@@ -1,0 +1,5 @@
+bin/
+obj/
+debug/
+*.opensdf
+*.suo
