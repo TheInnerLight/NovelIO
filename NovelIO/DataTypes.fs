@@ -22,13 +22,17 @@ type IOResult<'a, 'b> =
     |IOSuccess of 'a * 'b
     |IOError of IOErrorResult
 and IOErrorResult =
-    |Unspecified of System.Exception
+    |Other of IOException
     |DirectoryNotFound of DirectoryNotFoundException
     |DriveNotFound of DriveNotFoundException
     |PastEndOfStream of EndOfStreamException
     |FileNotFound of FileNotFoundException
     |PathTooLong of PathTooLongException
+    |StreamClosed of System.ObjectDisposedException
+    |UnauthourisedAccess of System.UnauthorizedAccessException
     |InvalidToken
+
+type IOToken = interface end
 
 type internal IOStatusValidity =
     |Valid
@@ -39,4 +43,5 @@ type BinaryReadFileToken internal(reader : BinaryReader) =
     member internal this.Invalidate() = iostatus <- Invalid
     member internal this.BinaryReader = reader
     member internal this.IOStatus = iostatus
+    interface IOToken
     

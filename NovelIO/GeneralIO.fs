@@ -18,6 +18,42 @@ namespace NovelFS.NovelIO
 
 open System.IO
 
+module internal IOStatus =
+    let map validFunc invalidFunc status =
+        match status with
+        |Valid -> validFunc()
+        |Invalid -> invalidFunc()
+
+type IOBuilder() =
+    member this.Bind(x, f) =
+        match x with
+        |IOSuccess (res, token) -> f (res, token)
+        |IOError error -> IOError error
+
+    member this.Return(x) =
+        x
+
+type IOTokenBuilder<'b when 'b :> IOToken>(tokenCreator : unit -> IOResult<unit, 'b>, tokenDestroyer : 'b -> IOResult<unit, unit>) =
+    let mutable stateToken = 
+        match tokenCreator() with
+        |IOSuccess (_, token) -> token
+
+    member this.Bind(x, f) =
+        match x stateToken with
+        |IOSuccess (res, token) ->
+            stateToken <- token 
+            f res
+        |IOError error -> IOError error
+
+    member this.Return(x) =
+        match tokenDestroyer stateToken with
+        |IOSuccess (_, _) -> IOSuccess(x, ())
+        |IOError error -> IOError error
+
+[<AutoOpen>]
+module IOExpressions =
+    let io = IOBuilder()
+
 module GeneralIO =
     let ioCallWithExceptionCheck call =
         try
@@ -28,6 +64,13 @@ module GeneralIO =
         | :? EndOfStreamException as eose -> PastEndOfStream eose |> IOError
         | :? FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError
         | :? PathTooLongException as ptle -> PathTooLong ptle |> IOError
+        | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
+        | :? System.UnauthorizedAccessException as unax -> UnauthourisedAccess unax |> IOError
+        | :? IOException as ioex -> Other ioex |> IOError
+
+    let private assume token =
+        match token with
+        |IOSuccess (succ, token) -> (succ, token)
 
     let listOfN func n iToken =
         let first = func iToken
@@ -40,6 +83,27 @@ module GeneralIO =
                     |IOSuccess (newRes, newToken) -> IOSuccess(newRes :: res, newToken)
                     |IOError error -> IOError error 
                 |IOError error -> IOError error) (IOSuccess([succ], token))
+            |> function
+            |IOSuccess (res, token) -> IOSuccess (List.rev res, token)
+            |IOError error -> IOError error
+        |IOError error -> IOError error
+
+    let many func iToken =
+        let first = func iToken
+        match first with
+        |IOSuccess (succ, token) ->
+            let lRes =
+                (IOSuccess(succ, token)) |> Seq.unfold (fun st ->
+                    match st with
+                    | IOSuccess(succ, token) ->
+                        let res = func token
+                        match res with
+                        |IOSuccess(suc2, token2) -> Some <| (res, res)
+                        |_ -> None
+                    |_ -> None) |> Seq.toList
+            let test = List.head lRes
+            let (_, tkn) = test |> assume
+            IOSuccess(lRes |> List.map (fun x -> assume x), tkn)
         |IOError error -> IOError error
 
     let pipe2 one two func iToken =
@@ -70,9 +134,4 @@ module GeneralIOOperators =
     let (.>>.) = GeneralIO.tuple2
 
 
-module internal IOStatus =
-    let map validFunc invalidFunc status =
-        match status with
-        |Valid -> validFunc
-        |Invalid -> invalidFunc  
 

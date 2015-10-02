@@ -18,14 +18,18 @@ open NovelFS.NovelIO
 
 [<EntryPoint>]
 let main argv = 
-    let result = BinaryReading.createBinaryReadToken "test.txt"
-    match result with
-    |IOSuccess (_, token) -> 
-        let test = 
-            token |> GeneralIO.listOfN (GeneralIO.tuple3 BinaryReading.readByte BinaryReading.readByte BinaryReading.readByte) 5
-        match test with
-        |IOSuccess (res, _) -> printfn "%A" res
-        |IOError error -> printfn "%A" error
+
+    let iotest = BinaryReadingExpressions.createReaderBuilder "test.txt"
+    let result2 =
+        iotest{
+            let! test1 = BinaryReading.readChar
+            let! test2 = BinaryReading.readChar
+            let! test3 = BinaryReading.readChar
+            let! test4 = BinaryReading.readChar
+            let! test5 = GeneralIO.listOfN (BinaryReading.readChar) 76
+            return (test1, test2, test3, test4, test5)
+        }
+    match result2 with
+    |IOSuccess (res, _) -> printfn "%A" res
     |IOError error -> printfn "%A" error
-    printfn "%A" argv
     0 // return an integer exit code
