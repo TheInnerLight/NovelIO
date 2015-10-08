@@ -33,10 +33,11 @@ type IOBuilder() =
     member this.Return(x) =
         x
 
-type IOTokenBuilder<'b when 'b :> IOToken>(tokenCreator : unit -> IOResult<unit, 'b>, tokenDestroyer : 'b -> IOResult<unit, unit>) =
+type IOTokenBuilder<'b when 'b :> IIOToken>(tokenCreator : unit -> IOResult<unit, 'b>, tokenDestroyer : 'b -> IOResult<unit, unit>) =
     let mutable stateToken = 
         match tokenCreator() with
         |IOSuccess (_, token) -> token
+        |IOError _ -> raise <| System.InvalidOperationException()
 
     member this.Bind(x, f) =
         match x stateToken with
@@ -49,6 +50,9 @@ type IOTokenBuilder<'b when 'b :> IOToken>(tokenCreator : unit -> IOResult<unit,
         match tokenDestroyer stateToken with
         |IOSuccess (_, _) -> IOSuccess(x, ())
         |IOError error -> IOError error
+
+    member this.ReturnFrom(x) =
+        x stateToken
 
 [<AutoOpen>]
 module IOExpressions =
@@ -72,6 +76,8 @@ module GeneralIO =
         match token with
         |IOSuccess (succ, token) -> (succ, token)
 
+    let iofy statement = IOSuccess (statement, ())
+
     let listOfN func n iToken =
         let first = func iToken
         match first with
@@ -88,22 +94,33 @@ module GeneralIO =
             |IOError error -> IOError error
         |IOError error -> IOError error
 
-    let many func iToken =
+    let arrayOfN func n iToken =
+        let first = func iToken
+        match first with
+        |IOSuccess (succ, token) ->
+            [0..n-1] |> List.fold (fun acc _ ->
+                match acc with
+                |IOSuccess(res, token) ->
+                    match func token with
+                    |IOSuccess (newRes, newToken) -> IOSuccess(newRes :: res, newToken)
+                    |IOError error -> IOError error 
+                |IOError error -> IOError error) (IOSuccess([succ], token))
+            |> function
+               |IOSuccess (res, token) -> IOSuccess (List.rev res |> List.toArray, token)
+               |IOError error -> IOError error
+        |IOError error -> IOError error
+
+    let remaining func iToken =
         let first = func iToken
         match first with
         |IOSuccess (succ, token) ->
             let lRes =
                 (IOSuccess(succ, token)) |> Seq.unfold (fun st ->
-                    match st with
-                    | IOSuccess(succ, token) ->
-                        let res = func token
-                        match res with
-                        |IOSuccess(suc2, token2) -> Some <| (res, res)
-                        |_ -> None
+                    let res = assume st |> snd |> func
+                    match res with
+                    |IOSuccess(suc2, token2) -> Some <| (res, res)
                     |_ -> None) |> Seq.toList
-            let test = List.head lRes
-            let (_, tkn) = test |> assume
-            IOSuccess(lRes |> List.map (fun x -> assume x), tkn)
+            IOSuccess(lRes |> List.map (fun x -> fst <| assume x), ())
         |IOError error -> IOError error
 
     let pipe2 one two func iToken =

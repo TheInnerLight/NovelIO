@@ -18,11 +18,18 @@ namespace NovelFS.NovelIO
 
 open System.IO
 
-module BinaryReading =
+type BinaryReadFileToken internal(reader : BinaryReader) =
+    let mutable iostatus = Valid
+    member internal this.Invalidate() = iostatus <- Invalid
+    member internal this.BinaryReader = reader
+    member internal this.IOStatus = iostatus
+    interface IIOToken
+
+module BinaryReader =
     let private readGeneral readFunction (token : BinaryReadFileToken) =
         token.IOStatus |> IOStatus.map 
             (fun () -> token.Invalidate(); GeneralIO.ioCallWithExceptionCheck (fun () -> token.BinaryReader |> readFunction, BinaryReadFileToken(token.BinaryReader)) )
-            (fun () -> token.BinaryReader.Dispose(); InvalidToken |> IOError)
+            (fun () -> token.BinaryReader.Dispose(); raise InvalidIOTokenError)
     
     let createBinaryReadToken path =
         GeneralIO.ioCallWithExceptionCheck 
@@ -33,7 +40,7 @@ module BinaryReading =
     let disposeBinaryReadToken (token : BinaryReadFileToken) =
         token.IOStatus |> IOStatus.map
             (fun () -> token.Invalidate(); GeneralIO.ioCallWithExceptionCheck(fun () -> token.BinaryReader.Dispose(), ()))
-            (fun () -> token.BinaryReader.Dispose(); InvalidToken |> IOError)
+            (fun () -> token.BinaryReader.Dispose(); raise InvalidIOTokenError)
         
     let readByte (token : BinaryReadFileToken) = token |> readGeneral (fun br -> br.ReadByte())
     let readChar (token : BinaryReadFileToken) = token |> readGeneral (fun br -> br.ReadChar())
@@ -44,11 +51,11 @@ module BinaryReading =
     let readFloat (token : BinaryReadFileToken) = token |> readGeneral (fun br -> br.ReadDouble())        
     let readFloat32 (token : BinaryReadFileToken) = token |> readGeneral (fun br -> br.ReadSingle())
     let readString(token : BinaryReadFileToken) = token |> readGeneral (fun br -> br.ReadString())
-    let readUInt (token : BinaryReadFileToken) = token |> readGeneral (fun br -> br.ReadUInt32())
     let readUInt16 (token : BinaryReadFileToken) = token |> readGeneral (fun br -> br.ReadUInt16())
+    let readUInt (token : BinaryReadFileToken) = token |> readGeneral (fun br -> br.ReadUInt32())
     let readUInt64 (token : BinaryReadFileToken) = token |> readGeneral (fun br -> br.ReadUInt64())
 
-module BinaryReadingExpressions =
-    let createReaderBuilder path = IOTokenBuilder((fun () -> BinaryReading.createBinaryReadToken path), (fun tk -> BinaryReading.disposeBinaryReadToken tk))
+module BinaryReaderExpr =
+    let createFileReaderBuilder path = IOTokenBuilder((fun () -> BinaryReader.createBinaryReadToken path), (fun tk -> BinaryReader.disposeBinaryReadToken tk))
     
 

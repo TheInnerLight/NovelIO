@@ -30,18 +30,12 @@ and IOErrorResult =
     |PathTooLong of PathTooLongException
     |StreamClosed of System.ObjectDisposedException
     |UnauthourisedAccess of System.UnauthorizedAccessException
-    |InvalidToken
 
-type IOToken = interface end
+type IIOToken = interface end
+
+exception InvalidIOTokenError
 
 type internal IOStatusValidity =
     |Valid
     |Invalid
-
-type BinaryReadFileToken internal(reader : BinaryReader) =
-    let mutable iostatus = Valid
-    member internal this.Invalidate() = iostatus <- Invalid
-    member internal this.BinaryReader = reader
-    member internal this.IOStatus = iostatus
-    interface IOToken
     

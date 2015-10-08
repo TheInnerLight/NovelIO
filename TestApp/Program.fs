@@ -19,15 +19,37 @@ open NovelFS.NovelIO
 [<EntryPoint>]
 let main argv = 
 
-    let iotest = BinaryReadingExpressions.createReaderBuilder "test.txt"
+    let newTest1 = BinaryReading.readByte
+    let newTest2 = BinaryReading.readByte
+    let newTest3 = BinaryReading.readByte
+    let newTestTup = IO.tuple3 newTest1 newTest2 newTest3
+    let newTestTup2 = IO.tuple3 newTestTup newTestTup newTestTup
+
+    let token = BinaryReading.createToken "test.txt"
+    let result = BinaryReading.read newTestTup2 token
+    match result with
+    |IOSuccess (res, token2) ->
+        printfn "%A" res
+        let result2 = BinaryReading.read newTestTup2 token2
+        let result3 = BinaryReading.read newTestTup2 token
+        let result4 = BinaryReading.read newTestTup2 token2
+        printfn "%A" result2
+        printfn "%A" result3
+        printfn "%A" result4
+    |IOError _ -> printfn "Errroooooooorrrrrrr"
+
+    //let bytes = BinaryReading.apply "test.txt" newTestTup
+    //printfn "%A" result
+
+    let iotest = BinaryReaderExpr.createFileReaderBuilder "test.txt"
     let result2 =
         iotest{
-            let! test1 = BinaryReading.readChar
-            let! test2 = BinaryReading.readChar
-            let! test3 = BinaryReading.readChar
-            let! test4 = BinaryReading.readChar
-            let! test5 = GeneralIO.listOfN (BinaryReading.readChar) 76
-            return (test1, test2, test3, test4, test5)
+            let! test1 = BinaryReader.readChar
+            let! test2 = BinaryReader.readChar
+            let! test3 = BinaryReader.readChar
+            let! test4 = BinaryReader.readChar
+            return! (GeneralIO.remaining (GeneralIO.tuple3 BinaryReader.readChar BinaryReader.readChar BinaryReader.readChar)) 
+            //return (test1, test2, test3, test4, test5)
         }
     match result2 with
     |IOSuccess (res, _) -> printfn "%A" res
