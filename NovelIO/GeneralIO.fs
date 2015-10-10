@@ -18,26 +18,9 @@ namespace NovelFS.NovelIO
 
 open System.IO
 
-module internal IOStatus =
-    let map validFunc invalidFunc status =
-        match status with
-        |Valid -> validFunc()
-        |Invalid -> invalidFunc()
-
-type IOBuilder() =
-    member this.Bind(x, f) =
-        match x with
-        |IOSuccess (res, token) -> f (res, token)
-        |IOError error -> IOError error
-
-    member this.Return(x) =
-        x
-
-type IOTokenBuilder<'b when 'b :> IIOToken>(tokenCreator : unit -> IOResult<unit, 'b>, tokenDestroyer : 'b -> IOResult<unit, unit>) =
-    let mutable stateToken = 
-        match tokenCreator() with
-        |IOSuccess (_, token) -> token
-        |IOError _ -> raise <| System.InvalidOperationException()
+/// A builder for handling IO expressions in computation expressions
+type IOBuilder<'b when 'b :> IIOToken>(tokenCreator : 'b, tokenDestroyer : 'b -> unit) =
+    let mutable stateToken =  tokenCreator with
 
     member this.Bind(x, f) =
         match x stateToken with
@@ -47,108 +30,30 @@ type IOTokenBuilder<'b when 'b :> IIOToken>(tokenCreator : unit -> IOResult<unit
         |IOError error -> IOError error
 
     member this.Return(x) =
-        match tokenDestroyer stateToken with
-        |IOSuccess (_, _) -> IOSuccess(x, ())
-        |IOError error -> IOError error
+        tokenDestroyer stateToken
+        x
 
     member this.ReturnFrom(x) =
-        x stateToken
+        tokenDestroyer stateToken
+        IOSuccess(x, ())
 
 [<AutoOpen>]
 module IOExpressions =
-    let io = IOBuilder()
+    let io creator destroyer = IOBuilder(creator, destroyer)
 
-module GeneralIO =
-    let ioCallWithExceptionCheck call =
-        try
-            call() |> IOSuccess
-        with
-        | :? DirectoryNotFoundException as dnfe -> DirectoryNotFound dnfe |> IOError
-        | :? DriveNotFoundException as dnfe -> DriveNotFound dnfe |> IOError
-        | :? EndOfStreamException as eose -> PastEndOfStream eose |> IOError
-        | :? FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError
-        | :? PathTooLongException as ptle -> PathTooLong ptle |> IOError
-        | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
-        | :? System.UnauthorizedAccessException as unax -> UnauthourisedAccess unax |> IOError
-        | :? IOException as ioex -> Other ioex |> IOError
-
-    let private assume token =
-        match token with
-        |IOSuccess (succ, token) -> (succ, token)
-
-    let iofy statement = IOSuccess (statement, ())
-
-    let listOfN func n iToken =
-        let first = func iToken
-        match first with
-        |IOSuccess (succ, token) ->
-            [0..n-1] |> List.fold (fun acc _ ->
-                match acc with
-                |IOSuccess(res, token) ->
-                    match func token with
-                    |IOSuccess (newRes, newToken) -> IOSuccess(newRes :: res, newToken)
-                    |IOError error -> IOError error 
-                |IOError error -> IOError error) (IOSuccess([succ], token))
-            |> function
-            |IOSuccess (res, token) -> IOSuccess (List.rev res, token)
-            |IOError error -> IOError error
-        |IOError error -> IOError error
-
-    let arrayOfN func n iToken =
-        let first = func iToken
-        match first with
-        |IOSuccess (succ, token) ->
-            [0..n-1] |> List.fold (fun acc _ ->
-                match acc with
-                |IOSuccess(res, token) ->
-                    match func token with
-                    |IOSuccess (newRes, newToken) -> IOSuccess(newRes :: res, newToken)
-                    |IOError error -> IOError error 
-                |IOError error -> IOError error) (IOSuccess([succ], token))
-            |> function
-               |IOSuccess (res, token) -> IOSuccess (List.rev res |> List.toArray, token)
-               |IOError error -> IOError error
-        |IOError error -> IOError error
-
-    let remaining func iToken =
-        let first = func iToken
-        match first with
-        |IOSuccess (succ, token) ->
-            let lRes =
-                (IOSuccess(succ, token)) |> Seq.unfold (fun st ->
-                    let res = assume st |> snd |> func
-                    match res with
-                    |IOSuccess(suc2, token2) -> Some <| (res, res)
-                    |_ -> None) |> Seq.toList
-            IOSuccess(lRes |> List.map (fun x -> fst <| assume x), ())
-        |IOError error -> IOError error
-
-    let pipe2 one two func iToken =
-        match one iToken with
-        |IOSuccess(result, token) -> 
-            match (two token) with
-            |IOSuccess(result2, token2) -> IOSuccess(func result result2, token2)
-            |IOError error2 -> IOError error2
-        |IOError error -> error |> IOError
-
-    let pipe3 one two three func iToken =
-        match one iToken with
-        |IOSuccess(result, token) -> 
-            match (two token) with
-            |IOSuccess(result2, token2) -> 
-                match (three token2) with
-                |IOSuccess(result3, token3) -> IOSuccess(func result result2 result3, token3)
-                |IOError error3 -> IOError error3
-            |IOError error2 -> IOError error2
-        |IOError error -> error |> IOError
-
-    let tuple2 one two = pipe2 one two (fun a b -> (a,b))
-
-    let tuple3 one two three = pipe3 one two three (fun a b c -> (a,b,c))
-
-[<AutoOpen>]
-module GeneralIOOperators =
-    let (.>>.) = GeneralIO.tuple2
-
+/// General IO functions
+module IO =
+    /// Convert two IO formats of types <'a> and <'b> into a combined IO format of type<'a*'b>
+    let inline tuple2 (a:^a) (b:^b) =
+        (^a : (static member Tuplify2: ^a * ^b -> ^c) (a, b))
+    /// Convert three IO formats of types <'a>, <'b> and <'c> into a combined IO format of type<'a*'b'c>
+    let inline tuple3 (a:^a) (b:^b) (c:^c)  =
+        (^a : (static member Tuplify3: ^a * ^b * ^c -> ^d) (a, b, c))
+    /// Convert an IO format of type <'a> into an IO format of type <'a list> with supplied length
+    let inline list len (a:^a) =
+        (^a : (static member Listify: ^a * int -> ^b) (a, len))
+    /// Convert an IO format of type <'a> into an IO format of type <'a[]> with supplied length
+    let inline array len (a:^a)  =
+        (^a : (static member Arrayify: ^a * int -> ^b) (a, len))
 
 

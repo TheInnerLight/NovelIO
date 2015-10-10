@@ -1,111 +1,171 @@
-﻿namespace NovelFS.NovelIO
+﻿(*
+   Copyright 2015 Philip Curzon
 
-type IBinaryRead =
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*)
+
+namespace NovelFS.NovelIO
+
+/// A type representing a generic binary read format
+type IBinaryReadFormat =
+    /// Skip past this structure in the supplied binary reader
     abstract member Skip : System.IO.BinaryReader -> unit
 
+/// Base class for binary read formats
 [<AbstractClass>]
-type BinaryRead<'a>() =
+type BinaryReadFormat<'a>() =
+    /// Read this format structure from a supplied binary reader
     abstract member Read : System.IO.BinaryReader -> 'a
+    /// The minimum number of bytes that will be read when this format is read from a stream
     abstract member MinByteCount : int
-    
-    interface IBinaryRead with
-        member this.Skip br = this.Read br |> ignore
+    /// Skip past this structure in the supplied binary reader
+    member this.Skip br = this.Read br |> ignore
+    /// IBinaryReadFormat implementation
+    interface IBinaryReadFormat with
+        member this.Skip br = this.Skip br
+    /// Transform two binary read formats of types <'a> and <'b> into a combined reader of type<'a*'b>
+    static member Tuplify2(a : BinaryReadFormat<'a>, b : BinaryReadFormat<'b>) =
+        BinaryReadFormatDouble(a, b) :> BinaryReadFormat<'a*'b>
+    /// Transform three binary read formats of types <'a>, <'b> and <'c> into a combined reader of type<'a*'b'c>
+    static member Tuplify3(a : BinaryReadFormat<'a>, b : BinaryReadFormat<'b>, c : BinaryReadFormat<'c>) =
+        BinaryReadFormatTriple(a, b, c) :> BinaryReadFormat<'a*'b*'c>
+    /// Transform a binary read format of type <'a> into a binary read format of type <'a list> with supplied length
+    static member Listify(a : BinaryReadFormat<'a>, len) =
+        BinaryReadFormatList(a, len) :> BinaryReadFormat<'a list>
+    /// Transform a binary read format of type <'a> into a binary read format of type <'a[]> with supplied length
+    static member Arrayify(a : BinaryReadFormat<'a>, len) =
+        BinaryReadFormatArray(a, len) :> BinaryReadFormat<'a[]>
 
-    static member Tuplify2(a : BinaryRead<'a>, b : BinaryRead<'b>) =
-        BinaryReadDouble(a, b) :> BinaryRead<'a*'b>
-
-    static member Tuplify3(a : BinaryRead<'a>, b : BinaryRead<'b>, c : BinaryRead<'c>) =
-        BinaryReadTriple(a, b, c) :> BinaryRead<'a*'b*'c>
-
-and BinaryReadSingle<'a> (readFunc, ?size : int) =
-    inherit BinaryRead<'a>()
+/// A binary read format of one type
+and private BinaryReadFormatSingle<'a> (readFunc, ?size : int) =
+    inherit BinaryReadFormat<'a>()
     let size = 
         match size with
         |Some sz -> sz
         |None -> sizeof<'a>
-
+    /// Read this format structure from a supplied binary reader
     override this.Read lst =
         readFunc lst
-
+    /// The minimum number of bytes that will be read when this format is read from a stream
     override this.MinByteCount = size
 
-and BinaryReadDouble<'a, 'b> (one : BinaryRead<'a>, two : BinaryRead<'b>) =
-    inherit BinaryRead<'a*'b>()
+/// A binary read format of two combined types
+and private BinaryReadFormatDouble<'a, 'b> (one : BinaryReadFormat<'a>, two : BinaryReadFormat<'b>) =
+    inherit BinaryReadFormat<'a*'b>()
     let size = one.MinByteCount + two.MinByteCount
-
+    /// Read this format structure from a supplied binary reader
     override this.Read br =
         let result1 = one.Read br
         let result2 = two.Read br
         (result1, result2)
-
+    /// The minimum number of bytes that will be read when this format is read from a stream
     override this.MinByteCount = size
 
-and BinaryReadTriple<'a,'b, 'c> (one : BinaryRead<'a>, two : BinaryRead<'b>, three : BinaryRead<'c>) =
-    inherit BinaryRead<'a*'b*'c>()
+/// A binary read format of three combined types
+and private BinaryReadFormatTriple<'a,'b, 'c> (one : BinaryReadFormat<'a>, two : BinaryReadFormat<'b>, three : BinaryReadFormat<'c>) =
+    inherit BinaryReadFormat<'a*'b*'c>()
     let size = one.MinByteCount + two.MinByteCount + three.MinByteCount
-
+    /// Read this format structure from a supplied binary reader
     override this.Read br =
         let result1 = one.Read br
         let result2 = two.Read br
         let result3 = three.Read br
         (result1, result2, result3)
-
+    /// The minimum number of bytes that will be read when this format is read from a stream
     override this.MinByteCount = size
-        
 
+/// A binary read format of a list of types  
+and private BinaryReadFormatList<'a> (one : BinaryReadFormat<'a>, length : int) =
+    inherit BinaryReadFormat<'a list>()
+    /// Read this format structure from a supplied binary reader
+    override this.Read br =
+        List.init length (fun i -> one.Read br)
+    /// The minimum number of bytes that will be read when this format is read from a stream
+    override this.MinByteCount = one.MinByteCount * length
 
+/// A binary read format of an array of types
+and private BinaryReadFormatArray<'a> (one : BinaryReadFormat<'a>, length : int) =
+    inherit BinaryReadFormat<'a[]>()
+    /// Read this format structure from a supplied binary reader
+    override this.Read br =
+        Array.init length (fun i -> one.Read br)
+    /// The minimum number of bytes that will be read when this format is read from a stream
+    override this.MinByteCount = one.MinByteCount * length
 
-//and BinaryReadList<'a> (one : BinaryRead<'a>, length : int) =
-//    inherit BinaryRead<'a>()
-//
-//        
-//    override this.ByteCount = one.ByteCount * length
-
-type BinaryFileState(fname : string, br : System.IO.BinaryReader, readCalls : IBinaryRead list) =
-    let mutable reader = new System.IO.BinaryReader(System.IO.File.OpenRead(fname))
-    let mutable valid = false
-    member internal this.BinaryReader = 
+/// Encapsulates the current state of binary file reading.  Reading from the same token will, except in exceptional circumstances, produce the same result.
+type BinaryFileState(fname : string, br : System.IO.BinaryReader, readCalls : IBinaryReadFormat list) =
+    let mutable reader = br
+    let mutable valid = true
+    /// Get the reader associated with this state.  If the state is valid, using the existing one, otherwise make a new one nand move to the correct position
+    let getReader() =
         match valid with
-        |true -> reader
+        |true -> br
         |false ->
             reader <- new System.IO.BinaryReader(System.IO.File.OpenRead(fname))
             readCalls |> List.iter (fun ibr -> ibr.Skip reader)
             reader
-    member internal this.Filename = fname
-    member internal this.ReadList = readCalls
-    member internal this.Invalidate() = valid <- false
+    /// Disposes the stream associated with this binary file state and invalidates the token
+    member internal this.Dispose() =
+        valid <- false
+        reader.Dispose()
+    /// Read from the current binary file state using the supplied binary read format
+    member internal this.ReadUsing (readFormat : BinaryReadFormat<_>) =
+        let result = readFormat.Read <| getReader()
+        let newToken = BinaryFileState(fname, getReader(), (readFormat :> IBinaryReadFormat) :: readCalls)
+        valid <- false
+        result, newToken
     interface IIOToken
 
-module IO =
-    let inline tuple2 (a:^a) (b:^b) =
-        (^a : (static member Tuplify2: ^a * ^b -> ^c) (a, b))
-
-    let inline tuple3 (a:^a) (b:^b) (c:^c)  =
-        (^a : (static member Tuplify3: ^a * ^b * ^c -> ^d) (a, b, c))
-
-module BinaryReading =
+/// Functions for creating binary reading formats
+module BinaryReadFormatter =
+    /// A binary read format for reading bytes
     let readByte =
         let readByteFunc (br : System.IO.BinaryReader) = br.ReadByte()
-        BinaryReadSingle<byte>(readByteFunc) :> BinaryRead<_>
+        BinaryReadFormatSingle<byte>(readByteFunc) :> BinaryReadFormat<_>
+    /// A binary read format for reading chars
     let readChar =
         let readCharFunc (br : System.IO.BinaryReader) = br.ReadChar()
-        BinaryReadSingle<char>(readCharFunc, 1) :> BinaryRead<_>
+        BinaryReadFormatSingle<char>(readCharFunc, 1) :> BinaryReadFormat<_>
+    /// A binary read format for reading (32 bit) ints
     let readInt =
         let readIntFunc (br : System.IO.BinaryReader) = br.ReadInt32()
-        BinaryReadSingle<int>(readIntFunc) :> BinaryRead<_>
+        BinaryReadFormatSingle<int>(readIntFunc) :> BinaryReadFormat<_>
+    /// A binary read format for reading (double-precision) floats
     let readFloat =
         let readFloatFunc (br : System.IO.BinaryReader) = br.ReadDouble()
-        BinaryReadSingle<float>(readFloatFunc) :> BinaryRead<_>
+        BinaryReadFormatSingle<float>(readFloatFunc) :> BinaryReadFormat<_>
 
+/// Functions for performing binary IO operations
+module BinaryIO =
+    /// Create a binary read token for a supplied file name
     let createToken fName =
         BinaryFileState(fName, new System.IO.BinaryReader(System.IO.File.OpenRead(fName)), [])
-
-    let read (br : BinaryRead<_>) (brt : BinaryFileState) =
-        let result = br.Read brt.BinaryReader
-        let newToken = BinaryFileState(brt.Filename, brt.BinaryReader, (br :> IBinaryRead) :: brt.ReadList)
-        brt.Invalidate()
-        IOSuccess(result, newToken)
-        
+    /// Create a binary read token for a supplied file name
+    let destroyToken (token : BinaryFileState) =
+        token.Dispose()
+    /// Read from a supplied binary state using a supplied binary read format
+    let read (br : BinaryReadFormat<_>) (brt : BinaryFileState) =
+        try
+            brt.ReadUsing br |> IOSuccess
+        with
+        | :? System.IO.DirectoryNotFoundException as dnfe -> DirectoryNotFound dnfe |> IOError
+        | :? System.IO.DriveNotFoundException as dnfe -> DriveNotFound dnfe |> IOError
+        | :? System.IO.EndOfStreamException as eose -> PastEndOfStream eose |> IOError
+        | :? System.IO.FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError
+        | :? System.IO.PathTooLongException as ptle -> PathTooLong ptle |> IOError
+        | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
+        | :? System.UnauthorizedAccessException as unax -> UnauthourisedAccess unax |> IOError
+        | :? System.IO.IOException as ioex -> Other ioex |> IOError
 
 
     

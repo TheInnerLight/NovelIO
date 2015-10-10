@@ -19,39 +19,36 @@ open NovelFS.NovelIO
 [<EntryPoint>]
 let main argv = 
 
-    let newTest1 = BinaryReading.readByte
-    let newTest2 = BinaryReading.readByte
-    let newTest3 = BinaryReading.readByte
+    let newTest1 = BinaryReadFormatter.readChar
+    let newTest2 = BinaryReadFormatter.readChar
+    let newTest3 = BinaryReadFormatter.readChar
     let newTestTup = IO.tuple3 newTest1 newTest2 newTest3
     let newTestTup2 = IO.tuple3 newTestTup newTestTup newTestTup
+    let newListTest = IO.list 5 newTest3
 
-    let token = BinaryReading.createToken "test.txt"
-    let result = BinaryReading.read newTestTup2 token
+    let testTxtIo = io (BinaryIO.createToken "test.txt") (BinaryIO.destroyToken) 
+    let res = testTxtIo {
+        let! result1 = BinaryIO.read newTestTup2
+        let! result2 = BinaryIO.read newTestTup2
+        let! result3 = BinaryIO.read newTestTup2
+        let! result4 = BinaryIO.read newTestTup2
+        let! result5 = BinaryIO.read newTestTup2
+        return! (result1, result2, result3, result4, result5)
+        }
+
+    printfn "%A" res
+
+    let token = BinaryIO.createToken "test.txt"
+    let result = BinaryIO.read newTestTup2 token
     match result with
     |IOSuccess (res, token2) ->
         printfn "%A" res
-        let result2 = BinaryReading.read newTestTup2 token2
-        let result3 = BinaryReading.read newTestTup2 token
-        let result4 = BinaryReading.read newTestTup2 token2
+        let result2 = BinaryIO.read newTestTup2 token2
+        let result3 = BinaryIO.read newTestTup2 token
+        let result4 = BinaryIO.read newTestTup2 token2
         printfn "%A" result2
         printfn "%A" result3
         printfn "%A" result4
     |IOError _ -> printfn "Errroooooooorrrrrrr"
+    0
 
-    //let bytes = BinaryReading.apply "test.txt" newTestTup
-    //printfn "%A" result
-
-    let iotest = BinaryReaderExpr.createFileReaderBuilder "test.txt"
-    let result2 =
-        iotest{
-            let! test1 = BinaryReader.readChar
-            let! test2 = BinaryReader.readChar
-            let! test3 = BinaryReader.readChar
-            let! test4 = BinaryReader.readChar
-            return! (GeneralIO.remaining (GeneralIO.tuple3 BinaryReader.readChar BinaryReader.readChar BinaryReader.readChar)) 
-            //return (test1, test2, test3, test4, test5)
-        }
-    match result2 with
-    |IOSuccess (res, _) -> printfn "%A" res
-    |IOError error -> printfn "%A" error
-    0 // return an integer exit code

@@ -51,7 +51,6 @@
   <ItemGroup>
     <Compile Include="DataTypes.fs" />
     <Compile Include="GeneralIO.fs" />
-    <Compile Include="BinaryReading.fs" />
     <Compile Include="BinaryRead.fs" />
   </ItemGroup>
   <ItemGroup>
