@@ -49,6 +49,6 @@ let main argv =
         printfn "%A" result2
         printfn "%A" result3
         printfn "%A" result4
-    |IOError _ -> printfn "Errroooooooorrrrrrr"
+    |IOError _ -> printfn "Error reading from file."
     0
 
