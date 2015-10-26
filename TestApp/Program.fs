@@ -20,7 +20,7 @@ open NovelFS.NovelIO
 let main argv = 
 
     let newTest1 = BinaryReadFormatter.readChar
-    let newTest2 = BinaryReadFormatter.readChar
+    let newTest2 = BinaryReadFormatter.readFloat
     let newTest3 = BinaryReadFormatter.readChar
     let newTestTup = IO.tuple3 newTest1 newTest2 newTest3
     let newTestTup2 = IO.tuple3 newTestTup newTestTup newTestTup
@@ -33,7 +33,7 @@ let main argv =
         let! result3 = BinaryIO.read newTestTup2
         let! result4 = BinaryIO.read newTestTup2
         let! result5 = BinaryIO.read newTestTup2
-        return! (result1, result2, result3, result4, result5)
+        return (result1, result2, result3, result4, result5)
         }
 
     printfn "%A" res

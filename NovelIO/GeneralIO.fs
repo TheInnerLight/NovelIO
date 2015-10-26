@@ -31,11 +31,11 @@ type IOBuilder<'b when 'b :> IIOToken>(tokenCreator : 'b, tokenDestroyer : 'b ->
 
     member this.Return(x) =
         tokenDestroyer stateToken
-        x
+        IOSuccess(x, ())
 
     member this.ReturnFrom(x) =
         tokenDestroyer stateToken
-        IOSuccess(x, ())
+        x
 
 [<AutoOpen>]
 module IOExpressions =
