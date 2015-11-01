@@ -49,7 +49,6 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="InternalTypes.fs" />
     <Compile Include="DataTypes.fs" />
     <Compile Include="GeneralIO.fs" />
     <Compile Include="BinaryRead.fs" />

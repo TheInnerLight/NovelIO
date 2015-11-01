@@ -24,16 +24,18 @@ let main argv =
     let newTest3 = BinaryReadFormatter.readChar
     let newTestTup = IO.tuple3 newTest1 newTest2 newTest3
     let newTestTup2 = IO.tuple3 newTestTup newTestTup newTestTup
-    let newListTest = IO.list 5 newTest3
+    let newListTest = IO.listRemaining newTest3
 
     let testTxtIo = io (BinaryIO.createToken "test.txt") (BinaryIO.destroyToken) 
     let res = testTxtIo {
-        let! result1 = BinaryIO.read newTestTup2
-        let! result2 = BinaryIO.read newTestTup2
-        let! result3 = BinaryIO.read newTestTup2
-        let! result4 = BinaryIO.read newTestTup2
-        let! result5 = BinaryIO.read newTestTup2
-        return (result1, result2, result3, result4, result5)
+//        let! result1 = BinaryIO.read newTestTup2
+//        let! result2 = BinaryIO.read newTestTup2
+//        let! result3 = BinaryIO.read newTestTup2
+//        let! result4 = BinaryIO.read newTestTup2
+//        let! result5 = BinaryIO.read newTestTup2
+//        return (result1, result2, result3, result4, result5)
+        let! a = BinaryIO.read newListTest
+        return a
         }
 
     printfn "%A" res

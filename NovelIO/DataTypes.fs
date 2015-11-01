@@ -46,3 +46,6 @@ and IOErrorResult =
 /// A token used to represent the state of an IO operation
 type IIOToken = interface end
     
+type ReadLength =
+    |Specified of int
+    |Remainder

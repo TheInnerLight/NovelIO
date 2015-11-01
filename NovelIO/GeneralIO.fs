@@ -43,17 +43,23 @@ module IOExpressions =
 
 /// General IO functions
 module IO =
-    /// Convert two IO formats of types <'a> and <'b> into a combined IO format of type<'a*'b>
+    /// Convert two IO formats of types 'a and 'b into a combined IO format of type 'a*'b
     let inline tuple2 (a:^a) (b:^b) =
         (^a : (static member Tuplify2: ^a * ^b -> ^c) (a, b))
-    /// Convert three IO formats of types <'a>, <'b> and <'c> into a combined IO format of type<'a*'b'c>
+    /// Convert three IO formats of types 'a, 'b and 'c into a combined IO format of type 'a*'b'c
     let inline tuple3 (a:^a) (b:^b) (c:^c)  =
         (^a : (static member Tuplify3: ^a * ^b * ^c -> ^d) (a, b, c))
-    /// Convert an IO format of type <'a> into an IO format of type <'a list> with supplied length
+    /// Convert an IO format of type 'a into an IO format of type 'a list with supplied length
     let inline list len (a:^a) =
-        (^a : (static member Listify: ^a * int -> ^b) (a, len))
-    /// Convert an IO format of type <'a> into an IO format of type <'a[]> with supplied length
+        (^a : (static member Listify: ^a * ReadLength -> ^b) (a, Specified len))
+    /// Convert an IO format of type 'a into an IO format of type 'a list which reads the remainder of the stream
+    let inline listRemaining (a:^a) =
+        (^a : (static member Listify: ^a * ReadLength -> ^b) (a, Remainder))
+    /// Convert an IO format of type 'a into an IO format of type 'a[] with supplied length
     let inline array len (a:^a)  =
-        (^a : (static member Arrayify: ^a * int -> ^b) (a, len))
+        (^a : (static member Arrayify: ^a * ReadLength -> ^b) (a, Specified len))
+    /// Convert an IO format of type 'a into an IO format of type 'a[] which reads the remainder of the stream
+    let inline arrayRemaining (a:^a)  =
+        (^a : (static member Arrayify: ^a * ReadLength -> ^b) (a, Remainder))
 
 

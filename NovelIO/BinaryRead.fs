@@ -40,11 +40,11 @@ type BinaryReadFormat<'a>() =
     static member Tuplify3(a : BinaryReadFormat<'a>, b : BinaryReadFormat<'b>, c : BinaryReadFormat<'c>) =
         BinaryReadFormatTriple(a, b, c) :> BinaryReadFormat<'a*'b*'c>
     /// Transform a binary read format of type <'a> into a binary read format of type <'a list> with supplied length
-    static member Listify(a : BinaryReadFormat<'a>, len) =
-        BinaryReadFormatList(a, Specified len) :> BinaryReadFormat<'a list>
+    static member Listify(a : BinaryReadFormat<'a>, specLen) =
+        BinaryReadFormatList(a, specLen) :> BinaryReadFormat<'a list>
     /// Transform a binary read format of type <'a> into a binary read format of type <'a[]> with supplied length
-    static member Arrayify(a : BinaryReadFormat<'a>, len) =
-        BinaryReadFormatArray(a, len) :> BinaryReadFormat<'a[]>
+    static member Arrayify(a : BinaryReadFormat<'a>, specLen) =
+        BinaryReadFormatArray(a, specLen) :> BinaryReadFormat<'a[]>
 
 /// A binary read format of one type
 and private BinaryReadFormatSingle<'a> (readFunc, ?size : int) =
@@ -100,13 +100,18 @@ and private BinaryReadFormatList<'a> (one : BinaryReadFormat<'a>, rLen : ReadLen
         |Remainder -> one.MinByteCount
 
 /// A binary read format of an array of types
-and private BinaryReadFormatArray<'a> (one : BinaryReadFormat<'a>, length : int) =
+and private BinaryReadFormatArray<'a> (one : BinaryReadFormat<'a>, rLen : ReadLength) =
     inherit BinaryReadFormat<'a[]>()
     /// Read this format structure from a supplied binary reader
     override this.Read br =
-        Array.init length (fun i -> one.Read br)
+        match rLen with
+        |Specified len -> Array.init len (fun i -> one.Read br)
+        |Remainder -> Seq.initInfinite id |> Seq.takeWhile (fun i -> br.PeekChar() <> -1) |> Seq.map (fun i -> one.Read br) |> Array.ofSeq
     /// The minimum number of bytes that will be read when this format is read from a stream
-    override this.MinByteCount = one.MinByteCount * length
+    override this.MinByteCount =
+        match rLen with
+        |Specified len -> one.MinByteCount*len
+        |Remainder -> one.MinByteCount
 
 /// Encapsulates the current state of binary file reading.  Reading from the same token will, except in exceptional circumstances, produce the same result.
 type BinaryFileState(fname : string, br : System.IO.BinaryReader, readCalls : IBinaryReadFormat list) =
@@ -163,17 +168,4 @@ module BinaryIO =
         token.Dispose()
     /// Read from a supplied binary state using a supplied binary read format
     let read (br : BinaryReadFormat<_>) (brt : BinaryFileState) =
-        try
-            brt.ReadUsing br |> IOSuccess
-        with
-        | :? System.IO.DirectoryNotFoundException as dnfe -> DirectoryNotFound dnfe |> IOError
-        | :? System.IO.DriveNotFoundException as dnfe -> DriveNotFound dnfe |> IOError
-        | :? System.IO.EndOfStreamException as eose -> PastEndOfStream eose |> IOError
-        | :? System.IO.FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError
-        | :? System.IO.PathTooLongException as ptle -> PathTooLong ptle |> IOError
-        | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
-        | :? System.UnauthorizedAccessException as unax -> UnauthourisedAccess unax |> IOError
-        | :? System.IO.IOException as ioex -> Other ioex |> IOError
-
-
-    
+        FileIO.performFileIoWithExceptionCheck (fun () -> brt.ReadUsing br)
