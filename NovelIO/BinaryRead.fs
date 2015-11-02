@@ -33,18 +33,6 @@ type BinaryReadFormat<'a>() =
     /// IBinaryReadFormat implementation
     interface IBinaryReadFormat with
         member this.Skip br = this.Skip br
-    /// Transform two binary read formats of types <'a> and <'b> into a combined reader of type<'a*'b>
-    static member Tuplify2(a : BinaryReadFormat<'a>, b : BinaryReadFormat<'b>) =
-        BinaryReadFormatDouble(a, b) :> BinaryReadFormat<'a*'b>
-    /// Transform three binary read formats of types <'a>, <'b> and <'c> into a combined reader of type<'a*'b'c>
-    static member Tuplify3(a : BinaryReadFormat<'a>, b : BinaryReadFormat<'b>, c : BinaryReadFormat<'c>) =
-        BinaryReadFormatTriple(a, b, c) :> BinaryReadFormat<'a*'b*'c>
-    /// Transform a binary read format of type <'a> into a binary read format of type <'a list> with supplied length
-    static member Listify(a : BinaryReadFormat<'a>, specLen) =
-        BinaryReadFormatList(a, specLen) :> BinaryReadFormat<'a list>
-    /// Transform a binary read format of type <'a> into a binary read format of type <'a[]> with supplied length
-    static member Arrayify(a : BinaryReadFormat<'a>, specLen) =
-        BinaryReadFormatArray(a, specLen) :> BinaryReadFormat<'a[]>
 
 /// A binary read format of one type
 and private BinaryReadFormatSingle<'a> (readFunc, ?size : int) =
@@ -59,64 +47,10 @@ and private BinaryReadFormatSingle<'a> (readFunc, ?size : int) =
     /// The minimum number of bytes that will be read when this format is read from a stream
     override this.MinByteCount = size
 
-/// A binary read format of two combined types
-and private BinaryReadFormatDouble<'a, 'b> (one : BinaryReadFormat<'a>, two : BinaryReadFormat<'b>) =
-    inherit BinaryReadFormat<'a*'b>()
-    let size = one.MinByteCount + two.MinByteCount
-    /// Read this format structure from a supplied binary reader
-    override this.Read br =
-        let result1 = one.Read br
-        let result2 = two.Read br
-        (result1, result2)
-    /// The minimum number of bytes that will be read when this format is read from a stream
-    override this.MinByteCount = size
-
-/// A binary read format of three combined types
-and private BinaryReadFormatTriple<'a,'b, 'c> (one : BinaryReadFormat<'a>, two : BinaryReadFormat<'b>, three : BinaryReadFormat<'c>) =
-    inherit BinaryReadFormat<'a*'b*'c>()
-    let size = one.MinByteCount + two.MinByteCount + three.MinByteCount
-    /// Read this format structure from a supplied binary reader
-    override this.Read br =
-        let result1 = one.Read br
-        let result2 = two.Read br
-        let result3 = three.Read br
-        (result1, result2, result3)
-    /// The minimum number of bytes that will be read when this format is read from a stream
-    override this.MinByteCount = size
-
-/// A binary read format of a list of types  
-and private BinaryReadFormatList<'a> (one : BinaryReadFormat<'a>, rLen : ReadLength) =
-    inherit BinaryReadFormat<'a list>()
-    /// Read this format structure from a supplied binary reader
-    override this.Read br =
-        match rLen with
-        |Specified len -> List.init len (fun i -> one.Read br)
-        |Remainder -> Seq.initInfinite id |> Seq.takeWhile (fun i -> br.PeekChar() <> -1) |> Seq.map (fun i -> one.Read br) |> List.ofSeq
-        
-    /// The minimum number of bytes that will be read when this format is read from a stream
-    override this.MinByteCount =
-        match rLen with
-        |Specified len -> one.MinByteCount*len
-        |Remainder -> one.MinByteCount
-
-/// A binary read format of an array of types
-and private BinaryReadFormatArray<'a> (one : BinaryReadFormat<'a>, rLen : ReadLength) =
-    inherit BinaryReadFormat<'a[]>()
-    /// Read this format structure from a supplied binary reader
-    override this.Read br =
-        match rLen with
-        |Specified len -> Array.init len (fun i -> one.Read br)
-        |Remainder -> Seq.initInfinite id |> Seq.takeWhile (fun i -> br.PeekChar() <> -1) |> Seq.map (fun i -> one.Read br) |> Array.ofSeq
-    /// The minimum number of bytes that will be read when this format is read from a stream
-    override this.MinByteCount =
-        match rLen with
-        |Specified len -> one.MinByteCount*len
-        |Remainder -> one.MinByteCount
-
 /// Encapsulates the current state of binary file reading.  Reading from the same token will, except in exceptional circumstances, produce the same result.
 type BinaryFileState(fname : string, br : System.IO.BinaryReader, readCalls : IBinaryReadFormat list) =
     let mutable reader = br
-    let mutable valid = true
+    let mutable valid = false
     /// Get the reader associated with this state.  If the state is valid, using the existing one, otherwise make a new one nand move to the correct position
     let getReader() =
         match valid with
@@ -131,32 +65,12 @@ type BinaryFileState(fname : string, br : System.IO.BinaryReader, readCalls : IB
         reader.Dispose()
     /// Read from the current binary file state using the supplied binary read format
     member internal this.ReadUsing (readFormat : BinaryReadFormat<_>) =
-        let result = readFormat.Read <| getReader()
-        let newToken = BinaryFileState(fname, getReader(), (readFormat :> IBinaryReadFormat) :: readCalls)
+        let reader = getReader()
+        let result = readFormat.Read <| reader
+        let newToken = BinaryFileState(fname, reader, (readFormat :> IBinaryReadFormat) :: readCalls)
         valid <- false
         result, newToken
     interface IIOToken
-
-/// Functions for creating binary reading formats
-module BinaryReadFormatter =
-    /// A binary read format for reading bytes
-    let readByte = BinaryReadFormatSingle(fun br -> br.ReadByte()) :> BinaryReadFormat<_>
-    /// A binary read format for reading chars
-    let readChar = BinaryReadFormatSingle(fun br -> br.ReadChar()) :> BinaryReadFormat<_>
-    /// A binary read format for reading a decimal number
-    let readDecimal = BinaryReadFormatSingle(fun br -> br.ReadDecimal()) :> BinaryReadFormat<_>
-    /// A binary read format for reading 16 bit ints
-    let readInt16 = BinaryReadFormatSingle(fun br -> br.ReadInt16()) :> BinaryReadFormat<_>
-    /// A binary read format for reading (32 bit) ints
-    let readInt32 = BinaryReadFormatSingle(fun br -> br.ReadInt32()) :> BinaryReadFormat<_>
-    /// A binary read format for reading 64 bit ints
-    let readInt64 = BinaryReadFormatSingle(fun br -> br.ReadInt64()) :> BinaryReadFormat<_>
-    /// A binary read format for reading (double-precision) floats
-    let readFloat = BinaryReadFormatSingle(fun br -> br.ReadDouble()) :> BinaryReadFormat<_>
-    /// A binary read format for reading single-precision floating point numbers
-    let readFloat32 = BinaryReadFormatSingle(fun br -> br.ReadDouble()) :> BinaryReadFormat<_>
-    /// A binary read format for reading a length prefixed string
-    let readString = BinaryReadFormatSingle(fun br -> br.ReadString()) :> BinaryReadFormat<_>
 
 /// Functions for performing binary IO operations
 module BinaryIO =
@@ -167,5 +81,30 @@ module BinaryIO =
     let destroyToken (token : BinaryFileState) =
         token.Dispose()
     /// Read from a supplied binary state using a supplied binary read format
-    let read (br : BinaryReadFormat<_>) (brt : BinaryFileState) =
-        FileIO.performFileIoWithExceptionCheck (fun () -> brt.ReadUsing br)
+    let run fName bfs =
+        match bfs <| createToken fName with
+        |IOSuccess (res, token) ->
+            destroyToken token
+            IOSuccess(res, ())
+        |IOError e -> IOError e
+    
+    let private readBasic f (brt : BinaryFileState) = 
+        IO.performIoWithExceptionCheck (fun () -> brt.ReadUsing f)
+    /// A binary read format for reading bytes
+    let readByte brt = readBasic (BinaryReadFormatSingle(fun br -> br.ReadByte()) :> BinaryReadFormat<_>) brt
+    /// A binary read format for reading chars
+    let readChar brt = readBasic (BinaryReadFormatSingle(fun br -> br.ReadChar()) :> BinaryReadFormat<_>) brt
+    /// A binary read format for reading a decimal number
+    let readDecimal brt = readBasic (BinaryReadFormatSingle(fun br -> br.ReadDecimal()) :> BinaryReadFormat<_>) brt
+    /// A binary read format for reading 16 bit ints
+    let readInt16 brt = readBasic (BinaryReadFormatSingle(fun br -> br.ReadInt16()) :> BinaryReadFormat<_>) brt
+    /// A binary read format for reading (32 bit) ints
+    let readInt32 brt = readBasic (BinaryReadFormatSingle(fun br -> br.ReadInt32()) :> BinaryReadFormat<_>) brt
+    /// A binary read format for reading 64 bit ints
+    let readInt64 brt = readBasic (BinaryReadFormatSingle(fun br -> br.ReadInt64()) :> BinaryReadFormat<_>) brt
+    /// A binary read format for reading (double-precision) floats
+    let readFloat brt = readBasic (BinaryReadFormatSingle(fun br -> br.ReadDouble()) :> BinaryReadFormat<_>) brt
+    /// A binary read format for reading single-precision floating point numbers
+    let readFloat32 brt =  readBasic (BinaryReadFormatSingle(fun br -> br.ReadDouble()) :> BinaryReadFormat<_>) brt
+    /// A binary read format for reading a length prefixed string
+    let readString brt = readBasic (BinaryReadFormatSingle(fun br -> br.ReadString()) :> BinaryReadFormat<_>) brt

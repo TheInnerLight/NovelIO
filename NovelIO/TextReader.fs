@@ -94,4 +94,4 @@ module TextIO =
         token.Dispose()
     /// Read from a supplied binary state using a supplied binary read format
     let read (tr : TextReadFormat<_>) (trt : TextFileState) =
-        FileIO.performFileIoWithExceptionCheck (fun () -> trt.ReadUsing tr)
+        IO.performIoWithExceptionCheck (fun () -> trt.ReadUsing tr)

@@ -19,47 +19,59 @@ namespace NovelFS.NovelIO
 open System.IO
 
 /// A builder for handling IO expressions in computation expressions
-type IOBuilder<'b when 'b :> IIOToken>(tokenCreator : 'b, tokenDestroyer : 'b -> unit) =
-    let mutable stateToken =  tokenCreator with
+type IOBuilder<'b when 'b :> IIOToken>() =
 
     member this.Bind(x, f) =
-        match x stateToken with
-        |IOSuccess (res, token) ->
-            stateToken <- token 
-            f res
-        |IOError error -> IOError error
+        fun token ->
+            match x token with
+            |IOSuccess (res, token2) -> f res token2
+            |IOError error -> IOError error
 
     member this.Return(x) =
-        tokenDestroyer stateToken
-        IOSuccess(x, ())
+        fun token -> IOSuccess(x, token)
 
     member this.ReturnFrom(x) =
-        tokenDestroyer stateToken
         x
 
 [<AutoOpen>]
 module IOExpressions =
-    let io creator destroyer = IOBuilder(creator, destroyer)
+    let io<'a when 'a :> IIOToken> = IOBuilder<'a>()
 
 /// General IO functions
 module IO =
-    /// Convert two IO formats of types 'a and 'b into a combined IO format of type 'a*'b
-    let inline tuple2 (a:^a) (b:^b) =
-        (^a : (static member Tuplify2: ^a * ^b -> ^c) (a, b))
-    /// Convert three IO formats of types 'a, 'b and 'c into a combined IO format of type 'a*'b'c
-    let inline tuple3 (a:^a) (b:^b) (c:^c)  =
-        (^a : (static member Tuplify3: ^a * ^b * ^c -> ^d) (a, b, c))
-    /// Convert an IO format of type 'a into an IO format of type 'a list with supplied length
-    let inline list len (a:^a) =
-        (^a : (static member Listify: ^a * ReadLength -> ^b) (a, Specified len))
-    /// Convert an IO format of type 'a into an IO format of type 'a list which reads the remainder of the stream
-    let inline listRemaining (a:^a) =
-        (^a : (static member Listify: ^a * ReadLength -> ^b) (a, Remainder))
-    /// Convert an IO format of type 'a into an IO format of type 'a[] with supplied length
-    let inline array len (a:^a)  =
-        (^a : (static member Arrayify: ^a * ReadLength -> ^b) (a, Specified len))
-    /// Convert an IO format of type 'a into an IO format of type 'a[] which reads the remainder of the stream
-    let inline arrayRemaining (a:^a)  =
-        (^a : (static member Arrayify: ^a * ReadLength -> ^b) (a, Remainder))
+    /// Perform some file IO and check for exceptions
+    let performIoWithExceptionCheck f =
+        try
+            f() |> IOSuccess 
+        with
+        | :? System.IO.DirectoryNotFoundException as dnfe -> DirectoryNotFound dnfe |> IOError
+        | :? System.IO.DriveNotFoundException as dnfe -> DriveNotFound dnfe |> IOError
+        | :? System.IO.EndOfStreamException as eose -> PastEndOfStream eose |> IOError
+        | :? System.IO.FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError
+        | :? System.IO.PathTooLongException as ptle -> PathTooLong ptle |> IOError
+        | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
+        | :? System.UnauthorizedAccessException as unax -> UnauthourisedAccess unax |> IOError
+        | :? System.IO.IOException as ioex -> Other ioex |> IOError
+    /// Transform n copies of an IO Expression into a new IO Expression containg a list of n results 
+    let list n f token =
+        List.init n id 
+        |> List.fold (fun acc v ->
+            match acc with
+            |IOSuccess (lstC, token) ->
+                match f token with
+                |IOSuccess (res, newToken) -> IOSuccess (res :: lstC, newToken) 
+                |IOError e -> IOError e
+            |IOError e -> IOError e) (IOSuccess([], token))
+
+    let mapM listFs token =
+        listFs
+        |> List.fold (fun acc v ->
+            match acc with
+            |IOSuccess (lstC, token) ->
+                match v token with
+                |IOSuccess (res, newToken) -> IOSuccess (res :: lstC, newToken) 
+                |IOError e -> IOError e
+            |IOError e -> IOError e) (IOSuccess([], token))
+
 
 
