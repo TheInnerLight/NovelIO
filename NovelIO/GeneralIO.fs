@@ -18,17 +18,24 @@ namespace NovelFS.NovelIO
 
 open System.IO
 
-/// A builder for handling IO expressions in computation expressions
-type IOBuilder<'b when 'b :> IIOToken>() =
-
-    member this.Bind(x, f) =
-        fun token ->
+module private IOExpressionFunctions = 
+    let bind x f =
+        fun (token : #IIOToken) ->
             match x token with
             |IOSuccess (res, token2) -> f res token2
             |IOError error -> IOError error
 
+    let ereturn x = 
+        fun (token : #IIOToken) -> IOSuccess(x, token)
+
+/// A builder for handling IO expressions in computation expressions
+type IOBuilder<'b when 'b :> IIOToken>() =
+
+    member this.Bind(x, f) =
+        IOExpressionFunctions.bind x f
+
     member this.Return(x) =
-        fun token -> IOSuccess(x, token)
+        IOExpressionFunctions.ereturn x
 
     member this.ReturnFrom(x) =
         x
@@ -52,26 +59,21 @@ module IO =
         | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
         | :? System.UnauthorizedAccessException as unax -> UnauthourisedAccess unax |> IOError
         | :? System.IO.IOException as ioex -> Other ioex |> IOError
-    /// Transform n copies of an IO Expression into a new IO Expression containg a list of n results 
+    /// Transform n copies of an IO Expression into a new IO Expression containing a list of n results 
     let list n f token =
-        List.init n id 
-        |> List.fold (fun acc v ->
-            match acc with
-            |IOSuccess (lstC, token) ->
-                match f token with
-                |IOSuccess (res, newToken) -> IOSuccess (res :: lstC, newToken) 
-                |IOError e -> IOError e
-            |IOError e -> IOError e) (IOSuccess([], token))
+        ([1..n]
+        |> List.fold (fun acc _ ->
+            IOExpressionFunctions.bind acc (fun lstC -> 
+                IOExpressionFunctions.bind f (fun b t2 -> IOExpressionFunctions.ereturn (b::lstC)  t2)))
+            (fun a -> IOSuccess([], token))) token
+
 
     let mapM listFs token =
-        listFs
-        |> List.fold (fun acc v ->
-            match acc with
-            |IOSuccess (lstC, token) ->
-                match v token with
-                |IOSuccess (res, newToken) -> IOSuccess (res :: lstC, newToken) 
-                |IOError e -> IOError e
-            |IOError e -> IOError e) (IOSuccess([], token))
+        (listFs
+        |> List.fold (fun acc f ->
+            IOExpressionFunctions.bind acc (fun lstC -> 
+                IOExpressionFunctions.bind f (fun b t2 -> IOExpressionFunctions.ereturn (b::lstC)  t2)))
+            (fun a -> IOSuccess([], token))) token
 
 
 
