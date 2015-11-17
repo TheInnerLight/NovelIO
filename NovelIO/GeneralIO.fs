@@ -18,31 +18,33 @@ namespace NovelFS.NovelIO
 
 open System.IO
 
-module private IOExpressionFunctions = 
-    let bind x f =
-        fun (token : #IIOToken) ->
+module internal IOExpressionFunctions =
+    let exReturn x = 
+        fun (token : #IIO) -> IOSuccess(x, token)
+    /// bind operation for #IOToken -> IOResult
+    let (>>=) x f =
+        fun (token : #IIO) ->
             match x token with
             |IOSuccess (res, token2) -> f res token2
             |IOError error -> IOError error
 
-    let ereturn x = 
-        fun (token : #IIOToken) -> IOSuccess(x, token)
+open IOExpressionFunctions
 
 /// A builder for handling IO expressions in computation expressions
-type IOBuilder<'b when 'b :> IIOToken>() =
-
+type IOBuilder<'b when 'b :> IIO>() =
+    /// bind operation in expression for #IOToken -> IOResult
     member this.Bind(x, f) =
-        IOExpressionFunctions.bind x f
+        x >>= f
 
     member this.Return(x) =
-        IOExpressionFunctions.ereturn x
+        IOExpressionFunctions.exReturn x
 
     member this.ReturnFrom(x) =
         x
 
 [<AutoOpen>]
 module IOExpressions =
-    let io<'a when 'a :> IIOToken> = IOBuilder<'a>()
+    let io<'a when 'a :> IIO> = IOBuilder<'a>()
 
 /// General IO functions
 module IO =
@@ -63,17 +65,25 @@ module IO =
     let list n f token =
         ([1..n]
         |> List.fold (fun acc _ ->
-            IOExpressionFunctions.bind acc (fun lstC -> 
-                IOExpressionFunctions.bind f (fun b t2 -> IOExpressionFunctions.ereturn (b::lstC)  t2)))
+            acc >>= (fun lstC -> 
+                f >>= (fun b -> IOExpressionFunctions.exReturn (b::lstC) )))
             (fun a -> IOSuccess([], token))) token
-
-
+    /// Transform a list of IO Expressions into a list of IO results
     let mapM listFs token =
         (listFs
         |> List.fold (fun acc f ->
-            IOExpressionFunctions.bind acc (fun lstC -> 
-                IOExpressionFunctions.bind f (fun b t2 -> IOExpressionFunctions.ereturn (b::lstC)  t2)))
+            acc >>= (fun lstC -> 
+                f >>= (fun b -> IOExpressionFunctions.exReturn (b::lstC) )))
             (fun a -> IOSuccess([], token))) token
+    /// Convert a pair of IO expressions in a single IO expression returning a tuple of the merged results
+    let tuple2 f1 f2 =
+        f1 >>= (fun a -> f2 >>= (fun b -> exReturn (a,b) ))
+    /// Convert three IO expressions in a single IO expression returning a tuple of the merged results
+    let tuple3 f1 f2 f3 =
+        f1 >>= (fun a -> f2 >>= (fun b -> f3 >>= (fun c -> exReturn (a,b,c) )))
+    /// Convert four IO expressions in a single IO expression returning a tuple of the merged results
+    let tuple4 f1 f2 f3 f4 =
+        f1 >>= (fun a -> f2 >>= (fun b -> f3 >>= (fun c -> f4 >>= (fun d -> exReturn (a,b,c,d) )))) 
 
 
 

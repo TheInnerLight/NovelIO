@@ -70,7 +70,7 @@ type BinaryFileState(fname : string, br : System.IO.BinaryReader, readCalls : IB
         let newToken = BinaryFileState(fname, reader, (readFormat :> IBinaryReadFormat) :: readCalls)
         valid <- false
         result, newToken
-    interface IIOToken
+    interface IIO
 
 /// Functions for performing binary IO operations
 module BinaryIO =
