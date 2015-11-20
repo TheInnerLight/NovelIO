@@ -72,7 +72,7 @@ type BinaryFileState(fname : string, br : System.IO.BinaryReader) =
 module BinaryIO =
     /// Create a binary read token for a supplied file name
     let private createToken fName =
-        BinaryFileState( fName, new System.IO.BinaryReader(System.IO.File.OpenRead(fName)) )
+        BinaryFileState(fName, new System.IO.BinaryReader(System.IO.File.OpenRead(fName)), [])
     /// Create a binary read token for a supplied file name
     let private destroyToken (token : BinaryFileState) =
         token.Dispose()

@@ -25,8 +25,8 @@ let main argv =
         let! c = BinaryIO.readFloat32
         let! d = BinaryIO.readByte
         let! lst1 = IO.list (int d) (BinaryIO.readFloat)
-        let! lst2 = IO.mapM [BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar]
-        return a, b, c, d, lst1, lst2
+        let! lst2 = IO.mapM [BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar]
+        return a, b, c, d, lst2
         }
 
     let result =  
@@ -35,50 +35,6 @@ let main argv =
         |IOError e -> failwith "error"
 
     printfn "%A" result
-
-    let token = BinaryIO.createToken "test.txt"
-
-    let result, token2 = 
-        match fileReader token with
-        |IOSuccess (res, tok2) -> res, tok2
-        |IOError e -> failwith "error"
-
-    printfn "%A" result
-
-    let result2 = 
-        match fileReader token2 with
-        |IOSuccess (res, _) -> res
-        |IOError e -> failwith "error"
-
-    printfn "%A" result2
-
-    let result2 = 
-        match fileReader token2 with
-        |IOSuccess (res, _) -> res
-        |IOError e -> failwith "error"
-
-    printfn "%A" result2
-
-    let result2 = 
-        match fileReader token2 with
-        |IOSuccess (res, _) -> res
-        |IOError e -> failwith "error"
-
-    printfn "%A" result2
-
-    let a = 
-        match fileReader token with
-        |IOSuccess (res, _) -> res
-        |IOError e -> failwith "error"
-
-    printfn "%A" a
-
-    let a = 
-        match fileReader token with
-        |IOSuccess (res, _) -> res
-        |IOError e -> failwith "error"
-
-    printfn "%A" a
 
     0
 

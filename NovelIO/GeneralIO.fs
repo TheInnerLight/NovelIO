@@ -19,28 +19,38 @@ namespace NovelFS.NovelIO
 open System.IO
 
 module internal IOExpressionFunctions =
+    /// return a result in the form of an IO expression
     let exReturn x = 
         fun (token : #IIO) -> IOSuccess(x, token)
-    /// bind operation for #IOToken -> IOResult
+    /// bind operation for #IO -> IOResult
     let (>>=) x f =
         fun (token : #IIO) ->
             match x token with
             |IOSuccess (res, token2) -> f res token2
             |IOError error -> IOError error
+    /// lift2 operation for #IO -> IOResult
+    let lift2 f x1 x2 =
+        fun (token : #IIO) ->
+            x1 >>= (fun a -> x2 >>= (fun b -> exReturn (f a b)))
+    /// lift3 operation for #IO -> IOResult
+    let lift3 f x1 x2 x3 =
+        fun (token : #IIO) ->
+            x1 >>= (fun a -> x2 >>= (fun b -> x3 >>= (fun c -> exReturn (f a b c) )))
+    /// lift4 operation for #IO -> IOResult
+    let lift4 f x1 x2 x3 x4 =
+        fun (token : #IIO) ->
+            x1 >>= (fun a -> x2 >>= (fun b -> x3 >>= (fun c -> x4 >>= (fun d -> exReturn (f a b c d) )))) 
 
 open IOExpressionFunctions
 
 /// A builder for handling IO expressions in computation expressions
 type IOBuilder<'b when 'b :> IIO>() =
     /// bind operation in expression for #IOToken -> IOResult
-    member this.Bind(x, f) =
-        x >>= f
-
-    member this.Return(x) =
-        IOExpressionFunctions.exReturn x
-
-    member this.ReturnFrom(x) =
-        x
+    member this.Bind(x, f) = x >>= f
+    /// return a result in the form of an IO expression
+    member this.Return(x) = IOExpressionFunctions.exReturn x
+    /// return an IO expression
+    member this.ReturnFrom(x) = x
 
 [<AutoOpen>]
 module IOExpressions =
@@ -76,14 +86,11 @@ module IO =
                 f >>= (fun b -> IOExpressionFunctions.exReturn (b::lstC) )))
             (fun a -> IOSuccess([], token))) token
     /// Convert a pair of IO expressions in a single IO expression returning a tuple of the merged results
-    let tuple2 f1 f2 =
-        f1 >>= (fun a -> f2 >>= (fun b -> exReturn (a,b) ))
+    let tuple2 f1 f2 = lift2 (fun a b -> a, b) f1 f2
     /// Convert three IO expressions in a single IO expression returning a tuple of the merged results
-    let tuple3 f1 f2 f3 =
-        f1 >>= (fun a -> f2 >>= (fun b -> f3 >>= (fun c -> exReturn (a,b,c) )))
+    let tuple3 f1 f2 f3 = lift3 (fun a b c -> (a, b, c)) f1 f2 f3
     /// Convert four IO expressions in a single IO expression returning a tuple of the merged results
-    let tuple4 f1 f2 f3 f4 =
-        f1 >>= (fun a -> f2 >>= (fun b -> f3 >>= (fun c -> f4 >>= (fun d -> exReturn (a,b,c,d) )))) 
+    let tuple4 f1 f2 f3 f4 = lift4 (fun a b c d -> (a, b, c, d)) f1 f2 f3 f4
 
 
 
