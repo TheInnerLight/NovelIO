@@ -44,7 +44,7 @@ and IOErrorResult =
     |UnauthourisedAccess of System.UnauthorizedAccessException
 
 /// A token used to represent the state of an IO operation
-type IIOToken = interface end
+type IIO = interface end
     
 type ReadLength =
     |Specified of int

@@ -40,26 +40,6 @@ type TextReadFormatSingle() =
     override this.Skip txtRdr =
         this.Read txtRdr |> ignore
 
-/// Class for reading a pair of combined textreadformats
-type TextReadFormatDouble<'a, 'b>(one : TextReadFormat<'a>, two : TextReadFormat<'b>) =
-    inherit TextReadFormat<'a*'b>()
-    /// Read this format structure from a supplied text reader
-    override this.Read (txtRdr : System.IO.TextReader) =
-        (one.Read txtRdr, two.Read txtRdr)
-    /// Skip past this structure in the supplied text reader
-    override this.Skip txtRdr =
-        this.Read txtRdr |> ignore
-
-/// Class for reading a triple of combined textreadformats
-type TextReadFormatTriple<'a, 'b, 'c>(one : TextReadFormat<'a>, two : TextReadFormat<'b>, three : TextReadFormat<'c>) =
-    inherit TextReadFormat<'a*'b*'c>()
-    /// Read this format structure from a supplied text reader
-    override this.Read (txtRdr : System.IO.TextReader) =
-        (one.Read txtRdr, two.Read txtRdr, three.Read txtRdr)
-    /// Skip past this structure in the supplied text reader
-    override this.Skip txtRdr =
-        this.Read txtRdr |> ignore
-
 /// Encapsulates the current state of text file reading.  Reading from the same token will, except in exceptional circumstances, produce the same result.
 type TextFileState(fname : string, br : System.IO.TextReader, readCalls : ITextReadFormat list) =
     let mutable reader = br
@@ -82,10 +62,11 @@ type TextFileState(fname : string, br : System.IO.TextReader, readCalls : ITextR
         let newToken = TextFileState(fname, getReader(), (readFormat :> ITextReadFormat) :: readCalls)
         valid <- false
         result, newToken
-    interface IIOToken
+    interface IIO
 
 /// Functions for performing text IO operations
 module TextIO =
+    open IOExpressionFunctions
     /// Create a binary read token for a supplied file name
     let createToken fName =
         TextFileState(fName, new System.IO.StreamReader(System.IO.File.OpenRead(fName)), [])
@@ -93,5 +74,12 @@ module TextIO =
     let destroyToken (token : TextFileState) =
         token.Dispose()
     /// Read from a supplied binary state using a supplied binary read format
+    let run fName tfs =
+        match tfs <| createToken fName with
+        |IOSuccess (res, token) ->
+            destroyToken token
+            IOSuccess(res, ())
+        |IOError e -> IOError e
+    /// Read from a supplied binary state using a supplied binary read format
     let read (tr : TextReadFormat<_>) (trt : TextFileState) =
-        FileIO.performFileIoWithExceptionCheck (fun () -> trt.ReadUsing tr)
+        IO.performIoWithExceptionCheck (fun () -> trt.ReadUsing tr)
