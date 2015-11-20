@@ -54,16 +54,15 @@ type BinaryFileState(fname : string, br : System.IO.BinaryReader) =
     let getReader() =
         match valid with
         |true -> br
-        |false -> raise <| System.InvalidOperationException ""
+        |false -> raise <| System.InvalidOperationException "Attempted read from invalid state token"
     /// Disposes the stream associated with this binary file state and invalidates the token
     member internal this.Dispose() =
         valid <- false
         br.Dispose()
     /// Read from the current binary file state using the supplied binary read format
     member internal this.ReadUsing (readFormat : BinaryReadFormat<_>) =
-        let reader = getReader()
-        let result = readFormat.Read <| reader
-        let newToken = BinaryFileState(fname, reader)
+        let result = readFormat.Read <| getReader()
+        let newToken = BinaryFileState(fname, getReader())
         valid <- false
         result, newToken
     interface IIO

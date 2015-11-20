@@ -41,25 +41,21 @@ type TextReadFormatSingle() =
         this.Read txtRdr |> ignore
 
 /// Encapsulates the current state of text file reading.  Reading from the same token will, except in exceptional circumstances, produce the same result.
-type TextFileState(fname : string, br : System.IO.TextReader, readCalls : ITextReadFormat list) =
-    let mutable reader = br
+type TextFileState(fname : string, tr : System.IO.TextReader) =
     let mutable valid = true
     /// Get the reader associated with this state.  If the state is valid, using the existing one, otherwise make a new one nand move to the correct position
     let getReader() =
         match valid with
-        |true -> br
-        |false ->
-            reader <- new System.IO.StreamReader(System.IO.File.OpenRead(fname))
-            readCalls |> List.iter (fun ibr -> ibr.Skip reader)
-            reader
+        |true -> tr
+        |false -> raise <| System.InvalidOperationException "Attempted read from invalid state token"
     /// Disposes the stream associated with this text file state and invalidates the token
     member internal this.Dispose() =
         valid <- false
-        reader.Dispose()
+        tr.Dispose()
     /// Read from the current text file state using the supplied text read format
     member internal this.ReadUsing (readFormat : TextReadFormat<_>) =
         let result = readFormat.Read <| getReader()
-        let newToken = TextFileState(fname, getReader(), (readFormat :> ITextReadFormat) :: readCalls)
+        let newToken = TextFileState(fname, getReader())
         valid <- false
         result, newToken
     interface IIO
@@ -68,10 +64,10 @@ type TextFileState(fname : string, br : System.IO.TextReader, readCalls : ITextR
 module TextIO =
     open IOExpressionFunctions
     /// Create a binary read token for a supplied file name
-    let createToken fName =
-        TextFileState(fName, new System.IO.StreamReader(System.IO.File.OpenRead(fName)), [])
+    let private createToken fName =
+        TextFileState( fName, new System.IO.StreamReader(System.IO.File.OpenRead(fName)) )
     /// Create a binary read token for a supplied file name
-    let destroyToken (token : TextFileState) =
+    let private destroyToken (token : TextFileState) =
         token.Dispose()
     /// Read from a supplied binary state using a supplied binary read format
     let run fName tfs =
