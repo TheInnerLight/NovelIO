@@ -56,6 +56,11 @@ type IOBuilder<'b when 'b :> IIO>() =
 module IOExpressions =
     let io<'a when 'a :> IIO> = IOBuilder<'a>()
 
+type RunIO<'a, 'b> =
+    |FileReadIO of string * 'a
+    |FileWriteIO of string * 'b
+    |TCPServerSocketReadIO of System.Net.Sockets.Socket *'a
+
 /// General IO functions
 module IO =
     /// Perform some file IO and check for exceptions

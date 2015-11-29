@@ -26,8 +26,6 @@ type IBinaryReadFormat =
 type BinaryReadFormat<'a>() =
     /// Read this format structure from a supplied binary reader
     abstract member Read : System.IO.BinaryReader -> 'a
-    /// The minimum number of bytes that will be read when this format is read from a stream
-    abstract member MinByteCount : int
     /// Skip past this structure in the supplied binary reader
     member this.Skip br = this.Read br |> ignore
     /// IBinaryReadFormat implementation
@@ -37,18 +35,12 @@ type BinaryReadFormat<'a>() =
 /// A binary read format of one type
 and private BinaryReadFormatSingle<'a> (readFunc, ?size : int) =
     inherit BinaryReadFormat<'a>()
-    let size = 
-        match size with
-        |Some sz -> sz
-        |None -> sizeof<'a>
     /// Read this format structure from a supplied binary reader
-    override this.Read lst =
-        readFunc lst
-    /// The minimum number of bytes that will be read when this format is read from a stream
-    override this.MinByteCount = size
+    override this.Read brf =
+        readFunc brf
 
 /// Encapsulates the current state of binary file reading.  Reading from the same token will, except in exceptional circumstances, produce the same result.
-type BinaryFileState(fname : string, br : System.IO.BinaryReader) =
+type BinaryReaderState(fname : string, br : System.IO.BinaryReader) =
     let mutable valid = true
     /// Get the reader associated with this state.  If the state is valid, using the existing one, otherwise make a new one nand move to the correct position
     let getReader() =
@@ -62,7 +54,7 @@ type BinaryFileState(fname : string, br : System.IO.BinaryReader) =
     /// Read from the current binary file state using the supplied binary read format
     member internal this.ReadUsing (readFormat : BinaryReadFormat<_>) =
         let result = readFormat.Read <| getReader()
-        let newToken = BinaryFileState(fname, getReader())
+        let newToken = BinaryReaderState(fname, getReader())
         valid <- false
         result, newToken
     interface IIO
@@ -71,9 +63,9 @@ type BinaryFileState(fname : string, br : System.IO.BinaryReader) =
 module BinaryIO =
     /// Create a binary read token for a supplied file name
     let private createToken fName =
-        BinaryFileState( fName, new System.IO.BinaryReader(System.IO.File.OpenRead(fName)) )
+        BinaryReaderState( fName, new System.IO.BinaryReader(System.IO.File.OpenRead(fName)) )
     /// Create a binary read token for a supplied file name
-    let private destroyToken (token : BinaryFileState) =
+    let private destroyToken (token : BinaryReaderState) =
         token.Dispose()
     /// Read from a supplied binary state using a supplied binary read format
     let run fName bfs =
@@ -83,7 +75,7 @@ module BinaryIO =
             IOSuccess(res, ())
         |IOError e -> IOError e
     
-    let private readBasic f (brt : BinaryFileState) = 
+    let private readBasic f (brt : BinaryReaderState) = 
         IO.performIoWithExceptionCheck (fun () -> brt.ReadUsing f)
     /// A binary read format for reading bytes
     let readByte brt = readBasic (BinaryReadFormatSingle(fun br -> br.ReadByte()) :> BinaryReadFormat<_>) brt
