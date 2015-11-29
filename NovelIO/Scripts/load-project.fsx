@@ -4,4 +4,4 @@
 #load @"..\DataTypes.fs"
       @"..\GeneralIO.fs"
       @"..\BinaryRead.fs"
-      @"..\TextReader.fs"
+      @"..\TextIO.fs"

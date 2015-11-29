@@ -36,5 +36,35 @@ let main argv =
 
     printfn "%A" result
 
+    let writer =
+        io {
+            do! TextIO.writeLine "Hello, this is a purely functional IO library"
+            do! TextIO.writeLine "Here is some nice text"
+            do! TextIO.writeLine "Isn't that great?"
+            return ()
+        }
+
+    let result =  
+        match TextIO.run (FileWriteIO ("test3.txt", writer)) with
+        |IOSuccess (res, tok2) -> res
+        |IOError e -> failwith "error"
+
+    let tcpListener = System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, 9001)
+    tcpListener.Start()
+    let tcpReader =
+        io{ 
+            let! one = TextIO.readLine
+            let! two = TextIO.readLine
+            return one, two
+        }
+
+    let clientHandler =
+        async{
+            let! socket = Async.AwaitTask <| tcpListener.AcceptSocketAsync()
+            match TextIO.run (TCPServerSocketReadIO(socket, tcpReader)) with
+            |IOSuccess (res, tok2) -> printfn "%A" res
+            |IOError e -> failwith "error"
+            }
+    Async.RunSynchronously(clientHandler)
     0
 
