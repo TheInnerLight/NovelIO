@@ -3,5 +3,5 @@
 #load @"load-references.fsx"
 #load @"..\DataTypes.fs"
       @"..\GeneralIO.fs"
-      @"..\BinaryRead.fs"
+      @"..\BinaryIO.fs"
       @"..\TextIO.fs"

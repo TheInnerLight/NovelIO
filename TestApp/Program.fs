@@ -25,12 +25,12 @@ let main argv =
         let! c = BinaryIO.readFloat32
         let! d = BinaryIO.readByte
         let! lst1 = IO.list (int d) (BinaryIO.readFloat)
-        let! lst2 = IO.mapM [BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar]
+        let! lst2 = IO.sequence [BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar]
         return a, b, c, d, lst2
         }
 
     let result =  
-        match BinaryIO.run "test.txt" fileReader with
+        match BinaryIO.run (FileReadIO("test.txt",fileReader)) with
         |IOSuccess (res, tok2) -> res
         |IOError e -> failwith "error"
 
@@ -41,6 +41,7 @@ let main argv =
             do! TextIO.writeLine "Hello, this is a purely functional IO library"
             do! TextIO.writeLine "Here is some nice text"
             do! TextIO.writeLine "Isn't that great?"
+            do! IO.mapM_ (TextIO.printfn "printing %f") [1.0; 1.0; 1.0]
             return ()
         }
 

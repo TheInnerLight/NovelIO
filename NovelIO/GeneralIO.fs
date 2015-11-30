@@ -83,13 +83,19 @@ module IO =
             acc >>= (fun lstC -> 
                 f >>= (fun b -> IOExpressionFunctions.exReturn (b::lstC) )))
             (fun a -> IOSuccess([], token))) token
+    /// Transforms a function from an object to IO Expression and a list of objects into an IO Expression returning a list of results 
+    let mapM mFunc list token =
+        let folder head tail = 
+            mFunc head >>= (fun h -> 
+                tail >>= (fun t ->
+                    IOExpressionFunctions.exReturn (h::t) ))
+        List.foldBack (folder) list (IOExpressionFunctions.exReturn []) token
+    /// As mapM but ignores the results
+    let mapM_ mFunc list =
+        mapM mFunc list >>= (fun x -> IOExpressionFunctions.exReturn())
     /// Transform a list of IO Expressions into a list of IO results
-    let mapM listFs token =
-        (listFs
-        |> List.fold (fun acc f ->
-            acc >>= (fun lstC -> 
-                f >>= (fun b -> IOExpressionFunctions.exReturn (b::lstC) )))
-            (fun a -> IOSuccess([], token))) token
+    let sequence list token =
+        mapM (id) list token
     /// Convert a pair of IO expressions in a single IO expression returning a tuple of the merged results
     let tuple2 f1 f2 = lift2 (fun a b -> a, b) f1 f2
     /// Convert three IO expressions in a single IO expression returning a tuple of the merged results
