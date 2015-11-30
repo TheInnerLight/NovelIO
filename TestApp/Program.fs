@@ -30,7 +30,7 @@ let main argv =
         }
 
     let result =  
-        match BinaryIO.run "test.txt" fileReader with
+        match BinaryIO.run (FileReadIO("test.txt",fileReader)) with
         |IOSuccess (res, tok2) -> res
         |IOError e -> failwith "error"
 

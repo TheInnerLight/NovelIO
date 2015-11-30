@@ -129,6 +129,13 @@ module BinaryIO =
     /// Create a binary read token for a supplied file name
     let private createFileReadToken fName =
         BinaryReaderState(new System.IO.BinaryReader(System.IO.File.OpenRead(fName)) )
+    /// Create a binary write token for a supplied file name
+    let private createFileWriteToken fName =
+        BinaryWriterState(new System.IO.BinaryWriter(System.IO.File.OpenWrite(fName)) )
+    /// Create a binary read token for a supplied socket
+    let private createTCPServerReadToken socket =
+        BinaryReaderState (new System.IO.BinaryReader(new System.Net.Sockets.NetworkStream(socket)))
+
     let private finaliseToken f =
         let destroyToken (token : IBinaryToken) = token.Destroy()
         match f with
@@ -140,8 +147,14 @@ module BinaryIO =
     let private destroyToken (token : BinaryReaderState) =
         token.Destroy()
     /// Read from a supplied binary state using a supplied binary read format
-    let run fName bfs =
-        finaliseToken (bfs <| createFileReadToken fName)
+    let run rIOType =
+        match rIOType with
+        |FileReadIO (fName, f) ->
+            finaliseToken (f <| createFileReadToken fName)
+        |FileWriteIO (fName, f) ->
+            finaliseToken (f <| createFileWriteToken fName)
+        |TCPServerSocketReadIO (socket, f) ->
+            finaliseToken (f <| createTCPServerReadToken socket)
     
     let private readBasic f (brt : IBinaryReaderState<_>) = 
         IO.performIoWithExceptionCheck (fun () -> brt.ReadUsing f)

@@ -126,12 +126,13 @@ type TextWriterState internal(tr : System.IO.TextWriter) =
 /// Functions for performing text IO operations
 module TextIO =
     open IOExpressionFunctions
-    /// Create a binary read token for a supplied file name
+    /// Create a text read token for a supplied file name
     let private createFileReadToken fName =
         TextReaderState(new System.IO.StreamReader(System.IO.File.OpenRead(fName)) )
-    /// Create a binary write token for a supplied file name
+    /// Create a text write token for a supplied file name
     let private createFileWriteToken fName =
         TextWriterState(new System.IO.StreamWriter(System.IO.File.OpenWrite(fName)) )
+    /// Create a text read token for a supplied socket
     let private createTCPServerReadToken socket =
         TextReaderState (new System.IO.StreamReader(new System.Net.Sockets.NetworkStream(socket)))
 
