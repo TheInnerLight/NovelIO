@@ -41,7 +41,7 @@ let main argv =
             do! TextIO.writeLine "Hello, this is a purely functional IO library"
             do! TextIO.writeLine "Here is some nice text"
             do! TextIO.writeLine "Isn't that great?"
-            let! test = IO.mapM (TextIO.writeLine) ["a"; "b"; "c"]
+            do! IO.mapM_ (TextIO.printfn "printing %f") [1.0; 1.0; 1.0]
             return ()
         }
 

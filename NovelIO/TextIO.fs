@@ -169,5 +169,14 @@ module TextIO =
         readBasic (TextReadFormatByFunc(fun tr -> tr.ReadToEnd()) :> TextReadFormat<_>) trt
 
     /// Write a line to a supplied text writer state
+    let write value (twrt : ITextWriterState<_>) =
+        writeBasic (TextWriteFormatByFunc(fun tw str -> tw.Write(str)) :> TextWriteFormat<_>) value twrt    
+    /// Write a line to a supplied text writer state
     let writeLine value (twrt : ITextWriterState<_>) =
         writeBasic (TextWriteFormatByFunc(fun tw str -> tw.WriteLine(str)) :> TextWriteFormat<_>) value twrt
+    /// Print to the supplied text writer state with a supplied formatting
+    let printf formatter value (twrt : ITextWriterState<_>) =
+        (write << Core.Printf.sprintf formatter) value twrt
+    /// Print a line to the supplied text writer state with a supplied formatting
+    let printfn formatter value (twrt : ITextWriterState<_>) =
+        (writeLine << Core.Printf.sprintf formatter) value twrt
