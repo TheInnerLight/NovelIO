@@ -61,6 +61,8 @@ type ITextWriterState<'s when 's :> ITextWriterState> =
     /// Write with the state, supplying a value and get a new text writer state
     abstract member WriteUsing : TextWriteFormat<'a> -> 'a -> unit * 's
 
+// ***** IMPLEMENTATION *****
+
 /// Class for reading a from a file based on a func
 type private TextReadFormatByFunc (readFunc) =
     inherit TextReadFormat<string>()
@@ -68,14 +70,12 @@ type private TextReadFormatByFunc (readFunc) =
     override this.Read txtRdr =
         readFunc txtRdr
 
-/// Class for writing to a file based on a func
+/// Class for text writing based on a func
 type private TextWriteFormatByFunc (writeFunc) =
     inherit TextWriteFormat<string>()
     /// Write this format structure to a supplied text writer
     override this.Write txtRdr value =
         writeFunc txtRdr value
-
-// ***** IMPLEMENTATION *****
 
 /// Encapsulates the current state of text file reading.
 type TextReaderState internal(tr : System.IO.TextReader) =
@@ -134,7 +134,7 @@ module TextIO =
         TextWriterState(new System.IO.StreamWriter(System.IO.File.OpenWrite(fName)) )
     let private createTCPServerReadToken socket =
         TextReaderState (new System.IO.StreamReader(new System.Net.Sockets.NetworkStream(socket)))
-    /// Create a binary read token for a supplied file name
+
     let private finaliseToken f =
         let destroyToken (token : ITextToken) = token.Destroy()
         match f with
