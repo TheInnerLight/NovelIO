@@ -51,7 +51,7 @@
   <ItemGroup>
     <Compile Include="DataTypes.fs" />
     <Compile Include="GeneralIO.fs" />
-    <Compile Include="BinaryRead.fs" />
+    <Compile Include="BinaryIO.fs" />
     <Compile Include="TextIO.fs" />
     <None Include="Scripts\load-references.fsx" />
     <None Include="Scripts\load-project.fsx" />

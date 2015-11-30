@@ -25,7 +25,7 @@ let main argv =
         let! c = BinaryIO.readFloat32
         let! d = BinaryIO.readByte
         let! lst1 = IO.list (int d) (BinaryIO.readFloat)
-        let! lst2 = IO.mapM [BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar]
+        let! lst2 = IO.sequence [BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar]
         return a, b, c, d, lst2
         }
 
@@ -41,6 +41,7 @@ let main argv =
             do! TextIO.writeLine "Hello, this is a purely functional IO library"
             do! TextIO.writeLine "Here is some nice text"
             do! TextIO.writeLine "Isn't that great?"
+            let! test = IO.mapM (TextIO.writeLine) ["a"; "b"; "c"]
             return ()
         }
 
