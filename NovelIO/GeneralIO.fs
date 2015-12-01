@@ -28,6 +28,8 @@ module internal IOExpressionFunctions =
             match x token with
             |IOSuccess (res, token2) -> f res token2
             |IOError error -> IOError error
+    /// Kleisli composition
+    let (>=>) f g t = f t >>= g
     /// lift2 operation for #IO -> IOResult
     let lift2 f x1 x2 =
         fun (token : #IIO) ->
@@ -102,6 +104,8 @@ module IO =
     let tuple3 f1 f2 f3 = lift3 (fun a b c -> (a, b, c)) f1 f2 f3
     /// Convert four IO expressions in a single IO expression returning a tuple of the merged results
     let tuple4 f1 f2 f3 f4 = lift4 (fun a b c d -> (a, b, c, d)) f1 f2 f3 f4
+    /// forward Kleisli composition
+    let forwardKleisli f g t = (f >=> g) t
 
 
 

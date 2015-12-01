@@ -35,7 +35,7 @@ let main argv =
         |IOError e -> failwith "error"
 
     printfn "%A" result
-
+    
     let writer =
         io {
             do! TextIO.writeLine "Hello, this is a purely functional IO library"
