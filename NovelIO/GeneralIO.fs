@@ -58,13 +58,27 @@ type IOBuilder<'b when 'b :> IIO>() =
 module IOExpressions =
     let io<'a when 'a :> IIO> = IOBuilder<'a>()
 
-type RunIO<'a, 'b> =
+type RunIO<'a, 'b, 'c> =
     |FileReadIO of string * 'a
     |FileWriteIO of string * 'b
     |TCPServerSocketReadIO of System.Net.Sockets.Socket *'a
+    |TCPServerSocketReadWriteIO of System.Net.Sockets.Socket *'c
+    |HTTPResponse of System.Net.HttpListenerResponse * 'b
+    |MemoryBlockRead of byte[]*'a
+    |MemoryBlockWrite of 'b
 
 /// General IO functions
 module IO =
+    let private finaliseToken f =
+        let destroyToken (token : IDestructibleIOToken) = token.Destroy()
+        match f with
+        |IOSuccess (res, token) ->
+            destroyToken token
+            IOSuccess(res, ())
+        |IOError e -> IOError e
+    /// run some IO with a supplied token creater
+    let internal run f = 
+        finaliseToken (f)
     /// Perform some file IO and check for exceptions
     let performIoWithExceptionCheck f =
         try
@@ -78,13 +92,8 @@ module IO =
         | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
         | :? System.UnauthorizedAccessException as unax -> UnauthourisedAccess unax |> IOError
         | :? System.IO.IOException as ioex -> Other ioex |> IOError
-    /// Transform n copies of an IO Expression into a new IO Expression containing a list of n results 
-    let list n f token =
-        ([1..n]
-        |> List.fold (fun acc _ ->
-            acc >>= (fun lstC -> 
-                f >>= (fun b -> IOExpressionFunctions.exReturn (b::lstC) )))
-            (fun a -> IOSuccess([], token))) token
+    
+
     /// Transforms a function from an object to IO Expression and a list of objects into an IO Expression returning a list of results 
     let mapM mFunc list token =
         let folder head tail = 
@@ -98,6 +107,9 @@ module IO =
     /// Transform a list of IO Expressions into a list of IO results
     let sequence list token =
         mapM (id) list token
+    /// Transform n copies of an IO Expression into a new IO Expression containing a list of n results 
+    let list n mFunc token =
+        sequence (List.init n (fun _ -> mFunc)) token
     /// Convert a pair of IO expressions in a single IO expression returning a tuple of the merged results
     let tuple2 f1 f2 = lift2 (fun a b -> a, b) f1 f2
     /// Convert three IO expressions in a single IO expression returning a tuple of the merged results

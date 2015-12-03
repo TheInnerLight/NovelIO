@@ -15,6 +15,8 @@
 *)
 
 open NovelFS.NovelIO
+open System.Net
+open System.Text
 
 [<EntryPoint>]
 let main argv = 
@@ -50,22 +52,37 @@ let main argv =
         |IOSuccess (res, tok2) -> res
         |IOError e -> failwith "error"
 
-    let tcpListener = System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, 9001)
-    tcpListener.Start()
     let tcpReader =
         io{ 
-            let! one = TextIO.readLine
-            let! two = TextIO.readLine
-            return one, two
+            do! TextIO.writeLine "Hello World"
         }
 
-    let clientHandler =
-        async{
-            let! socket = Async.AwaitTask <| tcpListener.AcceptSocketAsync()
-            match TextIO.run (TCPServerSocketReadIO(socket, tcpReader)) with
-            |IOSuccess (res, tok2) -> printfn "%A" res
-            |IOError e -> failwith "error"
-            }
-    Async.RunSynchronously(clientHandler)
+    let listener (handler:(HttpListenerRequest -> HttpListenerResponse -> Async<unit>)) =
+        let hl = new HttpListener()
+        hl.Prefixes.Add "http://localhost:9011/"
+        hl.Start()
+        let task = Async.FromBeginEnd(hl.BeginGetContext, hl.EndGetContext)
+        async {
+            while true do
+                let! context = task
+                Async.Start(handler context.Request context.Response)
+        } |> Async.RunSynchronously
+
+    listener (fun req resp ->
+        async {
+                match TextIO.run (HTTPResponse(resp, writer)) with
+                |IOSuccess (res, tok2) -> printfn "%A" res
+                |IOError e -> failwith "error"
+                ()
+            })
+
+//    let clientHandler =
+//        async{
+//            let! socket = Async.AwaitTask <| tcpListener.AcceptSocketAsync()
+//            match TextIO.run (TCPServerSocketReadWriteIO(socket, tcpReader)) with
+//            |IOSuccess (res, tok2) -> printfn "%A" res
+//            |IOError e -> failwith "error"
+//            }
+//    Async.RunSynchronously(clientHandler)
     0
 

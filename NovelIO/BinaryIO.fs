@@ -23,15 +23,10 @@ type IBinaryReadFormat =
 
 /// A type representing a generic binary write format
 type IBinaryWriteFormat = interface end
-/// A type representing the state of binary IO
-type IBinaryToken = 
-    inherit IIO
-    /// Destroys the token
-    abstract member Destroy : unit -> unit
 /// A type representing the state of binary reading IO
-type IBinaryReaderState = inherit IBinaryToken
+type IBinaryReaderState = inherit IDestructibleIOToken
 /// A type representing the state of binary writing IO
-type IBinaryWriterState = inherit IBinaryToken
+type IBinaryWriterState = inherit IDestructibleIOToken
 
 /// Base class for binary read formats
 [<AbstractClass>]
@@ -124,6 +119,43 @@ type BinaryWriterState internal(tr : System.IO.BinaryWriter) =
         member this.WriteUsing writeFormat value = this.WriteUsing writeFormat value
         member this.Destroy() = this.Destroy()
 
+type BinaryReaderWriterState(br : System.IO.BinaryReader, bwr : System.IO.BinaryWriter) = 
+    let mutable valid = true
+    /// Get the reader associated with this state.
+    let getReader() =
+        match valid with
+        |true -> br
+        |false -> raise <| System.InvalidOperationException "Attempted read from invalid state token"
+    /// Get the writer associated with this state.
+    let getWriter() =
+        match valid with
+        |true -> bwr
+        |false -> raise <| System.InvalidOperationException "Attempted write with invalid state token"
+    /// Disposes the stream associated with this state and invalidates the token
+    member internal this.Destroy() =
+        valid <- false
+        br.Dispose()
+    /// Read from the current binary state using the supplied binary read format
+    member internal this.ReadUsing (readFormat : BinaryReadFormat<_>) =
+        let result = readFormat.Read <| getReader()
+        let newToken = BinaryReaderWriterState(getReader(), getWriter())
+        valid <- false
+        result, newToken
+    /// Write to the current binary state using the supplied binary write format and a value of type 'a
+    member internal this.WriteUsing (writeFormat : BinaryWriteFormat<_>) (value : 'a) =
+        writeFormat.Write (getWriter()) value
+        let newToken = BinaryReaderWriterState(getReader(), getWriter())
+        valid <- false
+        (), newToken
+    interface IDestructibleIOToken with
+        member this.Destroy() = this.Destroy()
+    // IBinaryReaderState interface impl
+    interface IBinaryReaderState<BinaryReaderWriterState> with
+        member this.ReadUsing readFormat = this.ReadUsing readFormat
+    // IBinaryWriterState interface impl
+    interface IBinaryWriterState<BinaryReaderWriterState> with
+        member this.WriteUsing writeFormat value = this.WriteUsing writeFormat value
+
 /// Functions for performing binary IO operations
 module BinaryIO =
     /// Create a binary read token for a supplied file name
@@ -135,26 +167,27 @@ module BinaryIO =
     /// Create a binary read token for a supplied socket
     let private createTCPServerReadToken socket =
         BinaryReaderState (new System.IO.BinaryReader(new System.Net.Sockets.NetworkStream(socket)))
-
-    let private finaliseToken f =
-        let destroyToken (token : IBinaryToken) = token.Destroy()
-        match f with
-        |IOSuccess (res, token) ->
-            destroyToken token
-            IOSuccess(res, ())
-        |IOError e -> IOError e
-    /// Create a binary read token for a supplied file name
-    let private destroyToken (token : BinaryReaderState) =
-        token.Destroy()
+    /// Create a binary read/write token for a supplied socket
+    let private createTCPServerReadWriteToken socket =
+        let netStream = new System.Net.Sockets.NetworkStream(socket)
+        BinaryReaderWriterState (new System.IO.BinaryReader(netStream), new System.IO.BinaryWriter(netStream))
+    /// Create a binary read token from a supplied byte block
+    let private createMemoryBlockReadToken (array : byte[]) =
+        BinaryReaderState (new System.IO.BinaryReader(new System.IO.MemoryStream(array)))
     /// Read from a supplied binary state using a supplied binary read format
     let run rIOType =
         match rIOType with
         |FileReadIO (fName, f) ->
-            finaliseToken (f <| createFileReadToken fName)
+            f <| createFileReadToken fName
         |FileWriteIO (fName, f) ->
-            finaliseToken (f <| createFileWriteToken fName)
+            f <| createFileWriteToken fName
         |TCPServerSocketReadIO (socket, f) ->
-            finaliseToken (f <| createTCPServerReadToken socket)
+            f <| createTCPServerReadToken socket
+        |TCPServerSocketReadWriteIO (socket, f) ->
+            f <| createTCPServerReadWriteToken socket
+        |MemoryBlockRead (array, f) ->
+            f <| createMemoryBlockReadToken array
+        |> IO.run
     
     let private readBasic f (brt : IBinaryReaderState<_>) = 
         IO.performIoWithExceptionCheck (fun () -> brt.ReadUsing f)
