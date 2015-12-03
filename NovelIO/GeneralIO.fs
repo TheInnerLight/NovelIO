@@ -109,7 +109,7 @@ module IO =
         mapM (id) list token
     /// Transform n copies of an IO Expression into a new IO Expression containing a list of n results 
     let list n mFunc token =
-        sequence (List.init n (fun _ -> mFunc)) token 
+        sequence (List.init n (fun _ -> mFunc)) token
     /// Convert a pair of IO expressions in a single IO expression returning a tuple of the merged results
     let tuple2 f1 f2 = lift2 (fun a b -> a, b) f1 f2
     /// Convert three IO expressions in a single IO expression returning a tuple of the merged results
