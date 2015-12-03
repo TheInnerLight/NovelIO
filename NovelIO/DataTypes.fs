@@ -45,6 +45,11 @@ and IOErrorResult =
 
 /// A token used to represent the state of an IO operation
 type IIO = interface end
+/// A token that can be destroyed
+type IDestructibleIOToken =
+    inherit IIO
+    /// Destroys the token
+    abstract member Destroy : unit -> unit
     
 type ReadLength =
     |Specified of int
