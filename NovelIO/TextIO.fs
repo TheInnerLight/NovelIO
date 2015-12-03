@@ -23,15 +23,10 @@ type ITextReadFormat =
 
 /// A type representing a generic text write format
 type ITextWriteFormat = interface end
-/// A type representing the state of text IO
-type ITextToken = 
-    inherit IIO
-    /// Destroys the token
-    abstract member Destroy : unit -> unit
 /// A type representing the state of text reading IO
-type ITextReaderState = inherit ITextToken
+type ITextReaderState = inherit IDestructibleIOToken
 /// A type representing the state of text writing IO
-type ITextWriterState = inherit ITextToken
+type ITextWriterState = inherit IDestructibleIOToken
 
 /// Base class for text read formats
 [<AbstractClass>]
@@ -123,6 +118,45 @@ type TextWriterState internal(tr : System.IO.TextWriter) =
         member this.WriteUsing writeFormat value = this.WriteUsing writeFormat value
         member this.Destroy() = this.Destroy()
 
+type TextReaderWriterState(tr : System.IO.TextReader, twr : System.IO.TextWriter) = 
+    let mutable valid = true
+    /// Get the reader associated with this state.
+    let getReader() =
+        match valid with
+        |true -> tr
+        |false -> raise <| System.InvalidOperationException "Attempted read from invalid state token"
+    /// Get the writer associated with this state.
+    let getWriter() =
+        match valid with
+        |true -> twr
+        |false -> raise <| System.InvalidOperationException "Attempted write with invalid state token"
+    /// Disposes the stream associated with this state and invalidates the token
+    member internal this.Destroy() =
+        valid <- false
+        tr.Dispose()
+    /// Read from the current text state using the supplied text read format
+    member internal this.ReadUsing (readFormat : TextReadFormat<_>) =
+        let result = readFormat.Read <| getReader()
+        let newToken = TextReaderWriterState(getReader(), getWriter())
+        valid <- false
+        result, newToken
+    /// Write to the current text state using the supplied text write format and a value of type 'a
+    member internal this.WriteUsing (writeFormat : TextWriteFormat<_>) (value : 'a) =
+        writeFormat.Write (getWriter()) value
+        let newToken = TextReaderWriterState(getReader(), getWriter())
+        valid <- false
+        (), newToken
+    interface IDestructibleIOToken with
+        member this.Destroy() = this.Destroy()
+    // ITextReaderState interface impl
+    interface ITextReaderState<TextReaderWriterState> with
+        member this.ReadUsing readFormat = this.ReadUsing readFormat
+    // ITextWriterState interface impl
+    interface ITextWriterState<TextReaderWriterState> with
+        member this.WriteUsing writeFormat value = this.WriteUsing writeFormat value
+    
+    
+
 /// Functions for performing text IO operations
 module TextIO =
     open IOExpressionFunctions
@@ -135,25 +169,26 @@ module TextIO =
     /// Create a text read token for a supplied socket
     let private createTCPServerReadToken socket =
         TextReaderState (new System.IO.StreamReader(new System.Net.Sockets.NetworkStream(socket)))
-
-    let private finaliseToken f =
-        let destroyToken (token : ITextToken) = token.Destroy()
-        match f with
-        |IOSuccess (res, token) ->
-            destroyToken token
-            IOSuccess(res, ())
-        |IOError e -> IOError e
-            
+    /// Create a text read/write token for a supplied socket
+    let private createTCPServerReadWriteToken socket =
+        let netStream = new System.Net.Sockets.NetworkStream(socket)
+        TextReaderWriterState (new System.IO.StreamReader(netStream), new System.IO.StreamWriter(netStream))
+    let private createHTTPResponse (resp : System.Net.HttpListenerResponse) =
+        TextWriterState(new System.IO.StreamWriter(resp.OutputStream))
     /// Read from a supplied binary state using a supplied binary read format
     let run rIOType =
         match rIOType with
         |FileReadIO (fName, f) ->
-            finaliseToken (f <| createFileReadToken fName)
+            f <| createFileReadToken fName
         |FileWriteIO (fName, f) ->
-            finaliseToken (f <| createFileWriteToken fName)
+            f <| createFileWriteToken fName
         |TCPServerSocketReadIO (socket, f) ->
-            finaliseToken (f <| createTCPServerReadToken socket)
-            
+            f <| createTCPServerReadToken socket
+        |TCPServerSocketReadWriteIO (socket, f) ->
+            f <| createTCPServerReadWriteToken socket
+        |HTTPResponse (resp, f) ->
+            f <| createHTTPResponse resp
+        |> IO.run
 
     let private readBasic f (brt : ITextReaderState<_>) = 
         IO.performIoWithExceptionCheck (fun () -> brt.ReadUsing f)
