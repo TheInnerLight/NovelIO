@@ -7,6 +7,13 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "NovelIO", "NovelIO\NovelIO.
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestApp", "TestApp\TestApp.fsproj", "{273CBF60-2CF9-44B5-B934-FA0F68114579}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "NovelIO.UnitTests", "NovelIO.UnitTests\NovelIO.UnitTests.fsproj", "{B525B5AD-A9A2-4ACB-8DF3-77EDCBF18247}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{229047D5-77FE-4851-B93C-7F4EDEDB80B8}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +28,10 @@ Global
 		{273CBF60-2CF9-44B5-B934-FA0F68114579}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{273CBF60-2CF9-44B5-B934-FA0F68114579}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{273CBF60-2CF9-44B5-B934-FA0F68114579}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B525B5AD-A9A2-4ACB-8DF3-77EDCBF18247}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B525B5AD-A9A2-4ACB-8DF3-77EDCBF18247}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B525B5AD-A9A2-4ACB-8DF3-77EDCBF18247}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B525B5AD-A9A2-4ACB-8DF3-77EDCBF18247}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
