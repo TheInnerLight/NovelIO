@@ -4,7 +4,7 @@ open NovelFS.NovelIO
 open FsCheck
 open FsCheck.Xunit
 
-type ``Binary IO Tests`` =
+type ``Binary IO Simple Read Tests`` =
     [<Property>]
     static member ``readByte from array of one byte`` (byte : byte) =
         let bytes = [|byte|]
@@ -79,8 +79,8 @@ type ``Binary IO Tests`` =
     [<Property>]
     static member ``readString from array of one string`` (str : NonNull<string>) =
         let str = str.Get
-        let memoryStream = new System.IO.MemoryStream()
-        let binaryWriter = new System.IO.BinaryWriter(memoryStream);
+        use memoryStream = new System.IO.MemoryStream()
+        use binaryWriter = new System.IO.BinaryWriter(memoryStream);
         binaryWriter.Write(str)
         let bytes = memoryStream.ToArray()
         let result = 
