@@ -2,3 +2,4 @@
 #I __SOURCE_DIRECTORY__
 #load @"load-references.fsx"
 #load @"..\BinaryTests.fs"
+      @"..\TextTests.fs"

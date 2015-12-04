@@ -77,6 +77,7 @@
   </Target>
   <ItemGroup>
     <Compile Include="BinaryTests.fs" />
+    <Compile Include="TextTests.fs" />
     <None Include="packages.config" />
     <Content Include="App.config" />
     <None Include="Scripts\load-references.fsx" />

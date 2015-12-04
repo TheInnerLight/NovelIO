@@ -175,6 +175,9 @@ module TextIO =
         TextReaderWriterState (new System.IO.StreamReader(netStream), new System.IO.StreamWriter(netStream))
     let private createHTTPResponse (resp : System.Net.HttpListenerResponse) =
         TextWriterState(new System.IO.StreamWriter(resp.OutputStream))
+    /// Create a text read token from a supplied byte block
+    let private createMemoryBlockReadToken (array : byte[]) =
+        TextReaderState (new System.IO.StreamReader(new System.IO.MemoryStream(array)))
     /// Read from a supplied binary state using a supplied binary read format
     let run rIOType =
         match rIOType with
@@ -188,6 +191,8 @@ module TextIO =
             f <| createTCPServerReadWriteToken socket
         |HTTPResponse (resp, f) ->
             f <| createHTTPResponse resp
+        |MemoryBlockRead (array, f) ->
+            f <| createMemoryBlockReadToken array
         |> IO.run
 
     let private readBasic f (brt : ITextReaderState<_>) = 
