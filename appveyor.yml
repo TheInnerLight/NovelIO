@@ -1,7 +1,6 @@
-init:
-  - git config --global core.autocrlf input
-build_script:
-  - cmd: ./build.cmd CI
+init: 
+build_script: 
+  - cmd: build.cmd
 test: off
 version: '{build}'
 artifacts:
