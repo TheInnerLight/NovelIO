@@ -1,4 +1,6 @@
-init: 
+init:
+before_build:
+  - nuget restore
 build_script: 
   - cmd: build.cmd
 test: off
