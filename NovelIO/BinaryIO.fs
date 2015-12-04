@@ -208,7 +208,7 @@ module BinaryIO =
     /// A binary read format for reading (double-precision) floats
     let readFloat brt = readBasic (BinaryReadFormatByFunc(fun br -> br.ReadDouble()) :> BinaryReadFormat<_>) brt
     /// A binary read format for reading single-precision floating point numbers
-    let readFloat32 brt =  readBasic (BinaryReadFormatByFunc(fun br -> br.ReadDouble()) :> BinaryReadFormat<_>) brt
+    let readFloat32 brt =  readBasic (BinaryReadFormatByFunc(fun br -> br.ReadSingle()) :> BinaryReadFormat<_>) brt
     /// A binary read format for reading a length prefixed string
     let readString brt = readBasic (BinaryReadFormatByFunc(fun br -> br.ReadString()) :> BinaryReadFormat<_>) brt
 

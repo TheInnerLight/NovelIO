@@ -3,3 +3,6 @@ obj/
 debug/
 *.opensdf
 *.suo
+packages
+*.dll
+.fake/
