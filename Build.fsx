@@ -1,9 +1,10 @@
 ﻿// include Fake lib
 #r @"packages/FAKE.4.10.3/tools/FakeLib.dll"
 open Fake
+open Fake.Testing
 
 let solution = "NovelIO.sln"
-let testDir  = "./test/"
+let testDir  = "test/"
 
 // Targets
 Target "Clean" (fun _ ->
@@ -14,13 +15,12 @@ Target "Build" (fun _ ->
     |> MSBuildRelease "" "Rebuild"
     |> ignore)
 
-let testDlls = !! ("*Tests.dll")
-
 Target "xUnitTest" (fun _ ->
-    testDlls
-        |> Fake.Testing.XUnit.xUnit (fun p -> 
+    !! ("**/xUnit.Test.*.dll") 
+        -- ("**/obj/**/*.dll")
+        |> xUnit (fun p -> 
             {p with 
-                ShadowCopy = false;}))
+                 ToolPath = "packages/xunit.runner.console.2.1.0/tools/xunit.console.exe"}))
 
 Target "All" DoNothing
 
