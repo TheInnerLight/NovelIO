@@ -1,3 +1,5 @@
-@echo off
+@echo on
 
-"packages\FAKE.4.10.3\tools\FAKE.exe" "Build.fsx"
+set APPVEYOR_CI=1
+
+"packages\FAKE.4.10.3\tools\Fake.exe" Build.fsx
