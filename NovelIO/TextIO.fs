@@ -178,6 +178,10 @@ module TextIO =
     /// Create a text read token from a supplied byte block
     let private createMemoryBlockReadToken (array : byte[]) =
         TextReaderState (new System.IO.StreamReader(new System.IO.MemoryStream(array)))
+    /// Create a text read token from a supplied byte block
+    let private createMemoryMappedFileWriteToken name capacity =
+        let mmapf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateNew(name, capacity)
+        TextWriterState (new System.IO.StreamWriter(mmapf.CreateViewStream())) 
     /// Read from a supplied binary state using a supplied binary read format
     let run rIOType =
         match rIOType with
@@ -193,6 +197,8 @@ module TextIO =
             f <| createHTTPResponse resp
         |MemoryBlockRead (array, f) ->
             f <| createMemoryBlockReadToken array
+        |MemoryMappedFileWrite (name, capacity, f) ->
+            f <| createMemoryMappedFileWriteToken name capacity
         |> IO.run
 
     let private readBasic f (brt : ITextReaderState<_>) = 

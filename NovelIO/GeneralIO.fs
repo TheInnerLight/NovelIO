@@ -65,7 +65,7 @@ type RunIO<'a, 'b, 'c> =
     |TCPServerSocketReadWriteIO of System.Net.Sockets.Socket *'c
     |HTTPResponse of System.Net.HttpListenerResponse * 'b
     |MemoryBlockRead of byte[]*'a
-    |MemoryBlockWrite of 'b
+    |MemoryMappedFileWrite of string * int64 * 'b
 
 /// General IO functions
 module IO =

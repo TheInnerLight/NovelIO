@@ -26,4 +26,26 @@ type ``Text IO Simple Read Tests`` =
             |IOSuccess (strR,_) -> strR
             |IOError (_) -> failwith "error"
         result = str
-
+type ``Text IO Simple Write Tests`` =
+    [<Property>]
+    static member ``writeLine from string`` (str : NonNull<string>) =
+        let firstLine = str.Get
+        let mmapFID = System.IO.Path.GetRandomFileName()
+        match TextIO.run (MemoryMappedFileWrite (mmapFID, 1024L, TextIO.writeLine firstLine)) with
+        |IOSuccess (_) -> 
+            let mmapf = System.IO.MemoryMappedFiles.MemoryMappedFile.OpenExisting(mmapFID)
+            use reader = new System.IO.StreamReader(mmapf.CreateViewStream())
+            let mmapfText = reader.ReadLine()
+            mmapfText = firstLine.Split('\r','\n').[0]
+        |IOError (_) -> failwith "error"
+    [<Property>]
+    static member ``write from string`` (str : NonNull<string>) =
+        let text = str.Get
+        let mmapFID = System.IO.Path.GetRandomFileName()
+        match TextIO.run (MemoryMappedFileWrite (mmapFID, 1024L, TextIO.write text)) with
+        |IOSuccess (_) -> 
+            let mmapf = System.IO.MemoryMappedFiles.MemoryMappedFile.OpenExisting(mmapFID)
+            use reader = new System.IO.StreamReader(mmapf.CreateViewStream())
+            let mmapfText = new System.String(reader.ReadToEnd() |> Seq.take (text.Length) |> Array.ofSeq)
+            mmapfText = text
+        |IOError (_) -> failwith "error"
