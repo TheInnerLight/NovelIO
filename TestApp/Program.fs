@@ -20,6 +20,19 @@ open System.Text
 
 [<EntryPoint>]
 let main argv = 
+    let read3Tuple =
+        ioformatter{
+            let! a = BinaryIO.readFloat32()
+            let! b = BinaryIO.readFloat64()
+            let! c = BinaryIO.readInt16()
+            return (a, b, c)
+        }
+    let validPath = File.assumeValid "test.txt"
+    let handle = BinaryIO.createBinaryReadHandle validPath
+    let test = BinaryIO.run read3Tuple handle
+    match test with
+    |IOSuccess res -> printfn "%A" res
 
     0
 
+     

@@ -52,8 +52,23 @@ module IO =
         |IOSuccess a -> f a
         |IOError err -> IOError err
 
+    let withExceptionCheck f =
+        try 
+            f() |> IOSuccess
+        with
+            | :? EndOfStreamException as eose -> PastEndOfStream eose |> IOError
+            | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
+            | :? FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError
+            | :? PathTooLongException as ptle -> PathTooLong ptle |> IOError
+            | :? System.UnauthorizedAccessException as uaex -> UnauthourisedAccess uaex |> IOError
+            | :? IOException as ioex -> Other ioex |> IOError
+
 type IOStream = interface end
 
+type IOBuilder() =
+    member this.Return a = IO.return' a
+    member this.Bind (x, f) = IO.bind x f
 
-
-
+[<AutoOpen>]
+module IOBuilders =
+    let io = IOBuilder()

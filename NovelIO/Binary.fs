@@ -50,25 +50,23 @@ open IOFormats
 /// Functions for binary IO
 module BinaryIO =
     let private readBasic<'a,'b when 'a :> IBinaryReadStream> (f : 'a ->'b) (bw : 'a) =
-        try 
-            f bw |> IOSuccess
-        with
-            | :? EndOfStreamException as eose -> PastEndOfStream eose |> IOError
-            | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
+        IO.withExceptionCheck (fun () -> f bw)
 
     //
     // ------------ Binary file handle ------------ 
     //
 
     /// create a handle for reading binary files
-    let createBinaryReadHandle path = 
-        {Reader = new BinaryReader(new FileStream(path, FileMode.Open))} |> IO.return'
+    let createBinaryReadHandle (fname : Filename) = 
+        {Reader = new BinaryReader(new FileStream(fname.PathString, FileMode.Open))} |> IO.return'
     /// create a handle for writing binary files
-    let createBinaryWriteHandle path = 
-        {Writer = new BinaryWriter(new FileStream(path, FileMode.CreateNew))} |> IO.return'
+    let createBinaryWriteHandle (fname : Filename) = 
+        {Writer = new BinaryWriter(new FileStream(fname.PathString, FileMode.CreateNew))} |> IO.return'
     /// create a handle for reading and writing binary files
-    let createBinaryReadWriteHandle path = 
-        {Reader = new BinaryReader(new FileStream(path, FileMode.Open)); Writer = new BinaryWriter(new FileStream(path, FileMode.CreateNew))} |> IO.return'
+    let createBinaryReadWriteHandle (fname : Filename) = 
+        {Reader = new BinaryReader(new FileStream(fname.PathString, FileMode.Open)); 
+         Writer = new BinaryWriter(new FileStream(fname.PathString, FileMode.CreateNew))} 
+        |> IO.return'
 
     let run (format : IOFormat<_,_>) io = IO.bind io (fun stream -> format stream)
 
