@@ -2,6 +2,5 @@
 #I __SOURCE_DIRECTORY__
 #load @"load-references.fsx"
 #load @"..\DataTypes.fs"
-      @"..\GeneralIO.fs"
-      @"..\BinaryIO.fs"
-      @"..\TextIO.fs"
+      @"..\IOFormats.fs"
+      @"..\Binary.fs"

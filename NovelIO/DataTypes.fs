@@ -19,9 +19,9 @@ namespace NovelFS.NovelIO
 open System.IO
 
 /// Represents the result of an IO operation
-type IOResult<'a, 'b> =
+type IO<'a> =
     /// A successful IO operation
-    |IOSuccess of 'a * 'b
+    |IOSuccess of 'a
     /// An IO operation which failed
     |IOError of IOErrorResult
 /// A set of possible failure modes for IO Operations
@@ -32,25 +32,28 @@ and IOErrorResult =
     |DirectoryNotFound of DirectoryNotFoundException
     /// IO failure due to a drive not being found
     |DriveNotFound of DriveNotFoundException
-    /// IO failure due to trying to read past the end of the stream
-    |PastEndOfStream of EndOfStreamException
     /// IO failure due to a file not being found
     |FileNotFound of FileNotFoundException
     /// IO failure due to a path being too long
     |PathTooLong of PathTooLongException
-    /// IO failure due a stream being closed
-    |StreamClosed of System.ObjectDisposedException
     /// IO failure due to unathourised access to a resource
     |UnauthourisedAccess of System.UnauthorizedAccessException
+    /// IO failure due a stream being closed
+    |StreamClosed of System.ObjectDisposedException
+    /// IO failure due to trying to read past the end of the stream
+    |PastEndOfStream of EndOfStreamException
+    /// Incorrect format
+    |IncorrectFormat
 
-/// A token used to represent the state of an IO operation
-type IIO = interface end
-/// A token that can be destroyed
-type IDestructibleIOToken =
-    inherit IIO
-    /// Destroys the token
-    abstract member Destroy : unit -> unit
-    
-type ReadLength =
-    |Specified of int
-    |Remainder
+module IO =
+    let return' a = IOSuccess a
+    let bind x f =
+        match x with
+        |IOSuccess a -> f a
+        |IOError err -> IOError err
+
+type IOStream = interface end
+
+
+
+
