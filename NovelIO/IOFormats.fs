@@ -18,11 +18,11 @@ namespace NovelFS.NovelIO
 
 open System.IO
 
-type IOFormat<'a,'b when 'b :> IOStream> = 'b -> 'a
+
 
 module IOFormats =
     /// return a result in the form of an IOParser
-    let return'<'a,'b when 'b :> IOStream> (a : 'a) : IOFormat<IO<'a>,'b> = 
+    let return'<'a,'b when 'b :> IOStream> (a : 'a) : IOFormat<IOResult<'a>,'b> = 
         fun (reader : 'b) -> IOSuccess a
     /// bind function for IOParsers
     let bind (x : IOFormat<_,_>) (f : 'a -> IOFormat<_,_>) : IOFormat<_,_> =
@@ -75,7 +75,7 @@ module IOFormats =
 open IOFormats
 
 type IOFormatBuilder() =
-    member this.Return<'a,'b when 'b :> IOStream> x : IOFormat<IO<'a>,'b>  = return' x 
+    member this.Return<'a,'b when 'b :> IOStream> x : IOFormat<IOResult<'a>,'b>  = return' x 
     member this.Bind(x, f) = x >>= f
     member this.Zero = return' ()
 

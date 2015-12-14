@@ -18,27 +18,20 @@ namespace NovelFS.NovelIO
 
 open System.IO
 
-type Filename internal (path : string) =
-    let path =
-        match path.IndexOfAny(Path.GetInvalidFileNameChars()) = -1 with
-        |true -> invalidArg "path" "Path Invalid"
-        |false -> path
-    member this.PathString = path
-
-[<AutoOpen>]
-module PathDiscriminators =
-    let (|ValidFilename|InvalidFilename|) (path : string) =
-        match path.IndexOfAny(Path.GetInvalidFileNameChars()) = -1 with
-        |true -> ValidFilename (Filename path)
-        |false -> InvalidFilename
-
 module File =
     let assumeValidFilename path =
         match path with
         |ValidFilename fname -> fname
         |InvalidFilename -> invalidArg "path" "Assumption of valid path was not correct."
 
-    let fileExists (filename : Filename) = File.Exists (filename.PathString)
+    let getPathString (filename : Filename) = filename.PathString
 
-    let readLines (filename : Filename) : IO<seq<string>> = IO.return' (File.ReadLines filename.PathString)
+    let fileExists (filename : Filename) = File.Exists <| getPathString filename
+    
+    let readLines fName = FileReadLines (fName, IO.return')
+    
+    let openFileHandle (mode : FileMode) (fName : Filename) =
+        OpenFileHandle (fName, mode, IO.return')
+
+        
 
