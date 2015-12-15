@@ -79,18 +79,18 @@ module IO =
     let replicateM_ mFunc n  =
         replicateM mFunc n >>= (fun f -> return' ())
 
-    let rec private loopHelper mFunc predF m lst =
+    let rec private mLoopHelper mFunc predF m lst =
         m >>= (fun res ->
             mFunc >>= (fun pred ->
                 if predF pred then
-                    loopHelper mFunc predF m (res::lst)
+                    mLoopHelper mFunc predF m (res::lst)
                 else return' (List.rev lst)))
 
     let untilM mBool m =
-        loopHelper mBool ((=) false) m []
+        mLoopHelper mBool ((=) false) m []
 
     let whileM mBool m =
-        loopHelper mBool ((=) true) m []
+        mLoopHelper mBool ((=) true) m []
 
     let takeWhileM mFunc m =
         let rec iterateWhileRec mFunc m lst =
@@ -101,53 +101,50 @@ module IO =
                     else return' (List.rev lst)))
         iterateWhileRec mFunc m []
 
-
-
-
     /// Runs the IO actions and evaluates the result
     let rec run io =
         match io with
         |Return a -> IOResult.return' a
-        |ConsoleWrite (fmt, str, a) ->
+        |ConsoleWrite (fmt, str, a) -> // Write to the console
             let print = IOResult.withExceptionCheck (fun _ -> printf fmt str) ()
             run a
-        |ConsoleWriteLine (fmt, str, a) ->
+        |ConsoleWriteLine (fmt, str, a) -> // Write a line to the console
             let print = IOResult.withExceptionCheck (fun _ -> printfn fmt str) ()
             run a
-        |ConsoleReadKey (g) ->
+        |ConsoleReadKey (g) -> // Read a key from the console
             let consoleKey = IOResult.withExceptionCheck (fun _ -> System.Console.ReadKey()) ()
             IOResult.bind consoleKey (fun key -> run (g key))
-        |ConsoleReadLine (g) ->
+        |ConsoleReadLine (g) -> // Read a line from the console
             let consoleLine = IOResult.withExceptionCheck (fun _ -> System.Console.ReadLine()) ()
             IOResult.bind consoleLine (fun line -> run (g line))
-        |FileReadLines (fName, g) -> 
+        |FileReadLines (fName, g) -> // Read lines lazily from file
             let fileLines = IOResult.withExceptionCheck (fun _ -> File.ReadLines(fName.PathString)) ()
             IOResult.bind fileLines (fun lns -> run (g lns))
-        |ReadAllBytes (fName, g) -> 
+        |ReadAllBytes (fName, g) -> // read all bytes from a file
             let fileBytes = IOResult.withExceptionCheck (fun _ -> File.ReadAllBytes(fName.PathString)) ()
             IOResult.bind fileBytes (fun lns -> run (g lns))
-        |OpenFileHandle (fName, mode, g) ->
+        |OpenFileHandle (fName, mode, g) -> // open a file handle to a file
             let ioHandle = IOResult.withExceptionCheck (fun _ -> 
                 {TextReader = new StreamReader(new FileStream(fName.PathString, mode)) :> TextReader |> Some; TextWriter = None}) ()
             IOResult.bind ioHandle (fun hand -> run (g hand))
-        |StartTCPListener (ip, port, g) ->
+        |StartTCPListener (ip, port, g) -> // start a TCP listener on the specified ip and port
             let tcpServ = IOResult.withExceptionCheck (fun _ ->
                 let listener = Sockets.TcpListener(ip, port)
                 listener.Start()
                 {TCPListener = listener}) ()
             IOResult.bind tcpServ (fun serv -> run (g serv))
-        |TCPServerAccept (serv, g) ->
+        |TCPServerAccept (serv, g) -> // accept a tcp connection on the specified server
             let ioSock = IOResult.withExceptionCheck (fun _ ->
                 let socket = serv.TCPListener.AcceptSocket()
                 {TCPConnectedSocket = socket}) ()
             IOResult.bind ioSock (fun conSock -> run (g conSock))
-        |HGetLine (handle, g) ->
+        |HGetLine (handle, g) -> // get a line from the handle
             match handle.TextReader with
             |Some txtRdr ->
                 let ioLine = IOResult.withExceptionCheck (fun _ -> txtRdr.ReadLine()) ()
                 IOResult.bind ioLine (fun line -> run (g line))
             |None -> IOError (StreamStateUnsupported "Stream does not support reading")
-        |HPutStringLine (handle, str, a) ->
+        |HPutStringLine (handle, str, a) -> // write a line to the handle
             match handle.TextWriter with
             |Some txtWrtr ->
                 let ioWrite = IOResult.withExceptionCheck (fun _ -> 
@@ -155,30 +152,29 @@ module IO =
                     txtWrtr.Flush()) ()
                 IOResult.bind ioWrite (fun () -> run a)
             |None -> IOError (StreamStateUnsupported "Stream does not support writing")
-        |ConnectedSocketToHandle (socket, g) ->
+        |ConnectedSocketToHandle (socket, g) -> // convert a connected socket to a handle
             let ioHandle = IOResult.withExceptionCheck (fun _ -> 
                 {TextReader = new StreamReader(new Sockets.NetworkStream(socket.TCPConnectedSocket)) :> TextReader |> Some;
                  TextWriter = new StreamWriter(new Sockets.NetworkStream(socket.TCPConnectedSocket)) :> TextWriter |> Some }) ()
             IOResult.bind ioHandle (fun hand -> run (g hand))
-        |IsReady (handle, g) ->
+        |IsReady (handle, g) -> // determine if a handle has available input
             match handle.TextReader with
             |Some txtRdr ->
                 let ioEnd = IOResult.withExceptionCheck (fun _ -> txtRdr.Peek() = -1) ()
                 IOResult.bind ioEnd (fun line -> run (g line))
             |None -> IOError (StreamStateUnsupported "Stream does not support reading")
             
-
+    /// Reads a line from the file or channel
     let hGetLine handle =
         HGetLine(handle, return')
-
+    /// Determines if the handle has data available
     let hIsReady handle =
         IsReady(handle, return')
-
+    /// Writes a line to the final or channel
     let hPutStrLn handle str =
         HPutStringLine (handle, str, return' ())
-            
-            
 
+/// Console functions
 module Console =
     /// print a string to the console using the supplied formatter
     let printf fmt str = 
@@ -191,12 +187,13 @@ module Console =
         ConsoleReadLine(IO.return')
 
 module TCP =
+    /// Create a TCP server at the specfied IP on the specified port
     let createServer ip port =
         StartTCPListener (ip, port, IO.return')
-        
+    /// Accept a connection from the supplied TCP server
     let acceptConnection serv =
          TCPServerAccept (serv, IO.return')
-
+    /// Convert a socket to a handle
     let socketToHandle socket =
         ConnectedSocketToHandle (socket, IO.return')
 
