@@ -23,6 +23,9 @@ type IO<'a,'b,'c,'d when 'c :> IOStream> =
     private 
     |Return of 'a
     |ConsoleWrite of Printf.TextWriterFormat<'b> * string * IO<'a,'b,'c,'d>
+    |ConsoleWriteLine of Printf.TextWriterFormat<'b> * string * IO<'a,'b,'c,'d>
+    |ConsoleReadKey of (System.ConsoleKeyInfo -> IO<'a,'b,'c,'d>)
+    |ConsoleReadLine of (string -> IO<'a,'b,'c,'d>)
     |FileReadLines of Filename * (seq<string> -> IO<'a,'b,'c,'d>)
     |ReadAllBytes of Filename * (byte[] -> IO<'a,'b,'c,'d>)
     |OpenFileHandle of Filename * FileMode * (Handle -> IO<'a,'b,'c,'d>)
@@ -42,6 +45,9 @@ module IO =
         match x with
         |Return a -> f a
         |ConsoleWrite (fmt, str, a) -> ConsoleWrite (fmt, str, (bind a f))
+        |ConsoleWriteLine (fmt, str, a) -> ConsoleWriteLine (fmt, str, (bind a f))
+        |ConsoleReadKey (g) -> ConsoleReadKey (fun key -> bind (g key) f)
+        |ConsoleReadLine (g) -> ConsoleReadLine (fun line -> bind (g line) f)
         |FileReadLines (fName, g) -> FileReadLines (fName, fun str -> bind (g str) f)
         |ReadAllBytes (fName, g) -> ReadAllBytes (fName, fun bytes -> bind (g bytes) f)
         |OpenFileHandle (fName, mode, g) -> OpenFileHandle(fName, mode, fun fName -> bind (g fName) f)
@@ -73,25 +79,18 @@ module IO =
     let replicateM_ mFunc n  =
         replicateM mFunc n >>= (fun f -> return' ())
 
-
+    let rec private loopHelper mFunc predF m lst =
+        m >>= (fun res ->
+            mFunc >>= (fun pred ->
+                if predF pred then
+                    loopHelper mFunc predF m (res::lst)
+                else return' (List.rev lst)))
 
     let untilM mBool m =
-        let rec iterateWhileRec mFunc m lst =
-            m >>= (fun res ->
-                mFunc >>= (fun pred ->
-                    if pred = false then
-                        iterateWhileRec mFunc m (res::lst)
-                    else return' lst))
-        iterateWhileRec mBool m []
+        loopHelper mBool ((=) false) m []
 
     let whileM mBool m =
-        let rec iterateWhileRec mFunc m lst =
-            m >>= (fun res ->
-                mFunc >>= (fun pred ->
-                    if pred = true then
-                        iterateWhileRec mFunc m (res::lst)
-                    else return' lst))
-        iterateWhileRec mBool m []
+        loopHelper mBool ((=) true) m []
 
     let takeWhileM mFunc m =
         let rec iterateWhileRec mFunc m lst =
@@ -99,7 +98,7 @@ module IO =
                 mFunc res >>= (fun pred ->
                     if pred = true then
                         iterateWhileRec mFunc m (res::lst)
-                    else return' lst))
+                    else return' (List.rev lst)))
         iterateWhileRec mFunc m []
 
 
@@ -112,6 +111,15 @@ module IO =
         |ConsoleWrite (fmt, str, a) ->
             let print = IOResult.withExceptionCheck (fun _ -> printf fmt str) ()
             run a
+        |ConsoleWriteLine (fmt, str, a) ->
+            let print = IOResult.withExceptionCheck (fun _ -> printfn fmt str) ()
+            run a
+        |ConsoleReadKey (g) ->
+            let consoleKey = IOResult.withExceptionCheck (fun _ -> System.Console.ReadKey()) ()
+            IOResult.bind consoleKey (fun key -> run (g key))
+        |ConsoleReadLine (g) ->
+            let consoleLine = IOResult.withExceptionCheck (fun _ -> System.Console.ReadLine()) ()
+            IOResult.bind consoleLine (fun line -> run (g line))
         |FileReadLines (fName, g) -> 
             let fileLines = IOResult.withExceptionCheck (fun _ -> File.ReadLines(fName.PathString)) ()
             IOResult.bind fileLines (fun lns -> run (g lns))
@@ -177,7 +185,10 @@ module Console =
         ConsoleWrite (fmt, str, IO.return' ())
     /// print a line to the console using the supplied formatter
     let printfn fmt str = 
-        ConsoleWrite (fmt, str + System.Environment.NewLine, IO.return' ())
+        ConsoleWriteLine (fmt, str, IO.return' ())
+    /// read a line from the console
+    let readLine =
+        ConsoleReadLine(IO.return')
 
 module TCP =
     let createServer ip port =

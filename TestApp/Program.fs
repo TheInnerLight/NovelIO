@@ -40,16 +40,30 @@ let main argv =
         return! IO.mapM_ (Console.printfn "%s") (Seq.toList lines)
         }
 
+    let consoleTest = 
+        io{
+        let! inputStrs = IO.takeWhileM (fun str -> str <> "" |> IO.return') (Console.readLine)
+        do! IO.mapM_ (Console.printfn "%s") inputStrs
+        }
+
+    let results = IO.run consoleTest
+
+    let httpResponse handle (content : string) =
+        let length = System.Text.Encoding.UTF8.GetByteCount(content)
+        io {
+            do! IO.hPutStrLn handle ("HTTP/1.1 200 OK")
+            do! IO.hPutStrLn handle ("Content-Type: text/html")
+            do! IO.hPutStrLn handle (sprintf "Content-Length: %d" length)
+            do! IO.hPutStrLn handle ("")
+            do! IO.hPutStrLn handle (content)
+        }
+
     let testServ = io {
         let! serv = TCP.createServer (System.Net.IPAddress.Any) (7826)
         let! acceptSock = TCP.acceptConnection serv
         let! handle = TCP.socketToHandle acceptSock
         let! request = IO.takeWhileM (fun str -> str <> "" |> IO.return') (IO.hGetLine handle)
-        do! IO.hPutStrLn handle ("HTTP/1.1 200 OK")
-        do! IO.hPutStrLn handle ("Content-Type: text/html")
-        do! IO.hPutStrLn handle ("Content-Length: 15")
-        do! IO.hPutStrLn handle ("")
-        do! IO.hPutStrLn handle ("<html></html>")
+        do! httpResponse handle "<html>Go eat a cheese</html>"
         }
         
 
