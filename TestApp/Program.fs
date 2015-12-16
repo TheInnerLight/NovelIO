@@ -51,7 +51,7 @@ let main argv =
         let! acceptSock = TCP.acceptConnection serv
         let! handle = TCP.socketToHandle acceptSock
         let! request = IO.takeWhileM (fun str -> str <> "" |> IO.return') (IO.hGetLine handle)
-        do! httpResponse handle "<html>Go eat a cheese</html>"
+        do! httpResponse handle "<html>Test response</html>"
         }
         
 

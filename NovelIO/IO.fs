@@ -85,13 +85,13 @@ module IO =
                 if predF pred then
                     mLoopHelper mFunc predF m (res::lst)
                 else return' (List.rev lst)))
-
+    /// Execute an IO action repeatedly until a condition is met
     let untilM mBool m =
         mLoopHelper mBool ((=) false) m []
-
+    /// Execute an IO action repeatedly while a condition is met
     let whileM mBool m =
         mLoopHelper mBool ((=) true) m []
-
+    /// Take elements repeatedly while a condition is met
     let takeWhileM mFunc m =
         let rec iterateWhileRec mFunc m lst =
             m >>= (fun res ->
