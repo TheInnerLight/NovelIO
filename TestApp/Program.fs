@@ -23,15 +23,16 @@ let main argv =
 
     let fName = File.assumeValidFilename "test4.txt"
 
-    let test = io {
-        let! lines = File.readLines fName
-        return! IO.mapM_ (Console.printfn "%s") (Seq.toList lines)
+    let test = 
+        io {
+            let! lines = File.readLines fName
+            return! IO.mapM_ (Console.printfn "%s") (Seq.toList lines)
         }
 
     let consoleTest = 
         io{
-        let! inputStrs = IO.takeWhileM (fun str -> str <> "" |> IO.return') (Console.readLine)
-        do! IO.mapM_ (Console.printfn "%s") inputStrs
+            let! inputStrs = IO.takeWhileM (fun str -> str <> "" |> IO.return') (Console.readLine)
+            do! IO.mapM_ (Console.printfn "%s") inputStrs
         }
 
     let results = IO.run consoleTest
@@ -46,12 +47,13 @@ let main argv =
             do! IO.hPutStrLn handle (content)
         }
 
-    let testServ = io {
-        let! serv = TCP.createServer (System.Net.IPAddress.Any) (7826)
-        let! acceptSock = TCP.acceptConnection serv
-        let! handle = TCP.socketToHandle acceptSock
-        let! request = IO.takeWhileM (fun str -> str <> "" |> IO.return') (IO.hGetLine handle)
-        do! httpResponse handle "<html>Test response</html>"
+    let testServ = 
+        io {
+            let! serv = TCP.createServer (System.Net.IPAddress.Any) (7826)
+            let! acceptSock = TCP.acceptConnection serv
+            let! handle = TCP.socketToHandle acceptSock
+            let! request = IO.takeWhileM (fun str -> str <> "" |> IO.return') (IO.hGetLine handle)
+            do! httpResponse handle "<html>Test response</html>"
         }
         
 

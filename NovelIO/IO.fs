@@ -36,7 +36,6 @@ type IO<'a,'b,'c,'d when 'c :> IOStream> =
     |ConnectedSocketToHandle of TCPConnectedSocket * (Handle -> IO<'a,'b,'c,'d>)
     |IsReady of Handle * (bool -> IO<'a,'b,'c,'d>)
 
-
 module IO =
     /// Return a value as an IO value
     let return' x = Return x
