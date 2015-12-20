@@ -49,6 +49,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="BinaryParser.fs" />
     <Compile Include="Definitions.fs" />
     <Compile Include="IOFormats.fs" />
     <Compile Include="IO.fs" />

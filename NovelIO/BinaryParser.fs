@@ -23,8 +23,16 @@ type BinaryParser<'a> =
     |ReadInt16 of (int16 -> BinaryParser<'a>)
     |ReadInt32 of (int -> BinaryParser<'a>)
     |ReadInt64 of (int64 -> BinaryParser<'a>)
-    |ReadFloat64 of (float -> BinaryParser<'a>)
     |ReadFloat32 of (float32 -> BinaryParser<'a>)
+    |ReadFloat64 of (float -> BinaryParser<'a>)
+
+exception ParseExceededArrayLength
+
+type BinaryParseResult<'a> =
+    |ParseSuccess of 'a
+    |ParseFailure of ParseError
+and ParseError =
+    |ArrayLengthInsufficient
 
 module BinaryParser =
     /// return for Binary Parsers
@@ -37,8 +45,8 @@ module BinaryParser =
         |ReadInt16 (g) -> ReadInt16 (fun a -> bind (g a) f)
         |ReadInt32 (g) -> ReadInt32 (fun a -> bind (g a) f)
         |ReadInt64 (g) -> ReadInt64 (fun a -> bind (g a) f)
-        |ReadFloat64 (g) -> ReadFloat64 (fun a -> bind (g a) f)
         |ReadFloat32 (g) -> ReadFloat32 (fun a -> bind (g a) f)
+        |ReadFloat64 (g) -> ReadFloat64 (fun a -> bind (g a) f)
     /// Monadic bind operator for Binary Parsers
     let (>>=) x f = bind x f
     /// Map function for Binary Parsers
@@ -79,6 +87,36 @@ module BinaryParser =
     let lift4 f x1 x2 x3 x4 =
         f <!> x1 <*> x2 <*> x3 <*> x4
 
+    let private checkConversionException f array =
+        try
+            f array
+        with
+            | :? System.ArgumentOutOfRangeException as aoex -> raise <| ParseExceededArrayLength
+            | :? System.ArgumentException as aex -> raise <| ParseExceededArrayLength
+
+    let private convInt16 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt16(arr, pos)) array
+    let private convInt32 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt32(arr, pos)) array
+    let private convInt64 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt64(arr, pos)) array
+    let private convFloat32 pos array = checkConversionException (fun arr -> System.BitConverter.ToSingle(arr, pos)) array
+    let private convFloat64 pos array = checkConversionException (fun arr -> System.BitConverter.ToDouble(arr, pos)) array
+
+    /// Run binary parser
+    let run array x =
+        let rec runRec (array : byte[]) pos x =
+            match x with
+            |Return b -> b
+            |ReadByte (g) -> runRec array (pos+sizeof<byte>) (g array.[pos]) 
+            |ReadInt16 (g) -> runRec array (pos+sizeof<int16>) (g <| convInt16 pos array)
+            |ReadInt32 (g) -> runRec array (pos+sizeof<int32>) (g <| convInt32 pos array)
+            |ReadInt64 (g) -> runRec array (pos+sizeof<int64>) (g <| convInt64 pos array)
+            |ReadFloat32 (g) -> runRec array (pos+sizeof<float32>) (g <| convFloat32 pos array)
+            |ReadFloat64 (g) -> runRec array (pos+sizeof<float>) (g <| convFloat64 pos array)
+        try
+            ParseSuccess <| runRec array 0 x
+        with 
+            | ParseExceededArrayLength -> ParseFailure <| ArrayLengthInsufficient
+            
+
     // Binary Parsers
 
     /// Binary Parser for a byte
@@ -94,3 +132,10 @@ module BinaryParser =
     /// Binary Parser for a float 32
     let parseFloat32 = ReadFloat32 (return')
 
+open BinaryParser
+
+type BinaryParserBuilder() =
+    member this.Return x = return' x
+    member this.ReturnFrom x = x
+    member this.Bind (x,f) = x >>= f
+        

@@ -15,11 +15,20 @@
 *)
 
 open NovelFS.NovelIO
+open NovelFS.NovelIO.BinaryParser
 open System.Net
 open System.Text
 
 [<EntryPoint>]
 let main argv = 
+    
+    let a = BinaryParser.parseByte
+    let b = BinaryParser.parseFloat64
+    let c = BinaryParser.parseInt16
+
+    let d = BinaryParser.lift3 (fun a b c -> a, b, c) a b c
+    let num = BinaryParser.evaluateSize d
+    //BinaryParser.fold (fun a -> )
 
     let fName = File.assumeValidFilename "test4.txt"
 
