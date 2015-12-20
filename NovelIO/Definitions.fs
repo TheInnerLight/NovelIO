@@ -19,6 +19,9 @@ namespace NovelFS.NovelIO
 open System.IO
 open System.Net
 
+exception HandleDoesNotSupportWritingException
+exception HandleDoesNotSupportReadingException
+
 /// Represents the result of an IO operation
 type IOResult<'a> =
     /// A successful IO operation
@@ -41,6 +44,10 @@ and IOErrorResult =
     |UnauthourisedAccess of System.UnauthorizedAccessException
     /// IO failure due a stream being closed
     |StreamClosed of System.ObjectDisposedException
+    /// IO failure due to the supplied handle not supporting reading
+    |HandleDoesNotSupportReading
+    /// IO failure due to the supplied handle not supporting writing
+    |HandleDoesNotSupportWriting
     /// IO failure due to trying to read past the end of the stream
     |PastEndOfStream of EndOfStreamException
     /// Incorrect format
@@ -79,16 +86,12 @@ type TCPServer = private {TCPListener : Sockets.TcpListener}
 type TCPConnectedSocket = private {TCPConnectedSocket : System.Net.Sockets.Socket}
 
 module internal IOResult =
-    let return' a = IOSuccess a
-    let bind x f =
-        match x with
-        |IOSuccess a -> f a
-        |IOError err -> IOError err
-
     let withExceptionCheck f a =
         try 
             f a |> IOSuccess
         with
+            | HandleDoesNotSupportReadingException -> HandleDoesNotSupportReading |> IOError
+            | HandleDoesNotSupportWritingException -> HandleDoesNotSupportWriting |> IOError
             | :? EndOfStreamException as eose -> PastEndOfStream eose |> IOError
             | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
             | :? FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError

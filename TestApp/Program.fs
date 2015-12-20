@@ -27,7 +27,7 @@ let main argv =
     let c = BinaryParser.parseInt16
 
     let d = BinaryParser.lift3 (fun a b c -> a, b, c) a b c
-    let num = BinaryParser.evaluateSize d
+    //let num = BinaryParser.evaluateSize d
     //BinaryParser.fold (fun a -> )
 
     let fName = File.assumeValidFilename "test4.txt"
