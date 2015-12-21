@@ -49,10 +49,11 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="DataTypes.fs" />
-    <Compile Include="GeneralIO.fs" />
-    <Compile Include="BinaryIO.fs" />
-    <Compile Include="TextIO.fs" />
+    <Compile Include="BinaryParser.fs" />
+    <Compile Include="Definitions.fs" />
+    <Compile Include="IOFormats.fs" />
+    <Compile Include="IO.fs" />
+    <Compile Include="File.fs" />
     <None Include="Scripts\load-references.fsx" />
     <None Include="Scripts\load-project.fsx" />
   </ItemGroup>

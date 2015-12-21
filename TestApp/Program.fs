@@ -15,74 +15,73 @@
 *)
 
 open NovelFS.NovelIO
+open NovelFS.NovelIO.BinaryParser
 open System.Net
 open System.Text
 
 [<EntryPoint>]
 let main argv = 
-
-    let fileReader = io {
-        let! a = BinaryIO.readByte
-        let! b = BinaryIO.readChar
-        let! c = BinaryIO.readFloat32
-        let! d = BinaryIO.readByte
-        let! lst1 = IO.list (int d) (BinaryIO.readFloat)
-        let! lst2 = IO.sequence [BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar; BinaryIO.readChar]
-        return a, b, c, d, lst2
-        }
-
-    let result =  
-        match BinaryIO.run (FileReadIO("test.txt",fileReader)) with
-        |IOSuccess (res, tok2) -> res
-        |IOError e -> failwith "error"
-
-    printfn "%A" result
     
-    let writer =
+    let a = BinaryParser.parseByte
+    let b = BinaryParser.parseFloat64
+    let c = BinaryParser.parseInt16
+
+    let d = BinaryParser.lift3 (fun a b c -> a, b, c) a b c
+    //let num = BinaryParser.evaluateSize d
+    //BinaryParser.fold (fun a -> )
+
+    let fName = File.assumeValidFilename "test4.txt"
+
+    let test = 
         io {
-            do! TextIO.writeLine "Hello, this is a purely functional IO library"
-            do! TextIO.writeLine "Here is some nice text"
-            do! TextIO.writeLine "Isn't that great?"
-            do! IO.mapM_ (TextIO.printfn "printing %f") [1.0; 1.0; 1.0]
-            return ()
+            let! lines = File.readLines fName
+            return! IO.mapM_ (Console.printfn "%s") (Seq.toList lines)
         }
 
-    let result =  
-        match TextIO.run (FileWriteIO ("test3.txt", writer)) with
-        |IOSuccess (res, tok2) -> res
-        |IOError e -> failwith "error"
-
-    let tcpReader =
-        io{ 
-            do! TextIO.writeLine "Hello World"
+    let consoleTest = 
+        io{
+            let! inputStrs = IO.takeWhileM (fun str -> str <> "" |> IO.return') (Console.readLine)
+            do! IO.mapM_ (Console.printfn "%s") inputStrs
         }
 
-    let listener (handler:(HttpListenerRequest -> HttpListenerResponse -> Async<unit>)) =
-        let hl = new HttpListener()
-        hl.Prefixes.Add "http://localhost:9011/"
-        hl.Start()
-        let task = Async.FromBeginEnd(hl.BeginGetContext, hl.EndGetContext)
-        async {
-            while true do
-                let! context = task
-                Async.Start(handler context.Request context.Response)
-        } |> Async.RunSynchronously
+    let results = IO.run consoleTest
 
-    listener (fun req resp ->
-        async {
-                match TextIO.run (HTTPResponse(resp, writer)) with
-                |IOSuccess (res, tok2) -> printfn "%A" res
-                |IOError e -> failwith "error"
-                ()
-            })
+    let httpResponse handle (content : string) =
+        let length = System.Text.Encoding.UTF8.GetByteCount(content)
+        io {
+            do! IO.hPutStrLn handle ("HTTP/1.1 200 OK")
+            do! IO.hPutStrLn handle ("Content-Type: text/html")
+            do! IO.hPutStrLn handle (sprintf "Content-Length: %d" length)
+            do! IO.hPutStrLn handle ("")
+            do! IO.hPutStrLn handle (content)
+        }
 
-//    let clientHandler =
-//        async{
-//            let! socket = Async.AwaitTask <| tcpListener.AcceptSocketAsync()
-//            match TextIO.run (TCPServerSocketReadWriteIO(socket, tcpReader)) with
-//            |IOSuccess (res, tok2) -> printfn "%A" res
-//            |IOError e -> failwith "error"
-//            }
-//    Async.RunSynchronously(clientHandler)
+    let testServ = 
+        io {
+            let! serv = TCP.createServer (System.Net.IPAddress.Any) (7826)
+            let! acceptSock = TCP.acceptConnection serv
+            let! handle = TCP.socketToHandle acceptSock
+            let! request = IO.takeWhileM (fun str -> str <> "" |> IO.return') (IO.hGetLine handle)
+            do! httpResponse handle "<html>Test response</html>"
+        }
+        
+
+
+    let test = IO.run testServ
+
+    //let lines = File.assumeValidFilename "test3.txt" |> IO.readLines |> IO.run
+    //match lines with
+    //|IOSuccess a -> a |> Seq.iter (printfn "%s")
+    //|IOError err -> printfn "%A" err
+
+
+    //let testLines = System.IO.File.ReadLines "test4.txt"
+
+    //testLines |> Seq.iter (printfn "%s")
+
+
+    //testLines |> Seq.iter (printfn "%s")
+
     0
 
+     
