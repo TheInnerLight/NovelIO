@@ -1,18 +1,69 @@
 ﻿namespace NovelFS.NovelIO.UnitTests
 
-//open NovelFS.NovelIO
-//open FsCheck
-//open FsCheck.Xunit
-//
-//type ``Binary IO Simple Read Tests`` =
-//    [<Property>]
-//    static member ``readByte from array of one byte`` (byte : byte) =
-//        let bytes = [|byte|]
-//        let result = 
-//            match BinaryIO.run (MemoryBlockRead (bytes, BinaryIO.readByte)) with
-//            |IOSuccess (byte,_) -> byte
-//            |IOError (_) -> failwith "error"
-//        result = bytes.[0]
+open NovelFS.NovelIO
+open NovelFS.NovelIO.BinaryParser
+open FsCheck
+open FsCheck.Xunit
+
+type ``Binary Parser Tests`` =
+    [<Property>]
+    static member ``parseByte from array of one byte`` (byte : byte) =
+        let bytes = [|byte|]
+        let bParser = BinaryParser.parseByte
+        let result =
+            match BinaryParser.run bytes bParser with
+            |ParseSuccess byte -> byte
+            |ParseFailure err -> failwith "failed"
+        result = byte
+    [<Property>]
+    static member ``parseInt16 from array of bytes`` (i16 : int16) =
+        let bytes = System.BitConverter.GetBytes i16
+        let bParser = BinaryParser.parseInt16
+        let result =
+            match BinaryParser.run bytes bParser with
+            |ParseSuccess byte -> byte
+            |ParseFailure err -> failwith "failed"
+        result = i16
+    [<Property>]
+    static member ``parseInt32 from array of bytes`` (i32 : int32) =
+        let bytes = System.BitConverter.GetBytes i32
+        let bParser = BinaryParser.parseInt32
+        let result =
+            match BinaryParser.run bytes bParser with
+            |ParseSuccess byte -> byte
+            |ParseFailure err -> failwith "failed"
+        result = i32
+    [<Property>]
+    static member ``parseInt64 from array of bytes`` (i64 : int64) =
+        let bytes = System.BitConverter.GetBytes i64
+        let bParser = BinaryParser.parseInt64
+        let result =
+            match BinaryParser.run bytes bParser with
+            |ParseSuccess byte -> byte
+            |ParseFailure err -> failwith "failed"
+        result = i64
+    [<Property>]
+    static member ``parseFloat64 from array of bytes`` (flt : float) =
+        let bytes = System.BitConverter.GetBytes flt
+        let bParser = BinaryParser.parseFloat64
+        let result =
+            match BinaryParser.run bytes bParser with
+            |ParseSuccess byte -> byte
+            |ParseFailure err -> failwith "failed"
+        match result with
+        |x when System.Double.IsNaN(x) -> System.Double.IsNaN(flt)
+        |_ -> result = flt
+    [<Property>]
+    static member ``parseFloat32 from array of bytes`` (flt : float32) =
+        let bytes = System.BitConverter.GetBytes flt
+        let bParser = BinaryParser.parseFloat32
+        let result =
+            match BinaryParser.run bytes bParser with
+            |ParseSuccess byte -> byte
+            |ParseFailure err -> failwith "failed"
+        match result with
+        |x when System.Single.IsNaN(x) -> System.Single.IsNaN(flt)
+        |_ -> result = flt
 //    [<Property>]
 //    static member ``readCharfrom array of one char`` (character : char) =
 //        let bytes = System.BitConverter.GetBytes(character)
