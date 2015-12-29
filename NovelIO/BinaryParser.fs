@@ -26,7 +26,7 @@ type BinaryParser<'a> =
     |ReadFloat32 of (float32 -> BinaryParser<'a>)
     |ReadFloat64 of (float -> BinaryParser<'a>)
 
-exception ParseExceededArrayLength
+exception ParseExceededArrayLengthException
 
 type BinaryParseResult<'a> =
     |ParseSuccess of 'a
@@ -91,8 +91,8 @@ module BinaryParser =
         try
             f array
         with
-            | :? System.ArgumentOutOfRangeException as aoex -> raise <| ParseExceededArrayLength
-            | :? System.ArgumentException as aex -> raise <| ParseExceededArrayLength
+            | :? System.ArgumentOutOfRangeException as aoex -> raise <| ParseExceededArrayLengthException
+            | :? System.ArgumentException as aex -> raise <| ParseExceededArrayLengthException
 
     let private convInt16 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt16(arr, pos)) array
     let private convInt32 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt32(arr, pos)) array
@@ -114,7 +114,7 @@ module BinaryParser =
         try
             ParseSuccess <| runRec array 0 x
         with 
-            | ParseExceededArrayLength -> ParseFailure <| ArrayLengthInsufficient
+            | ParseExceededArrayLengthException -> ParseFailure <| ArrayLengthInsufficient
             
 
     // Binary Parsers

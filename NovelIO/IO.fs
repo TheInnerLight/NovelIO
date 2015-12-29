@@ -56,8 +56,17 @@ module IO =
         |HPutStringLine (handle, str, a) -> HPutStringLine (handle, str, (bind a f))
         |ConnectedSocketToHandle (socket, g) -> ConnectedSocketToHandle(socket, fun hand -> bind (g hand) f)
         |IsReady (handle, g) -> IsReady (handle, fun bl -> bind (g bl) f)
+
+    type IOBuilder() =
+        member this.Return a = return' a
+        member this.ReturnFrom a = a
+        member this.Bind (x, f) = bind x f
+
+    let private io = IOBuilder()
     /// Monadic bind operator for IO values
     let (>>=) x f = bind x f
+    /// Map function for IO Values
+    let map f x = x >>= (return' << f)
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results.
     let mapM mFunc list =
         let folder head tail = 
@@ -77,28 +86,6 @@ module IO =
     /// As replicateM but ignores the results
     let replicateM_ mFunc n  =
         replicateM mFunc n >>= (fun f -> return' ())
-
-    let rec private mLoopHelper mFunc predF m lst =
-        m >>= (fun res ->
-            mFunc >>= (fun pred ->
-                if predF pred then
-                    mLoopHelper mFunc predF m (res::lst)
-                else return' (List.rev lst)))
-    /// Execute an IO action repeatedly until a condition is met
-    let untilM mBool m =
-        mLoopHelper mBool ((=) false) m []
-    /// Execute an IO action repeatedly while a condition is met
-    let whileM mBool m =
-        mLoopHelper mBool ((=) true) m []
-    /// Take elements repeatedly while a condition is met
-    let takeWhileM mFunc m =
-        let rec iterateWhileRec mFunc m lst =
-            m >>= (fun res ->
-                mFunc res >>= (fun pred ->
-                    if pred = true then
-                        iterateWhileRec mFunc m (res::lst)
-                    else return' (List.rev lst)))
-        iterateWhileRec mFunc m []
 
     /// Runs the IO actions and evaluates the result
     let run io =
@@ -172,6 +159,75 @@ module IO =
     let hPutStrLn handle str =
         HPutStringLine (handle, str, return' ())
 
+    // ------ LOOPS ------ //
+
+    /// IO looping constructs
+    module Loops =
+        /// Take elements repeatedly while a condition is met
+        let rec takeWhileM p xs =
+            match xs with
+            |[] -> return' []
+            |x::xs ->
+                io {
+                    let! v = x
+                    let! q = p v
+                    if q then 
+                        let! res = (takeWhileM p xs) 
+                        return (v::res)
+                    else return []
+                }
+        /// Drop elements repeatedly while a condition is met
+        let rec dropWhileM p xs =
+            match xs with
+            |[] -> return' []
+            |x::xs ->
+                io {
+                    let! v = x
+                    let! q = p v
+                    if q then return! dropWhileM p xs
+                    else return! sequence (x::xs)
+                }
+        /// Execute an action repeatedly as long as the given boolean expression returns true
+        let rec whileM p f =
+            io {
+                let! x = p
+                let! x2 = f
+                let! xs = whileM p f
+                return x2 :: xs
+            }
+        /// As long as the supplied "Maybe" expression returns "Some _", the loopbody will be called and passed the value contained in the 'Some'.
+        /// Results are collected into a list.
+        let rec whileSome p f =
+            io {
+                let! x = p
+                match x with
+                |None -> return []
+                |Some x ->
+                    let! x = f x
+                    let! xs = whileSome p f
+                    return x :: xs
+            }
+
+        /// Yields the result of applying f until p holds.
+        let rec iterateUntilM p f v =
+            match p v with
+            |true -> return' v
+            |false -> f v >>= iterateUntilM p f
+
+        /// Execute an action repeatedly until its result satisfies a predicate and return that result (discarding all others).
+        let iterateUntil p x = x >>= iterateUntilM p (const' x)
+        /// Execute an action repeatedly until its result fails to satisfy a predicate and return that result (discarding all others).
+        let iterateWhile p x = iterateUntil (not << p) x
+
+        /// Repeatedly evaluates the second argument until the value satisfies the given predicate, and returns a list of all
+        /// values that satisfied the predicate.  Discards the final one (which failed the predicate).
+        let rec unfoldWhileM p m =
+            io {
+                let! x = m
+                if p x then return! unfoldWhileM p m
+                else return []
+             }
+
 /// Console functions
 module Console =
     /// print a string to the console using the supplied formatter
@@ -195,13 +251,10 @@ module TCP =
     let socketToHandle socket =
         ConnectedSocketToHandle (socket, IO.return')
 
-type IOBuilder() =
-    member this.Return a = IO.return' a
-    member this.ReturnFrom a = a
-    member this.Bind (x, f) = IO.bind x f
+
 
 [<AutoOpen>]
 module IOBuilders =
-    let io = IOBuilder()
+    let io = IO.IOBuilder()
             
 
