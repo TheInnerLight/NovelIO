@@ -27,8 +27,6 @@ let main argv =
     let c = BinaryParser.parseInt16
 
     let d = BinaryParser.lift3 (fun a b c -> a, b, c) a b c
-    //let num = BinaryParser.evaluateSize d
-    //BinaryParser.fold (fun a -> )
 
     let fName = File.assumeValidFilename "test4.txt"
 
@@ -40,7 +38,7 @@ let main argv =
 
     let consoleTest = 
         io{
-            let! inputStrs = IO.takeWhileM (fun str -> str <> "" |> IO.return') (Console.readLine)
+            let! inputStrs = IO.Loops.takeWhileM (fun str -> str <> "" |> IO.return') (List.init 10 (fun _ -> Console.readLine))
             do! IO.mapM_ (Console.printfn "%s") inputStrs
         }
 
@@ -61,7 +59,7 @@ let main argv =
             let! serv = TCP.createServer (System.Net.IPAddress.Any) (7826)
             let! acceptSock = TCP.acceptConnection serv
             let! handle = TCP.socketToHandle acceptSock
-            let! request = IO.takeWhileM (fun str -> str <> "" |> IO.return') (IO.hGetLine handle)
+            let! request = IO.Loops.unfoldWhileM (fun str -> str <> "") (IO.hGetLine handle)
             do! httpResponse handle "<html>Test response</html>"
         }
         

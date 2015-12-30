@@ -64,22 +64,26 @@ type Filename =
 
     member this.PathString = match this with Filename str -> str
 
-    static member tryCreateFromString (path : string) =
+    static member TryCreateFromString (path : string) =
         match path.IndexOfAny(Path.GetInvalidFileNameChars()) = -1 with
         |true -> Some <| Filename(path)
         |false -> None
 
-    static member createFromString path =
-        match Filename.tryCreateFromString path with
+    static member CreateFromString path =
+        match Filename.TryCreateFromString path with
         |Some fname -> fname
         |None -> invalidArg "path" "Path Invalid"
 
 [<AutoOpen>]
 module PathDiscriminators =
     let (|ValidFilename|InvalidFilename|) (path : string) =
-        match Filename.tryCreateFromString path with
+        match Filename.TryCreateFromString path with
         |Some fname -> ValidFilename fname
         |None -> InvalidFilename
+
+[<AutoOpen>]
+module General =
+    let const' x _ = x
 
 type Handle = private {TextReader : TextReader option; TextWriter : TextWriter option}
 type TCPServer = private {TCPListener : Sockets.TcpListener}
