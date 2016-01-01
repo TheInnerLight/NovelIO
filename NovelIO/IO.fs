@@ -65,14 +65,20 @@ module IO =
     let private io = IOBuilder()
     /// Monadic bind operator for IO values
     let (>>=) x f = bind x f
+    /// Left to right Kleisli composition of IO values
+    let (>=>) f g x = f x >>= g
+    /// Right to left Kleisli composition of IO values
+    let (<=<) f g x = flip (>=>) f g x
     /// Map function for IO Values
     let map f x = x >>= (return' << f)
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results.
     let mapM mFunc list =
-        let folder head tail = 
-            mFunc head >>= (fun h -> 
-                tail >>= (fun t ->
-                    return' (h::t) ))
+        let folder head tail =
+            io {
+                let! h = mFunc head
+                let! t = tail
+                return (h::t)
+            }
         List.foldBack (folder) list (return' [])
     /// As mapM but ignores the result.
     let mapM_ mFunc list =

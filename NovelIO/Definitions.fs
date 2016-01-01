@@ -84,6 +84,7 @@ module PathDiscriminators =
 [<AutoOpen>]
 module General =
     let const' x _ = x
+    let flip f a b = f b a
 
 type Handle = private {TextReader : TextReader option; TextWriter : TextWriter option}
 type TCPServer = private {TCPListener : Sockets.TcpListener}
