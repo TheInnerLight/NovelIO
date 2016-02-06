@@ -8,7 +8,7 @@
     <ProjectGuid>1e833761-70ad-47d1-aac6-f2918e3b6f06</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>NovelIO.IntegrationTests</RootNamespace>
-    <AssemblyName>NovelIO.IntegrationTests</AssemblyName>
+    <AssemblyName>xUnit.Test.NovelIO.IntegrationTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
