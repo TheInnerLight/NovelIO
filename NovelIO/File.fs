@@ -26,12 +26,15 @@ module File =
 
     let getPathString (filename : Filename) = filename.PathString
 
-    let fileExists (filename : Filename) = File.Exists <| getPathString filename
+    let fileExists filename = IO.Delay (fun _ -> File.Exists <| getPathString filename)
     
-    let readLines fName = FileReadLines (fName, IO.return')
-    
+    let readAllBytes filename = IO.Delay(fun _ -> File.ReadAllBytes <| getPathString filename)
+
     let openFileHandle (mode : FileMode) (fName : Filename) =
-        OpenFileHandle (fName, mode, IO.return')
+        IO.Delay (fun _ -> SideEffectingIO.openFileHandle fName mode)
+
+    let readLines filename = 
+        IO.Delay (fun _ -> Seq.map (IO.return') (File.ReadLines <| getPathString filename))
 
         
 

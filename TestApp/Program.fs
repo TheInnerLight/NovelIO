@@ -33,16 +33,20 @@ let main argv =
     let test = 
         io {
             let! lines = File.readLines fName
-            return! IO.mapM_ (Console.printfn "%s") (Seq.toList lines)
+            let! lList = Seq.toList lines |> IO.listM
+            for line in lines do
+                do! Console.printf "%s" line
+                
+            return! IO.mapM_ (Console.printfn "%s") (lList)
         }
 
     let consoleTest = 
         io{
-            let! inputStrs = IO.Loops.takeWhileM (fun str -> str <> "" |> IO.return') (List.init 10 (fun _ -> Console.readLine))
+            let! inputStrs = IO.Loops.unfoldWhileM (fun str -> str <> "") (Console.readLine)
             do! IO.mapM_ (Console.printfn "%s") inputStrs
         }
 
-    let results = IO.run consoleTest
+    let results = IO.run test
 
     let httpResponse handle (content : string) =
         let length = System.Text.Encoding.UTF8.GetByteCount(content)
@@ -54,13 +58,26 @@ let main argv =
             do! IO.hPutStrLn handle (content)
         }
 
-    let testServ = 
+    let handleSocket acceptSock =
         io {
-            let! serv = TCP.createServer (System.Net.IPAddress.Any) (7826)
-            let! acceptSock = TCP.acceptConnection serv
             let! handle = TCP.socketToHandle acceptSock
             let! request = IO.Loops.unfoldWhileM (fun str -> str <> "") (IO.hGetLine handle)
             do! httpResponse handle "<html>Test response</html>"
+            do! TCP.closeConnection acceptSock
+        }
+
+    let testServ = 
+        io {
+            let! serv = TCP.createServer (System.Net.IPAddress.Any) (7826)
+            while true do
+                let! sock = TCP.acceptConnection serv
+                do! IO.forkIO <| handleSocket sock
+                //do! handleSocket sock
+            //do! IO.Loops.iterateWhile (fun _ -> true) (IO.forkIO << handleSocket <| TCP.acceptConnection serv)
+            //let! acceptSock = TCP.acceptConnection serv
+            //let! handle = TCP.socketToHandle acceptSock
+            //let! request = IO.Loops.unfoldWhileM (fun str -> str <> "") (IO.hGetLine handle)
+            //do! httpResponse handle "<html>Test response</html>"
         }
         
 
