@@ -86,6 +86,15 @@ module BinaryParser =
     /// Combines four Binary Parsers using a specified function
     let lift4 f x1 x2 x3 x4 =
         f <!> x1 <*> x2 <*> x3 <*> x4
+    /// Zip two Binary Parsers to produce a 2-tuple parser
+    let zip2 x1 x2 =
+        lift2 (fun a b -> a, b) x1 x2
+    /// Zip three Binary Parsers to produce a 3-tuple parser
+    let zip3 x1 x2 x3 =
+        lift3 (fun a b c -> a, b, c) x1 x2 x3
+    /// Zip four Binary Parsers to produce a 4-tuple parser
+    let zip4 x1 x2 x3 x4 =
+        lift4 (fun a b c d -> a, b, c, d) x1 x2 x3 x4
 
     let private checkConversionException f array =
         try

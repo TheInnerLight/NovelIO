@@ -19,23 +19,47 @@ namespace NovelFS.NovelIO
 open System.IO
 open System.Net
 
-type IO<'a,'b,'c,'d when 'c :> IOStream> = 
+type IO<'a> = 
     private 
     |Return of 'a
-    |ConsoleWrite of Printf.TextWriterFormat<'b> * string * IO<'a,'b,'c,'d>
-    |ConsoleWriteLine of Printf.TextWriterFormat<'b> * string * IO<'a,'b,'c,'d>
-    |ConsoleReadKey of (System.ConsoleKeyInfo -> IO<'a,'b,'c,'d>)
-    |ConsoleReadLine of (string -> IO<'a,'b,'c,'d>)
-    |FileReadLines of Filename * (seq<string> -> IO<'a,'b,'c,'d>)
-    |ReadAllBytes of Filename * (byte[] -> IO<'a,'b,'c,'d>)
-    |OpenFileHandle of Filename * FileMode * (Handle -> IO<'a,'b,'c,'d>)
-    |StartTCPListener of IPAddress * int * (TCPServer -> IO<'a,'b,'c,'d>)
-    |TCPServerAccept of TCPServer * (TCPConnectedSocket -> IO<'a,'b,'c,'d>)
-    |HGetLine of Handle * (string -> IO<'a,'b,'c,'d>)
-    |HPutStringLine of Handle * string * IO<'a,'b,'c,'d>
-    |ConnectedSocketToHandle of TCPConnectedSocket * (Handle -> IO<'a,'b,'c,'d>)
-    |IsReady of Handle * (bool -> IO<'a,'b,'c,'d>)
+    |Delay of (unit -> 'a)
+    |Bind of (unit -> IO<'a>)
 
+/// Side effecting helper functions - this is where ugly things happen
+module internal SideEffectingIO =
+    /// Accept a socket from a TCP Server
+    let acceptSocketFromServer serv =
+        {TCPConnectedSocket = serv.TCPListener.AcceptSocket()}
+    /// Close a socket
+    let closeSocket sock =
+        sock.TCPConnectedSocket.Disconnect false
+    /// Gets a line from a handle
+    let hGetLine handle =
+        match handle.TextReader with
+        |Some txtRdr -> txtRdr.ReadLine()
+        |None -> raise HandleDoesNotSupportReadingException
+    /// Writes a string line to a handle
+    let hPutStrLn (str : string) handle =
+        match handle.TextWriter with
+        |Some txtWrtr ->
+            txtWrtr.WriteLine str
+            txtWrtr.Flush()
+        |None -> raise HandleDoesNotSupportWritingException
+    /// Determines whether a supplied handle is ready to be read from
+    let isHandleReadyToRead handle = 
+        match handle.TextReader with
+        |Some txtRdr -> txtRdr.Peek() = -1
+        |None -> raise HandleDoesNotSupportReadingException
+    /// Create a file handle for a supplied file name and file mode
+    let openFileHandle (fName : Filename) mode =
+        {TextReader = new StreamReader(new FileStream(fName.PathString, mode)) :> TextReader |> Some; TextWriter = None}
+    /// Start a TCP server on a supplied ip address and port
+    let startTCPServer ip port =
+        let listener = Sockets.TcpListener(ip, port)
+        listener.Start()
+        {TCPListener = listener}
+
+/// Pure IO Functions
 module IO =
     /// Return a value as an IO value
     let return' x = Return x
@@ -43,121 +67,82 @@ module IO =
     let rec bind x f =
         match x with
         |Return a -> f a
-        |ConsoleWrite (fmt, str, a) -> ConsoleWrite (fmt, str, (bind a f))
-        |ConsoleWriteLine (fmt, str, a) -> ConsoleWriteLine (fmt, str, (bind a f))
-        |ConsoleReadKey (g) -> ConsoleReadKey (fun key -> bind (g key) f)
-        |ConsoleReadLine (g) -> ConsoleReadLine (fun line -> bind (g line) f)
-        |FileReadLines (fName, g) -> FileReadLines (fName, fun str -> bind (g str) f)
-        |ReadAllBytes (fName, g) -> ReadAllBytes (fName, fun bytes -> bind (g bytes) f)
-        |OpenFileHandle (fName, mode, g) -> OpenFileHandle(fName, mode, fun fName -> bind (g fName) f)
-        |StartTCPListener (ip, port, g) -> StartTCPListener(ip, port, fun tcpServer -> bind(g tcpServer) f)
-        |TCPServerAccept (serv, g) -> TCPServerAccept (serv, fun sock -> bind (g sock) f)
-        |HGetLine (handle, g) -> HGetLine(handle, fun hand -> bind (g hand) f)
-        |HPutStringLine (handle, str, a) -> HPutStringLine (handle, str, (bind a f))
-        |ConnectedSocketToHandle (socket, g) -> ConnectedSocketToHandle(socket, fun hand -> bind (g hand) f)
-        |IsReady (handle, g) -> IsReady (handle, fun bl -> bind (g bl) f)
+        |Delay (g) -> Bind (fun _ -> bind (return' <| g()) f)
+        |Bind (g) -> Bind (fun _ -> bind (g ()) f)
 
     type IOBuilder() =
         member this.Return a = return' a
         member this.ReturnFrom a = a
         member this.Bind (x, f) = bind x f
+        member this.Delay f : IO<_> = f()
+        member this.Combine(f1, f2) =
+            bind f1 (fun () -> f2)
+        member this.Zero() = return' ()
+        member this.While(guard, body) =
+            match guard() with
+            |false -> this.Zero()
+            |true -> bind (body) (fun () -> this.While(guard, body))
+        member this.For (sequence : seq<_>, body) =
+            use enum = sequence.GetEnumerator()
+            enum.MoveNext() |> ignore
+            this.While(enum.MoveNext, 
+                this.Delay(fun () -> bind (enum.Current) body ))
 
     let private io = IOBuilder()
     /// Monadic bind operator for IO values
     let (>>=) x f = bind x f
+    /// Left to right Kleisli composition of IO values
+    let (>=>) f g x = f x >>= g
+    /// Right to left Kleisli composition of IO values
+    let (<=<) f g x = flip (>=>) f g x
     /// Map function for IO Values
     let map f x = x >>= (return' << f)
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results.
     let mapM mFunc list =
-        let folder head tail = 
-            mFunc head >>= (fun h -> 
-                tail >>= (fun t ->
-                    return' (h::t) ))
+        let folder head tail =
+            io {
+                let! h = mFunc head
+                let! t = tail
+                return (h::t)
+            }
         List.foldBack (folder) list (return' [])
     /// As mapM but ignores the result.
     let mapM_ mFunc list =
         mapM mFunc list >>= (fun x -> return' ())
     /// Evaluate each action in the list from left to right, and and collect the results.
-    let sequence list =
+    let listM list =
         mapM (id) list
     /// Performs the action mFunc n times, gathering the results.
     let replicateM mFunc n =
-        sequence (List.init n (fun _ -> mFunc))
+        listM (List.init n (fun _ -> mFunc))
     /// As replicateM but ignores the results
     let replicateM_ mFunc n  =
         replicateM mFunc n >>= (fun f -> return' ())
 
-    /// Runs the IO actions and evaluates the result
-    let run io =
-        let rec runRec io =
-            match io with
-            |Return a -> a
-            |ConsoleWrite (fmt, str, a) -> // Write to the console
-                printf fmt str
-                runRec a
-            |ConsoleWriteLine (fmt, str, a) -> // Write a line to the console
-                printfn fmt str
-                runRec a
-            |ConsoleReadKey (g) -> // Read a key from the console
-                let consoleKey = System.Console.ReadKey()
-                runRec <| g consoleKey
-            |ConsoleReadLine (g) -> // Read a line from the console
-                let consoleLine = System.Console.ReadLine()
-                runRec <| g consoleLine
-            |FileReadLines (fName, g) -> // Read lines lazily from file
-                let fileLines = File.ReadLines(fName.PathString)
-                runRec <| g fileLines
-            |ReadAllBytes (fName, g) -> // read all bytes from a file
-                let fileBytes = File.ReadAllBytes(fName.PathString)
-                runRec <| g fileBytes
-            |OpenFileHandle (fName, mode, g) -> // open a file handle to a file
-                let ioHandle = 
-                    {TextReader = new StreamReader(new FileStream(fName.PathString, mode)) :> TextReader |> Some; TextWriter = None}
-                runRec <| g ioHandle
-            |StartTCPListener (ip, port, g) -> // start a TCP listener on the specified ip and port
-                let listener = Sockets.TcpListener(ip, port)
-                listener.Start()
-                let tcpServ = {TCPListener = listener}
-                runRec <| g tcpServ
-            |TCPServerAccept (serv, g) -> // accept a tcp connection on the specified server
-                let socket = serv.TCPListener.AcceptSocket()
-                let ioSock = {TCPConnectedSocket = socket}
-                runRec <| g ioSock
-            |HGetLine (handle, g) -> // get a line from the handle
-                match handle.TextReader with
-                |Some txtRdr ->
-                    let line = txtRdr.ReadLine()
-                    runRec <| g line
-                |None -> raise HandleDoesNotSupportReadingException
-            |HPutStringLine (handle, str, a) -> // write a line to the handle
-                match handle.TextWriter with
-                |Some txtWrtr ->
-                    txtWrtr.WriteLine str
-                    txtWrtr.Flush()
-                    runRec a
-                |None -> raise HandleDoesNotSupportWritingException
-            |ConnectedSocketToHandle (socket, g) -> // convert a connected socket to a handle
-                let hand = 
-                    {TextReader = new StreamReader(new Sockets.NetworkStream(socket.TCPConnectedSocket)) :> TextReader |> Some;
-                     TextWriter = new StreamWriter(new Sockets.NetworkStream(socket.TCPConnectedSocket)) :> TextWriter |> Some }
-                runRec<| g hand
-            |IsReady (handle, g) -> // determine if a handle has available input
-                match handle.TextReader with
-                |Some txtRdr ->
-                    let endS = txtRdr.Peek() = -1
-                    runRec <| g endS
-                |None -> raise HandleDoesNotSupportReadingException
-        IOResult.withExceptionCheck (runRec) io
+    // ----- GENERAL ----- //
             
     /// Reads a line from the file or channel
-    let hGetLine handle =
-        HGetLine(handle, return')
+    let hGetLine handle = Delay (fun _ -> SideEffectingIO.hGetLine handle)
     /// Determines if the handle has data available
-    let hIsReady handle =
-        IsReady(handle, return')
+    let hIsReady handle = Delay (fun _ -> SideEffectingIO.isHandleReadyToRead handle)
     /// Writes a line to the final or channel
-    let hPutStrLn handle str =
-        HPutStringLine (handle, str, return' ())
+    let hPutStrLn handle str = Delay (fun _ -> SideEffectingIO.hPutStrLn str handle)
+
+    // ------- RUN ------- //
+
+    /// Runs the IO actions and evaluates the result
+    let run io =
+        let rec runRec (io : IO<'a>) =
+            match io with
+            |Return a -> a            
+            |Delay a -> a()
+            |Bind (a) -> runRec <| a()
+        // run recursively and handle exceptions in IO
+        IOResult.withExceptionCheck (runRec) io
+
+    /// Sparks off a new thread to run the IO computation passed as the first argument
+    let forkIO io = Delay(fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
+        //ForkIO (io, ForkNow, return')
 
     // ------ LOOPS ------ //
 
@@ -185,7 +170,7 @@ module IO =
                     let! v = x
                     let! q = p v
                     if q then return! dropWhileM p xs
-                    else return! sequence (x::xs)
+                    else return! listM (x::xs)
                 }
         /// Execute an action repeatedly as long as the given boolean expression returns true
         let rec whileM p f =
@@ -224,32 +209,39 @@ module IO =
         let rec unfoldWhileM p m =
             io {
                 let! x = m
-                if p x then return! unfoldWhileM p m
+                if p x then
+                    let! xs = unfoldWhileM p m
+                    return x :: xs
                 else return []
              }
 
 /// Console functions
 module Console =
     /// print a string to the console using the supplied formatter
-    let printf fmt str = 
-        ConsoleWrite (fmt, str, IO.return' ())
+    let printf fmt str = IO.Delay (fun () -> Core.Printf.printf fmt str)
     /// print a line to the console using the supplied formatter
-    let printfn fmt str = 
-        ConsoleWriteLine (fmt, str, IO.return' ())
+    let printfn fmt str = IO.Delay (fun () -> Core.Printf.printfn fmt str)
     /// read a line from the console
-    let readLine =
-        ConsoleReadLine(IO.return')
+    let readLine = IO.Delay (fun () -> System.Console.ReadLine())
+
+module DateTime =
+    /// Get the current local time
+    let localNow = IO.Delay (fun () -> System.DateTime.Now)
+    /// Get the current UTC time
+    let utcNow = IO.Delay (fun () -> System.DateTime.UtcNow)
 
 module TCP =
     /// Create a TCP server at the specfied IP on the specified port
-    let createServer ip port =
-        StartTCPListener (ip, port, IO.return')
+    let createServer ip port = IO.Delay (fun () -> SideEffectingIO.startTCPServer ip port)
     /// Accept a connection from the supplied TCP server
-    let acceptConnection serv =
-         TCPServerAccept (serv, IO.return')
-    /// Convert a socket to a handle
-    let socketToHandle socket =
-        ConnectedSocketToHandle (socket, IO.return')
+    let acceptConnection serv = IO.Delay (fun () -> SideEffectingIO.acceptSocketFromServer serv)
+    /// Close a connected socket
+    let closeConnection socket = IO.Delay (fun () -> SideEffectingIO.closeSocket socket)
+    /// Create a handle from a connected socket
+    let socketToHandle tcpSocket =
+        IO.return' 
+            {TextReader = new StreamReader(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) :> TextReader |> Some;
+             TextWriter = new StreamWriter(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) :> TextWriter |> Some}
 
 
 

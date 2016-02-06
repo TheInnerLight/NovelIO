@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "NovelIO", "NovelIO\NovelIO.fsproj", "{04AB84AE-11B0-4A6F-B509-BD9118E950AC}"
 EndProject
@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D3E1B164
 	ProjectSection(SolutionItems) = preProject
 		Build.fsx = Build.fsx
 	EndProjectSection
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "NovelIO.IntegrationTests", "NovelIO.IntegrationTests\NovelIO.IntegrationTests.fsproj", "{1E833761-70AD-47D1-AAC6-F2918E3B6F06}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,10 @@ Global
 		{B525B5AD-A9A2-4ACB-8DF3-77EDCBF18247}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B525B5AD-A9A2-4ACB-8DF3-77EDCBF18247}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B525B5AD-A9A2-4ACB-8DF3-77EDCBF18247}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E833761-70AD-47D1-AAC6-F2918E3B6F06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E833761-70AD-47D1-AAC6-F2918E3B6F06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E833761-70AD-47D1-AAC6-F2918E3B6F06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E833761-70AD-47D1-AAC6-F2918E3B6F06}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

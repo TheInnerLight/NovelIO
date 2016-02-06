@@ -7,7 +7,7 @@ open FsCheck.Xunit
 
 type ``Binary Parser Tests`` =
     [<Property>]
-    static member ``parseByte from array of one byte`` (byte : byte) =
+    static member ``Parse byte from array of one byte`` (byte : byte) =
         let bytes = [|byte|]
         let bParser = BinaryParser.parseByte
         let result =
@@ -16,7 +16,7 @@ type ``Binary Parser Tests`` =
             |ParseFailure err -> failwith "failed"
         result = byte
     [<Property>]
-    static member ``parseInt16 from array of bytes`` (i16 : int16) =
+    static member ``Parse int16 from array of bytes`` (i16 : int16) =
         let bytes = System.BitConverter.GetBytes i16
         let bParser = BinaryParser.parseInt16
         let result =
@@ -25,7 +25,7 @@ type ``Binary Parser Tests`` =
             |ParseFailure err -> failwith "failed"
         result = i16
     [<Property>]
-    static member ``parseInt32 from array of bytes`` (i32 : int32) =
+    static member ``Parse int32 from array of bytes`` (i32 : int32) =
         let bytes = System.BitConverter.GetBytes i32
         let bParser = BinaryParser.parseInt32
         let result =
@@ -34,7 +34,7 @@ type ``Binary Parser Tests`` =
             |ParseFailure err -> failwith "failed"
         result = i32
     [<Property>]
-    static member ``parseInt64 from array of bytes`` (i64 : int64) =
+    static member ``Parse int64 from array of bytes`` (i64 : int64) =
         let bytes = System.BitConverter.GetBytes i64
         let bParser = BinaryParser.parseInt64
         let result =
@@ -43,7 +43,7 @@ type ``Binary Parser Tests`` =
             |ParseFailure err -> failwith "failed"
         result = i64
     [<Property>]
-    static member ``parseFloat64 from array of bytes`` (flt : float) =
+    static member ``Parse float64 from array of bytes`` (flt : float) =
         let bytes = System.BitConverter.GetBytes flt
         let bParser = BinaryParser.parseFloat64
         let result =
@@ -54,7 +54,7 @@ type ``Binary Parser Tests`` =
         |x when System.Double.IsNaN(x) -> System.Double.IsNaN(flt)
         |_ -> result = flt
     [<Property>]
-    static member ``parseFloat32 from array of bytes`` (flt : float32) =
+    static member ``Parse float32 from array of bytes`` (flt : float32) =
         let bytes = System.BitConverter.GetBytes flt
         let bParser = BinaryParser.parseFloat32
         let result =
