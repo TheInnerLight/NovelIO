@@ -21,7 +21,11 @@ open NovelFS.NovelIO.BinaryParser
 open FsCheck
 open FsCheck.Xunit
 
-type ``File Unit Tests`` =
+type ``File Unit Tests``() =
+
+    static let firstRandomFileThatDoesNotExist() =
+        Seq.initInfinite (fun _ -> System.IO.Path.GetRandomFileName())
+        |> Seq.find (not << System.IO.File.Exists)
 
     [<Property>]
     static member ``Function: getPathString returns contained path string``() =
@@ -79,9 +83,7 @@ type ``File Unit Tests`` =
 
     [<Property>]
     static member ``File that does not exist is not found``() =
-        let fnameStr = 
-            Seq.initInfinite (fun _ -> System.IO.Path.GetRandomFileName())
-            |> Seq.find (not << System.IO.File.Exists)
+        let fnameStr = firstRandomFileThatDoesNotExist()
         let fname = File.assumeValidFilename fnameStr
         match IO.run <| File.fileExists fname with
         |IOSuccess b -> b = false
@@ -89,9 +91,7 @@ type ``File Unit Tests`` =
 
     [<Property>]
     static member ``File that does exist can be found``() =
-        let fnameStr = 
-            Seq.initInfinite (fun _ -> System.IO.Path.GetRandomFileName())
-            |> Seq.find (not << System.IO.File.Exists)
+        let fnameStr = firstRandomFileThatDoesNotExist()
         System.IO.File.WriteAllLines(fnameStr, [|""|])
         try
             let fname = File.assumeValidFilename fnameStr
@@ -100,3 +100,47 @@ type ``File Unit Tests`` =
             |IOError err -> failwith "error"
         finally
             System.IO.File.Delete fnameStr
+
+    [<Property>]
+    static member ``Random file can be deleted``() =
+        let fnameStr = firstRandomFileThatDoesNotExist()
+        let fname = File.assumeValidFilename fnameStr
+        System.IO.File.AppendAllLines(fnameStr, [""])
+        match IO.run <| File.delete fname with
+        |IOSuccess _ -> not <| System.IO.File.Exists fnameStr
+        |IOError err -> failwith "error"
+
+    [<Property>]
+    static member ``Random file can be copied``() =
+        let fnameStr = firstRandomFileThatDoesNotExist()
+        let fname = File.assumeValidFilename fnameStr
+        System.IO.File.AppendAllLines(fnameStr, [""])
+        let fnameStr2 = firstRandomFileThatDoesNotExist()
+        let fname2 = File.assumeValidFilename fnameStr2
+        match IO.run <| File.copy fname fname2 with
+        |IOSuccess _ -> 
+            try
+                System.IO.File.Exists fnameStr2
+            finally
+                System.IO.File.Delete fnameStr
+                System.IO.File.Delete fnameStr2
+        |IOError err ->
+            System.IO.File.Delete fnameStr
+            failwith "error"
+
+    [<Property>]
+    static member ``Random file can be moved``() =
+        let fnameStr = firstRandomFileThatDoesNotExist()
+        let fname = File.assumeValidFilename fnameStr
+        System.IO.File.AppendAllLines(fnameStr, [""])
+        let fnameStr2 = firstRandomFileThatDoesNotExist()
+        let fname2 = File.assumeValidFilename fnameStr2
+        match IO.run <| File.move fname fname2 with
+        |IOSuccess _ -> 
+            try
+                System.IO.File.Exists fnameStr2
+            finally
+                System.IO.File.Delete fnameStr2
+        |IOError err ->
+            System.IO.File.Delete fnameStr
+            failwith "error"

@@ -32,7 +32,7 @@ module File =
 
     /// Copies an existing file to a location specified.  Overwriting is not allowed
     let copy sourceFile destFile =
-        IO.Delay (fun _ -> File.Copy(sourceFile, destFile))
+        IO.Delay (fun _ -> File.Copy(getPathString sourceFile, getPathString destFile))
 
     /// Determines the creation date / time of the specified file
     let creationTime filename = 
@@ -68,7 +68,7 @@ module File =
 
     /// Moves an existing file to a location specified.  Overwriting is not allowed
     let move sourceFile destFile =
-        IO.Delay (fun _ -> File.Move(sourceFile, destFile))
+        IO.Delay (fun _ -> File.Move(getPathString sourceFile, getPathString destFile))
 
     /// Opens a handle to the specified file using the supplied file mode
     let openFileHandle (mode : FileMode) (access : FileAccess) (fName : Filename) =
