@@ -27,6 +27,16 @@ type IO<'a> =
 
 /// Side effecting helper functions - this is where ugly things happen
 module internal SideEffectingIO =
+    /// Hidden helper functions
+    module private Helpers =
+        /// Writes a a string to the console with a supplied function
+        let hPutStrF f handle =
+            match handle.TextWriter with
+            |Some txtWrtr ->
+                f txtWrtr
+                txtWrtr.Flush()
+            |None -> raise HandleDoesNotSupportWritingException
+
     /// Accept a socket from a TCP Server
     let acceptSocketFromServer serv =
         {TCPConnectedSocket = serv.TCPListener.AcceptSocket()}
@@ -38,21 +48,28 @@ module internal SideEffectingIO =
         match handle.TextReader with
         |Some txtRdr -> txtRdr.ReadLine()
         |None -> raise HandleDoesNotSupportReadingException
+    /// Writes a string to a handle
+    let hPutStr (str : string) handle =
+        Helpers.hPutStrF (fun txtWrtr -> txtWrtr.Write str) handle
     /// Writes a string line to a handle
     let hPutStrLn (str : string) handle =
-        match handle.TextWriter with
-        |Some txtWrtr ->
-            txtWrtr.WriteLine str
-            txtWrtr.Flush()
-        |None -> raise HandleDoesNotSupportWritingException
+        Helpers.hPutStrF (fun txtWrtr -> txtWrtr.WriteLine str) handle
     /// Determines whether a supplied handle is ready to be read from
     let isHandleReadyToRead handle = 
         match handle.TextReader with
         |Some txtRdr -> txtRdr.Peek() = -1
         |None -> raise HandleDoesNotSupportReadingException
-    /// Create a file handle for a supplied file name and file mode
-    let openFileHandle (fName : Filename) mode =
-        {TextReader = new StreamReader(new FileStream(fName.PathString, mode)) :> TextReader |> Some; TextWriter = None}
+    /// Create a file handle for a supplied file name, file mode and file access
+    let openFileHandle (fName : Filename) mode access =
+        let crTxtRdr (fStream : FileStream) = new StreamReader(fStream) :> TextReader
+        let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream) :> TextWriter
+        let fStream = new FileStream(fName.PathString, mode, access)
+        let (reader, writer) =
+            match access with
+            |FileAccess.Read -> Some <| crTxtRdr fStream, None
+            |FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
+            |FileAccess.Write -> None, Some <| crTxtWrtr fStream
+        {TextReader = reader; TextWriter = writer}
     /// Start a TCP server on a supplied ip address and port
     let startTCPServer ip port =
         let listener = Sockets.TcpListener(ip, port)
@@ -70,6 +87,7 @@ module IO =
         |Delay (g) -> Bind (fun _ -> bind (return' <| g()) f)
         |Bind (g) -> Bind (fun _ -> bind (g ()) f)
 
+    /// Builder for IO computation expressions
     type IOBuilder() =
         member this.Return a = return' a
         member this.ReturnFrom a = a
@@ -201,6 +219,7 @@ module IO =
 
         /// Execute an action repeatedly until its result satisfies a predicate and return that result (discarding all others).
         let iterateUntil p x = x >>= iterateUntilM p (const' x)
+
         /// Execute an action repeatedly until its result fails to satisfy a predicate and return that result (discarding all others).
         let iterateWhile p x = iterateUntil (not << p) x
 
@@ -221,6 +240,8 @@ module Console =
     let printf fmt str = IO.Delay (fun () -> Core.Printf.printf fmt str)
     /// print a line to the console using the supplied formatter
     let printfn fmt str = IO.Delay (fun () -> Core.Printf.printfn fmt str)
+    /// read a key from the console
+    let readKey = IO.Delay (fun () -> System.Console.ReadKey())
     /// read a line from the console
     let readLine = IO.Delay (fun () -> System.Console.ReadLine())
 

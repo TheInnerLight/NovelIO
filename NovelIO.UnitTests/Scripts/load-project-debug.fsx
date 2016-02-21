@@ -3,3 +3,4 @@
 #load "load-references-debug.fsx"
 #load "../BinaryTests.fs"
       "../TextTests.fs"
+      "../FileTests.fs"

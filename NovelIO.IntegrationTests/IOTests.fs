@@ -36,27 +36,5 @@ type ``IO Integration Tests`` =
             lines = lstStrs
         |IOError err -> failwith "error"
 
-    [<Property>]
-    static member ``File that does not exist is not found``() =
-        let fnameStr = 
-            Seq.initInfinite (fun _ -> System.IO.Path.GetRandomFileName())
-            |> Seq.find (not << System.IO.File.Exists)
-        let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.fileExists fname with
-        |IOSuccess b -> b = false
-        |IOError err -> failwith "error"
-
-    [<Property>]
-    static member ``File that does exist can be found``() =
-        let fnameStr = 
-            Seq.initInfinite (fun _ -> System.IO.Path.GetRandomFileName())
-            |> Seq.find (not << System.IO.File.Exists)
-        System.IO.File.WriteAllLines(fnameStr, [|""|])
-        try
-            let fname = File.assumeValidFilename fnameStr
-            match IO.run <| File.fileExists fname with
-            |IOSuccess b -> b = true
-            |IOError err -> failwith "error"
-        finally
-            System.IO.File.Delete fnameStr
+    
 
