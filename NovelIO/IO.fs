@@ -36,10 +36,14 @@ module internal SideEffectingIO =
                 f txtWrtr
                 txtWrtr.Flush()
             |None -> raise HandleDoesNotSupportWritingException
-
     /// Accept a socket from a TCP Server
     let acceptSocketFromServer serv =
         {TCPConnectedSocket = serv.TCPListener.AcceptSocket()}
+    /// Connect a TCP Socket to a specified ip and port
+    let connectTCPSocket (ip : IPAddress) (port : int) =
+        let sock = new Sockets.Socket(Sockets.SocketType.Stream, Sockets.ProtocolType.Tcp)
+        sock.Connect(ip, port)
+        {TCPConnectedSocket = sock}
     /// Close a socket
     let closeSocket sock =
         sock.TCPConnectedSocket.Disconnect false
@@ -80,6 +84,8 @@ module internal SideEffectingIO =
 module IO =
     /// Return a value as an IO value
     let return' x = Return x
+    /// Creates an IO value from an effectful computation
+    let fromEffectful f = Delay f
     /// Monadic bind for IO values
     let rec bind x f =
         match x with
@@ -89,17 +95,23 @@ module IO =
 
     /// Builder for IO computation expressions
     type IOBuilder() =
+        /// Monadic return for IO values
         member this.Return a = return' a
+        /// Bare return for IO Values
         member this.ReturnFrom a = a
+        /// Monadic bind for IO values
         member this.Bind (x, f) = bind x f
         member this.Delay f : IO<_> = f()
         member this.Combine(f1, f2) =
             bind f1 (fun () -> f2)
+        /// The zero IO value
         member this.Zero() = return' ()
+        /// Definition of while loops within IO computation expressions
         member this.While(guard, body) =
             match guard() with
             |false -> this.Zero()
             |true -> bind (body) (fun () -> this.While(guard, body))
+        /// Definition of for loops within IO computation expressions
         member this.For (sequence : seq<_>, body) =
             use enum = sequence.GetEnumerator()
             enum.MoveNext() |> ignore
@@ -159,8 +171,8 @@ module IO =
         IOResult.withExceptionCheck (runRec) io
 
     /// Sparks off a new thread to run the IO computation passed as the first argument
-    let forkIO io = Delay(fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
-        //ForkIO (io, ForkNow, return')
+    let forkIO io = 
+        Delay(fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
 
     // ------ LOOPS ------ //
 
@@ -258,6 +270,9 @@ module TCP =
     let acceptConnection serv = IO.Delay (fun () -> SideEffectingIO.acceptSocketFromServer serv)
     /// Close a connected socket
     let closeConnection socket = IO.Delay (fun () -> SideEffectingIO.closeSocket socket)
+    /// Create a TCP connection to the supplied IP and specified port
+    let connectSocket ip port = IO.Delay (fun () -> SideEffectingIO.connectTCPSocket ip port)
+
     /// Create a handle from a connected socket
     let socketToHandle tcpSocket =
         IO.return' 
