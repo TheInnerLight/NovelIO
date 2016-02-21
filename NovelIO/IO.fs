@@ -27,9 +27,23 @@ type IO<'a> =
 
 /// Side effecting helper functions - this is where ugly things happen
 module internal SideEffectingIO =
+    /// Hidden helper functions
+    module private Helpers =
+        /// Writes a a string to the console with a supplied function
+        let hPutStrF f handle =
+            match handle.TextWriter with
+            |Some txtWrtr ->
+                f txtWrtr
+                txtWrtr.Flush()
+            |None -> raise HandleDoesNotSupportWritingException
     /// Accept a socket from a TCP Server
     let acceptSocketFromServer serv =
         {TCPConnectedSocket = serv.TCPListener.AcceptSocket()}
+    /// Connect a TCP Socket to a specified ip and port
+    let connectTCPSocket (ip : IPAddress) (port : int) =
+        let sock = new Sockets.Socket(Sockets.SocketType.Stream, Sockets.ProtocolType.Tcp)
+        sock.Connect(ip, port)
+        {TCPConnectedSocket = sock}
     /// Close a socket
     let closeSocket sock =
         sock.TCPConnectedSocket.Disconnect false
@@ -38,21 +52,28 @@ module internal SideEffectingIO =
         match handle.TextReader with
         |Some txtRdr -> txtRdr.ReadLine()
         |None -> raise HandleDoesNotSupportReadingException
+    /// Writes a string to a handle
+    let hPutStr (str : string) handle =
+        Helpers.hPutStrF (fun txtWrtr -> txtWrtr.Write str) handle
     /// Writes a string line to a handle
     let hPutStrLn (str : string) handle =
-        match handle.TextWriter with
-        |Some txtWrtr ->
-            txtWrtr.WriteLine str
-            txtWrtr.Flush()
-        |None -> raise HandleDoesNotSupportWritingException
+        Helpers.hPutStrF (fun txtWrtr -> txtWrtr.WriteLine str) handle
     /// Determines whether a supplied handle is ready to be read from
     let isHandleReadyToRead handle = 
         match handle.TextReader with
         |Some txtRdr -> txtRdr.Peek() = -1
         |None -> raise HandleDoesNotSupportReadingException
-    /// Create a file handle for a supplied file name and file mode
-    let openFileHandle (fName : Filename) mode =
-        {TextReader = new StreamReader(new FileStream(fName.PathString, mode)) :> TextReader |> Some; TextWriter = None}
+    /// Create a file handle for a supplied file name, file mode and file access
+    let openFileHandle (fName : Filename) mode access =
+        let crTxtRdr (fStream : FileStream) = new StreamReader(fStream) :> TextReader
+        let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream) :> TextWriter
+        let fStream = new FileStream(fName.PathString, mode, access)
+        let (reader, writer) =
+            match access with
+            |FileAccess.Read -> Some <| crTxtRdr fStream, None
+            |FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
+            |FileAccess.Write -> None, Some <| crTxtWrtr fStream
+        {TextReader = reader; TextWriter = writer}
     /// Start a TCP server on a supplied ip address and port
     let startTCPServer ip port =
         let listener = Sockets.TcpListener(ip, port)
@@ -63,6 +84,8 @@ module internal SideEffectingIO =
 module IO =
     /// Return a value as an IO value
     let return' x = Return x
+    /// Creates an IO value from an effectful computation
+    let fromEffectful f = Delay f
     /// Monadic bind for IO values
     let rec bind x f =
         match x with
@@ -70,18 +93,25 @@ module IO =
         |Delay (g) -> Bind (fun _ -> bind (return' <| g()) f)
         |Bind (g) -> Bind (fun _ -> bind (g ()) f)
 
+    /// Builder for IO computation expressions
     type IOBuilder() =
+        /// Monadic return for IO values
         member this.Return a = return' a
+        /// Bare return for IO Values
         member this.ReturnFrom a = a
+        /// Monadic bind for IO values
         member this.Bind (x, f) = bind x f
         member this.Delay f : IO<_> = f()
         member this.Combine(f1, f2) =
             bind f1 (fun () -> f2)
+        /// The zero IO value
         member this.Zero() = return' ()
+        /// Definition of while loops within IO computation expressions
         member this.While(guard, body) =
             match guard() with
             |false -> this.Zero()
             |true -> bind (body) (fun () -> this.While(guard, body))
+        /// Definition of for loops within IO computation expressions
         member this.For (sequence : seq<_>, body) =
             use enum = sequence.GetEnumerator()
             enum.MoveNext() |> ignore
@@ -141,8 +171,8 @@ module IO =
         IOResult.withExceptionCheck (runRec) io
 
     /// Sparks off a new thread to run the IO computation passed as the first argument
-    let forkIO io = Delay(fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
-        //ForkIO (io, ForkNow, return')
+    let forkIO io = 
+        Delay(fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
 
     // ------ LOOPS ------ //
 
@@ -201,6 +231,7 @@ module IO =
 
         /// Execute an action repeatedly until its result satisfies a predicate and return that result (discarding all others).
         let iterateUntil p x = x >>= iterateUntilM p (const' x)
+
         /// Execute an action repeatedly until its result fails to satisfy a predicate and return that result (discarding all others).
         let iterateWhile p x = iterateUntil (not << p) x
 
@@ -221,6 +252,8 @@ module Console =
     let printf fmt str = IO.Delay (fun () -> Core.Printf.printf fmt str)
     /// print a line to the console using the supplied formatter
     let printfn fmt str = IO.Delay (fun () -> Core.Printf.printfn fmt str)
+    /// read a key from the console
+    let readKey = IO.Delay (fun () -> System.Console.ReadKey())
     /// read a line from the console
     let readLine = IO.Delay (fun () -> System.Console.ReadLine())
 
@@ -237,6 +270,9 @@ module TCP =
     let acceptConnection serv = IO.Delay (fun () -> SideEffectingIO.acceptSocketFromServer serv)
     /// Close a connected socket
     let closeConnection socket = IO.Delay (fun () -> SideEffectingIO.closeSocket socket)
+    /// Create a TCP connection to the supplied IP and specified port
+    let connectSocket ip port = IO.Delay (fun () -> SideEffectingIO.connectTCPSocket ip port)
+
     /// Create a handle from a connected socket
     let socketToHandle tcpSocket =
         IO.return' 
