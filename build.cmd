@@ -1,5 +1,18 @@
-@echo on
+@echo off
+cls
 
-set APPVEYOR_CI=1
+.paket\paket.bootstrapper.exe
+if errorlevel 1 (
+  exit /b %errorlevel%
+)
 
-"packages\FAKE.4.10.3\tools\Fake.exe" Build.fsx
+.paket\paket.exe restore
+if errorlevel 1 (
+  exit /b %errorlevel%
+)
+
+IF NOT EXIST build.fsx (
+  .paket\paket.exe update
+  packages\build\FAKE\tools\FAKE.exe init.fsx
+)
+packages\build\FAKE\tools\FAKE.exe build.fsx %*

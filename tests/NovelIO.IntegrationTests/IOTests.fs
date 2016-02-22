@@ -21,7 +21,7 @@ open NovelFS.NovelIO.BinaryParser
 open FsCheck
 open FsCheck.Xunit
 
-type ``IO Integration Tests`` =
+type ``IO Integration Tests``() =
 
     [<Property>]
     static member ``Read All Bytes from file`` (bytes : byte[]) =

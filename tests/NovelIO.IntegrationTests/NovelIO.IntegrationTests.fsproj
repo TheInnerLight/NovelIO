@@ -65,10 +65,7 @@
       <HintPath>..\packages\FsCheck.Xunit.2.2.4\lib\net45\FsCheck.Xunit.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.3.1.2.5\lib\net40\FSharp.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -82,7 +79,9 @@
     <Reference Include="xunit.execution.desktop">
       <HintPath>..\packages\xunit.extensibility.execution.2.1.0\lib\net45\xunit.execution.desktop.dll</HintPath>
     </Reference>
-    <ProjectReference Include="..\NovelIO\NovelIO.fsproj">
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NovelIO\NovelIO.fsproj">
       <Name>NovelIO</Name>
       <Project>{04ab84ae-11b0-4a6f-b509-bd9118e950ac}</Project>
       <Private>True</Private>
