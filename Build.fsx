@@ -4,6 +4,7 @@
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
 open Fake
+open Fake.Testing
 open Fake.Git
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
@@ -144,11 +145,9 @@ Target "Build" (fun _ ->
 
 Target "RunTests" (fun _ ->
     !! testAssemblies
-    |> NUnit (fun p ->
-        { p with
-            DisableShadowCopy = true
-            TimeOut = TimeSpan.FromMinutes 20.
-            OutputFile = "TestResults.xml" })
+    |> xUnit (fun p -> 
+            {p with 
+                 ToolPath = "packages/xunit.runner.console/tools/xunit.console.exe"})
 )
 
 #if MONO

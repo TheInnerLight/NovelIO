@@ -1,5 +1,7 @@
 source https://nuget.org/api/v2
 
+nuget xunit.runner.console
+
 group Build
   source https://nuget.org/api/v2
   
@@ -12,5 +14,6 @@ group Build
 group Test
   source https://nuget.org/api/v2
   
-  nuget NUnit ~> 2
-  nuget NUnit.Runners ~> 2
+  nuget FsCheck
+  nuget FsCheck.Xunit
+  nuget xunit
