@@ -3,17 +3,3 @@
 // it to define helpers that you do not want to show in the documentation.
 #I "../../bin"
 
-(**
-Introducing your project
-========================
-
-Say more
-
-*)
-#r "NovelIO.dll"
-open NovelIO
-
-Library.hello 0
-(**
-Some more info
-*)

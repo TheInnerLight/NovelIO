@@ -55,20 +55,20 @@ and IOErrorResult =
     /// IO failure due to an action being attempted on a stream which does not support it
     |StreamStateUnsupported of string
 
-type IOStream = interface end
-
-type IOFormat<'a,'b when 'b :> IOStream> = 'b -> 'a
-
+/// Represents a filename of a valid format
 type Filename =
     private |Filename of string
 
+    /// The raw string representation of the filename
     member this.PathString = match this with Filename str -> str
 
+    /// Attempts to create a valid filename from a string, returning Some Filename if successful or None otherwise
     static member TryCreateFromString (path : string) =
         match path.IndexOfAny(Path.GetInvalidFileNameChars()) = -1 with
         |true -> Some <| Filename(path)
         |false -> None
 
+    /// Attempts to create a valid filename from a string, returning a Filename if successful or throwing an exception otherwise
     static member CreateFromString path =
         match Filename.TryCreateFromString path with
         |Some fname -> fname
@@ -81,13 +81,16 @@ module PathDiscriminators =
         |Some fname -> ValidFilename fname
         |None -> InvalidFilename
 
+/// General functions of wide applicability
 [<AutoOpen>]
 module General =
     let const' x _ = x
     let flip f a b = f b a
 
 type Handle = private {TextReader : TextReader option; TextWriter : TextWriter option}
+/// A TCP Server
 type TCPServer = private {TCPListener : Sockets.TcpListener}
+/// A connected TCP Socket
 type TCPConnectedSocket = private {TCPConnectedSocket : System.Net.Sockets.Socket}
 
 module internal IOResult =

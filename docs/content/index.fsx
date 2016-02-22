@@ -7,61 +7,14 @@
 NovelIO
 ======================
 
-Documentation
+Introduction
 
-<div class="row">
-  <div class="span1"></div>
-  <div class="span6">
-    <div class="well well-small" id="nuget">
-      The NovelIO library can be <a href="https://nuget.org/packages/NovelIO">installed from NuGet</a>:
-      <pre>PM> Install-Package NovelIO</pre>
-    </div>
-  </div>
-  <div class="span1"></div>
-</div>
+NovelIO is a library designed to bring the explicit safety and robustness of Haskell's IO monad to the .NET framework. The result is a purely functional approach to describing I/O operations whereby the evaluation of functions do not produce side-effects, rather they describe sequenced operations which can later be evaluated.
 
-Example
--------
+Much like in Haskell, we introduce the `IO<'a>` type which represents some action that, when performed successfully, returns some result `'a.`
 
-This example demonstrates using a function defined in this sample library.
+It is possible to sequence I/O operations using the io computation expression, this results in syntax very similar to the do notation found in Haskell.
 
 *)
-#r "NovelIO.dll"
-open NovelIO
 
-printfn "hello = %i" <| Library.hello 0
 
-(**
-Some more info
-
-Samples & documentation
------------------------
-
-The library comes with comprehensible documentation. 
-It can include tutorials automatically generated from `*.fsx` files in [the content folder][content]. 
-The API reference is automatically generated from Markdown comments in the library implementation.
-
- * [Tutorial](tutorial.html) contains a further explanation of this sample library.
-
- * [API Reference](reference/index.html) contains automatically generated documentation for all types, modules
-   and functions in the library. This includes additional brief samples on using most of the
-   functions.
- 
-Contributing and copyright
---------------------------
-
-The project is hosted on [GitHub][gh] where you can [report issues][issues], fork 
-the project and submit pull requests. If you're adding a new public API, please also 
-consider adding [samples][content] that can be turned into a documentation. You might
-also want to read the [library design notes][readme] to understand how it works.
-
-The library is available under Public Domain license, which allows modification and 
-redistribution for both commercial and non-commercial purposes. For more information see the 
-[License file][license] in the GitHub repository. 
-
-  [content]: https://github.com/fsprojects/NovelIO/tree/master/docs/content
-  [gh]: https://github.com/fsprojects/NovelIO
-  [issues]: https://github.com/fsprojects/NovelIO/issues
-  [readme]: https://github.com/fsprojects/NovelIO/blob/master/README.md
-  [license]: https://github.com/fsprojects/NovelIO/blob/master/LICENSE.txt
-*)

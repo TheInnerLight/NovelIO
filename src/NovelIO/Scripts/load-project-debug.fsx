@@ -3,6 +3,5 @@
 #load "load-references-debug.fsx"
 #load "../BinaryParser.fs"
       "../Definitions.fs"
-      "../IOFormats.fs"
       "../IO.fs"
       "../File.fs"

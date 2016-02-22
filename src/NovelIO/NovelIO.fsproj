@@ -52,7 +52,6 @@
   <ItemGroup>
     <Compile Include="BinaryParser.fs" />
     <Compile Include="Definitions.fs" />
-    <Compile Include="IOFormats.fs" />
     <Compile Include="IO.fs" />
     <Compile Include="File.fs" />
     <None Include="Scripts\load-references.fsx" />
