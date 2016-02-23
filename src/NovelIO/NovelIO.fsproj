@@ -54,6 +54,7 @@
     <Compile Include="Definitions.fs" />
     <Compile Include="IO.fs" />
     <Compile Include="File.fs" />
+    <Compile Include="TCP.fs" />
     <None Include="Scripts\load-references.fsx" />
     <None Include="Scripts\load-project.fsx" />
     <None Include="Scripts\load-references-debug.fsx" />

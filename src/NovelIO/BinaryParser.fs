@@ -16,37 +16,41 @@
 
 namespace NovelFS.NovelIO.BinaryParser
 
-type BinaryParser<'a> =
-    private
-    |Return of 'a
-    |ReadByte of (byte -> BinaryParser<'a>)
-    |ReadInt16 of (int16 -> BinaryParser<'a>)
-    |ReadInt32 of (int -> BinaryParser<'a>)
-    |ReadInt64 of (int64 -> BinaryParser<'a>)
-    |ReadFloat32 of (float32 -> BinaryParser<'a>)
-    |ReadFloat64 of (float -> BinaryParser<'a>)
-
-exception ParseExceededArrayLengthException
-
+/// A binary parse result representing success or failure of the parsing operation
 type BinaryParseResult<'a> =
+    /// Binary parsing was successful with a result of type 'a
     |ParseSuccess of 'a
+    /// Binary parsing failed with an error
     |ParseFailure of ParseError
+/// Represents failure modes of the binary parser
 and ParseError =
-    |ArrayLengthInsufficient
+    /// The length of the array was insufficient for the requested parse operations
+    |ArrayLengthInsufficient of int * int
 
+/// A binary parser that parses some result 'a
+type BinaryParser<'s,'a> =
+    private
+    |RunState of ('s -> 'a * 's)
+
+/// The attempted binary parsing exceeded the length of the supplied array
+exception ParseExceededArrayLengthException of int * int
+
+/// Represents the current state of a binary parser of an in memory array
+type BinaryParserState = {Raw : byte array; Position : int}
+
+/// Binary Parsing functions
 module BinaryParser =
-    /// return for Binary Parsers
-    let return' x = Return x
-    /// monadic bind for Binary Parsers
-    let rec bind x f =
+    let private runState (s : 'state) x =
         match x with
-        |Return a -> f a
-        |ReadByte (g) -> ReadByte (fun a -> bind (g a) f)
-        |ReadInt16 (g) -> ReadInt16 (fun a -> bind (g a) f)
-        |ReadInt32 (g) -> ReadInt32 (fun a -> bind (g a) f)
-        |ReadInt64 (g) -> ReadInt64 (fun a -> bind (g a) f)
-        |ReadFloat32 (g) -> ReadFloat32 (fun a -> bind (g a) f)
-        |ReadFloat64 (g) -> ReadFloat64 (fun a -> bind (g a) f)
+        |RunState g -> g s
+    /// Monadic return for Binary Parsers
+    let return' x : BinaryParser<'state,'a> = RunState (fun s -> x, s)
+    /// Monadic bind for Binary Parsers
+    let bind (x : BinaryParser<'state,'a>) (f : 'a -> BinaryParser<'state,'b>) = 
+        match x with
+        |RunState (g) -> RunState (fun s -> 
+            let a, s' = runState s x
+            runState s' (f a) )
     /// Monadic bind operator for Binary Parsers
     let (>>=) x f = bind x f
     /// Map function for Binary Parsers
@@ -96,55 +100,69 @@ module BinaryParser =
     let zip4 x1 x2 x3 x4 =
         lift4 (fun a b c d -> a, b, c, d) x1 x2 x3 x4
 
-    let private checkConversionException f array =
+    let private checkConversionException f pos array =
         try
             f array
         with
-            | :? System.ArgumentOutOfRangeException as aoex -> raise <| ParseExceededArrayLengthException
-            | :? System.ArgumentException as aex -> raise <| ParseExceededArrayLengthException
+            | :? System.ArgumentOutOfRangeException as aoex -> raise <| ParseExceededArrayLengthException(pos, Array.length array)
+            | :? System.ArgumentException as aex -> raise <| ParseExceededArrayLengthException(pos, Array.length array)
 
-    let private convInt16 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt16(arr, pos)) array
-    let private convInt32 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt32(arr, pos)) array
-    let private convInt64 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt64(arr, pos)) array
-    let private convFloat32 pos array = checkConversionException (fun arr -> System.BitConverter.ToSingle(arr, pos)) array
-    let private convFloat64 pos array = checkConversionException (fun arr -> System.BitConverter.ToDouble(arr, pos)) array
+    let private convInt16 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt16(arr, pos)) pos array
+    let private convInt32 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt32(arr, pos)) pos array
+    let private convInt64 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt64(arr, pos)) pos array
+    let private convFloat32 pos array = checkConversionException (fun arr -> System.BitConverter.ToSingle(arr, pos)) pos array
+    let private convFloat64 pos array = checkConversionException (fun arr -> System.BitConverter.ToDouble(arr, pos)) pos array
 
     /// Run binary parser
     let run array x =
-        let rec runRec (array : byte[]) pos x =
-            match x with
-            |Return b -> b
-            |ReadByte (g) -> runRec array (pos+sizeof<byte>) (g array.[pos]) 
-            |ReadInt16 (g) -> runRec array (pos+sizeof<int16>) (g <| convInt16 pos array)
-            |ReadInt32 (g) -> runRec array (pos+sizeof<int32>) (g <| convInt32 pos array)
-            |ReadInt64 (g) -> runRec array (pos+sizeof<int64>) (g <| convInt64 pos array)
-            |ReadFloat32 (g) -> runRec array (pos+sizeof<float32>) (g <| convFloat32 pos array)
-            |ReadFloat64 (g) -> runRec array (pos+sizeof<float>) (g <| convFloat64 pos array)
         try
-            ParseSuccess <| runRec array 0 x
+            let initialState = {Raw = array; Position = 0}
+            ParseSuccess << fst <| runState initialState x
         with 
-            | ParseExceededArrayLengthException -> ParseFailure <| ArrayLengthInsufficient
+            | ParseExceededArrayLengthException (pos, arrayLen) -> ParseFailure <| ArrayLengthInsufficient(pos, arrayLen)
             
 
     // Binary Parsers
 
     /// Binary Parser for a byte
-    let parseByte = ReadByte (return')
+    let parseByte = RunState (fun state ->
+        let pos = state.Position
+        let result = Array.item (pos) state.Raw
+        result, {state with Position = pos + sizeof<byte>})
     /// Binary Parser for an int 16
-    let parseInt16 = ReadInt16 (return')
+    let parseInt16 = RunState (fun state ->
+        let pos = state.Position
+        let result = convInt16 pos (state.Raw)
+        result, {state with Position = pos + sizeof<int16>})
     /// Binary Parser for an int 32
-    let parseInt32 = ReadInt32 (return')
+    let parseInt32 = RunState (fun state ->
+        let pos = state.Position
+        let result = convInt32 pos (state.Raw)
+        result, {state with Position = pos + sizeof<int32>})
     /// Binary Parser for an int 64
-    let parseInt64 = ReadInt64 (return')
+    let parseInt64 = RunState (fun state ->
+        let pos = state.Position
+        let result = convInt64 pos (state.Raw)
+        result, {state with Position = pos + sizeof<int64>})
     /// Binary Parser for a float 64
-    let parseFloat64 = ReadFloat64 (return')
+    let parseFloat64 = RunState (fun state ->
+        let pos = state.Position
+        let result = convFloat64 pos (state.Raw)
+        result, {state with Position = pos + sizeof<float>})
     /// Binary Parser for a float 32
-    let parseFloat32 = ReadFloat32 (return')
+    let parseFloat32 = RunState (fun state ->
+        let pos = state.Position
+        let result = convFloat32 pos (state.Raw)
+        result, {state with Position = pos + sizeof<float32>})
 
 open BinaryParser
 
+/// A builder for binary parsing computation expressions
 type BinaryParserBuilder() =
-    member this.Return x = return' x
-    member this.ReturnFrom x = x
-    member this.Bind (x,f) = x >>= f
+    /// Monadic return for binary parsers
+    member this.Return x : BinaryParser<'state,'a> = BinaryParser.return' x
+    /// Bare return for binary parsers
+    member this.ReturnFrom x : BinaryParser<'state,'a> = x
+    /// Monadic bind for binary parsers
+    member this.Bind (x : BinaryParser<'state,'a> , f : 'a -> BinaryParser<'state,'b>) = x >>= f
         

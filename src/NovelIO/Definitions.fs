@@ -19,7 +19,10 @@ namespace NovelFS.NovelIO
 open System.IO
 open System.Net
 
+/// Exception that occurs when attempting to write to a Handle that does not support writing
 exception HandleDoesNotSupportWritingException
+
+/// Exception that occurs when attempt to read from a Handle that does not support reading
 exception HandleDoesNotSupportReadingException
 
 /// Represents the result of an IO operation
@@ -74,6 +77,7 @@ type Filename =
         |Some fname -> fname
         |None -> invalidArg "path" "Path Invalid"
 
+/// Provides patterns for matching against valid and invalid file names
 [<AutoOpen>]
 module PathDiscriminators =
     let (|ValidFilename|InvalidFilename|) (path : string) =
@@ -87,9 +91,12 @@ module General =
     let const' x _ = x
     let flip f a b = f b a
 
+/// A Handle that may support text being read from it and written to it
 type Handle = private {TextReader : TextReader option; TextWriter : TextWriter option}
+
 /// A TCP Server
 type TCPServer = private {TCPListener : Sockets.TcpListener}
+
 /// A connected TCP Socket
 type TCPConnectedSocket = private {TCPConnectedSocket : System.Net.Sockets.Socket}
 

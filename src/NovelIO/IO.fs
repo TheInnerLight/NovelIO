@@ -19,6 +19,7 @@ namespace NovelFS.NovelIO
 open System.IO
 open System.Net
 
+/// A value of type IO<'a> is a computation which, when performed, does some I/O before returning a value of type 'a.
 type IO<'a> = 
     private 
     |Return of 'a
@@ -257,30 +258,14 @@ module Console =
     /// read a line from the console
     let readLine = IO.Delay (fun () -> System.Console.ReadLine())
 
+/// Provides purely functional Date/Time functions
 module DateTime =
     /// Get the current local time
     let localNow = IO.Delay (fun () -> System.DateTime.Now)
     /// Get the current UTC time
     let utcNow = IO.Delay (fun () -> System.DateTime.UtcNow)
 
-module TCP =
-    /// Create a TCP server at the specfied IP on the specified port
-    let createServer ip port = IO.Delay (fun () -> SideEffectingIO.startTCPServer ip port)
-    /// Accept a connection from the supplied TCP server
-    let acceptConnection serv = IO.Delay (fun () -> SideEffectingIO.acceptSocketFromServer serv)
-    /// Close a connected socket
-    let closeConnection socket = IO.Delay (fun () -> SideEffectingIO.closeSocket socket)
-    /// Create a TCP connection to the supplied IP and specified port
-    let connectSocket ip port = IO.Delay (fun () -> SideEffectingIO.connectTCPSocket ip port)
-
-    /// Create a handle from a connected socket
-    let socketToHandle tcpSocket =
-        IO.return' 
-            {TextReader = new StreamReader(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) :> TextReader |> Some;
-             TextWriter = new StreamWriter(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) :> TextWriter |> Some}
-
-
-
+/// Module to provide the definition of the io computation expression
 [<AutoOpen>]
 module IOBuilders =
     let io = IO.IOBuilder()
