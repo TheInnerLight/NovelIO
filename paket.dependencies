@@ -1,0 +1,37 @@
+source https://nuget.org/api/v2
+
+nuget xunit.runner.console
+nuget FsCheck
+nuget FsCheck.Xunit
+nuget xunit
+nuget xunit.abstractions
+nuget xunit.assert
+nuget xunit.core
+nuget xunit.extensibility.execution
+
+group Build
+  source https://nuget.org/api/v2
+  
+  nuget SourceLink.Fake
+  nuget FAKE
+  nuget FSharp.Formatting
+  nuget FsCheck
+  nuget FsCheck.Xunit
+  nuget xunit
+  nuget xunit.abstractions
+  nuget xunit.assert
+  nuget xunit.core
+  nuget xunit.extensibility.execution
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+group Test
+  source https://nuget.org/api/v2
+  
+  nuget FsCheck
+  nuget FsCheck.Xunit
+  nuget xunit
+  nuget xunit.abstractions
+  nuget xunit.assert
+  nuget xunit.core
+  nuget xunit.extensibility.execution
