@@ -61,7 +61,8 @@
       <HintPath>..\..\packages\FsCheck\lib\net45\FsCheck.dll</HintPath>
     </Reference>
     <Reference Include="FsCheck.Xunit">
-      <HintPath>..\..\packages\FsCheck.Xunit\lib\net45\FsCheck.Xunit.dll</HintPath>
+      <HintPath>..\..\packages\FsCheck.Xunit.2.2.4\lib\net45\FsCheck.Xunit.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="mscorlib" />
@@ -71,8 +72,12 @@
     <Reference Include="xunit.abstractions">
       <HintPath>..\..\packages\xunit.abstractions\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.abstractions.dll</HintPath>
     </Reference>
+    <Reference Include="xunit.assert">
+      <HintPath>..\..\packages\xunit.assert\lib\dotnet\xunit.assert.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="xunit.core">
-      <HintPath>..\..\packages\build\xunit.extensibility.core\lib\portable-net45+win8+wp8+wpa81\xunit.core.dll</HintPath>
+      <HintPath>..\..\packages\xunit.extensibility.core\lib\dotnet\xunit.core.dll</HintPath>
     </Reference>
     <Reference Include="xunit.execution.desktop">
       <HintPath>..\..\packages\xunit.core\build\_desktop\xunit.execution.desktop.dll</HintPath>
