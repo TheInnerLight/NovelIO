@@ -31,6 +31,7 @@ type ``Binary Parser Tests`` =
             |ParseSuccess byte -> byte
             |ParseFailure err -> failwith "failed"
         result = byte
+
     [<Property>]
     static member ``Parse int16 from array of bytes`` (i16 : int16) =
         let bytes = System.BitConverter.GetBytes i16
@@ -40,6 +41,7 @@ type ``Binary Parser Tests`` =
             |ParseSuccess byte -> byte
             |ParseFailure err -> failwith "failed"
         result = i16
+
     [<Property>]
     static member ``Parse int32 from array of bytes`` (i32 : int32) =
         let bytes = System.BitConverter.GetBytes i32
@@ -49,6 +51,7 @@ type ``Binary Parser Tests`` =
             |ParseSuccess byte -> byte
             |ParseFailure err -> failwith "failed"
         result = i32
+
     [<Property>]
     static member ``Parse int64 from array of bytes`` (i64 : int64) =
         let bytes = System.BitConverter.GetBytes i64
@@ -58,6 +61,7 @@ type ``Binary Parser Tests`` =
             |ParseSuccess byte -> byte
             |ParseFailure err -> failwith "failed"
         result = i64
+
     [<Property>]
     static member ``Parse float64 from array of bytes`` (flt : float) =
         let bytes = System.BitConverter.GetBytes flt
@@ -69,6 +73,7 @@ type ``Binary Parser Tests`` =
         match result with
         |x when System.Double.IsNaN(x) -> System.Double.IsNaN(flt)
         |_ -> result = flt
+
     [<Property>]
     static member ``Parse float32 from array of bytes`` (flt : float32) =
         let bytes = System.BitConverter.GetBytes flt
@@ -80,6 +85,17 @@ type ``Binary Parser Tests`` =
         match result with
         |x when System.Single.IsNaN(x) -> System.Single.IsNaN(flt)
         |_ -> result = flt
+
+    [<Property>]
+    static member ``Parse too long value from array of one byte creates ArrayLengthInsufficient error`` (byte : byte) =
+        let bytes = [|byte|]
+        let bParser = BinaryParser.parseInt16
+        match BinaryParser.run bytes bParser with
+        |ParseSuccess byte -> failwith "did not fail"
+        |ParseFailure err -> 
+            match err with
+            |ArrayLengthInsufficient (pos, len) -> true
+            |_ -> failwith "incorrect error"
 //    [<Property>]
 //    static member ``readCharfrom array of one char`` (character : char) =
 //        let bytes = System.BitConverter.GetBytes(character)

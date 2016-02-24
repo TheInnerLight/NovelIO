@@ -28,6 +28,37 @@ type ``File Unit Tests``() =
         |> Seq.find (not << System.IO.File.Exists)
 
     [<Property>]
+    static member ``Function: assumeValidFilename returns a valid filename for a valid file path``() =
+        let fnameStr = System.IO.Path.GetRandomFileName()
+        let fname = File.assumeValidFilename fnameStr // throws exception in failure case
+        true
+
+    [<Property>]
+    static member ``Function: assumeValidFilename throws exception for an invalid file path``() =
+        let invStr = string << Array.head <| System.IO.Path.GetInvalidFileNameChars()
+        let fnameStr = System.IO.Path.GetRandomFileName() + invStr
+        try
+            let fname = File.assumeValidFilename fnameStr // throws exception in failure case
+            failwith "path was not expected to be valid"
+        with
+            | :? System.ArgumentException as aex -> true
+
+    [<Property>]
+    static member ``ValidFilename path disciminator matches for a valid file path``() =
+        let fnameStr = System.IO.Path.GetRandomFileName()
+        match fnameStr with
+        |ValidFilename fname -> true
+        |InvalidFilename -> failwith "path was expected not be invalid"
+
+    [<Property>]
+    static member ``InvalidFilename path disciminator matches for a invalid file path``() =
+        let invStr = string << Array.head <| System.IO.Path.GetInvalidFileNameChars()
+        let fnameStr = System.IO.Path.GetRandomFileName() + invStr
+        match fnameStr with
+        |ValidFilename fname -> failwith "path was invalid"
+        |InvalidFilename -> true
+
+    [<Property>]
     static member ``Function: getPathString returns contained path string``() =
         let fnameStr = System.IO.Path.GetRandomFileName()
         let fname = File.assumeValidFilename fnameStr
@@ -79,6 +110,54 @@ type ``File Unit Tests``() =
         let fname = File.assumeValidFilename fnameStr
         match IO.run <| File.lastWriteTimeUTC fname with
         |IOSuccess dt -> dt = System.IO.File.GetLastWriteTimeUtc fnameStr
+        |IOError err -> failwith "error"
+
+    [<Property>]
+    static member ``Function: setCreationTime sets correct date/time for test file`` (dt : System.DateTime) =
+        let fnameStr = """creationtimetestwriting.txt"""
+        let fname = File.assumeValidFilename fnameStr
+        match IO.run <| File.setCreationTime dt fname with
+        |IOSuccess _ -> dt = System.IO.File.GetCreationTime fnameStr
+        |IOError err -> failwith "error"
+
+    [<Property>]
+    static member ``Function: setCreationTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
+        let fnameStr = """creationtimetestwriting.txt"""
+        let fname = File.assumeValidFilename fnameStr
+        match IO.run <| File.setCreationTimeUTC dt fname with
+        |IOSuccess _ -> dt = System.IO.File.GetCreationTimeUtc fnameStr
+        |IOError err -> failwith "error"
+
+    [<Property>]
+    static member ``Function: setLastAccessTime sets correct date/time for test file`` (dt : System.DateTime) =
+        let fnameStr = """creationtimetestwriting.txt"""
+        let fname = File.assumeValidFilename fnameStr
+        match IO.run <| File.setLastAccessTime dt fname with
+        |IOSuccess _ -> dt = System.IO.File.GetLastAccessTime fnameStr
+        |IOError err -> failwith "error"
+
+    [<Property>]
+    static member ``Function: setLastAccessTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
+        let fnameStr = """creationtimetestwriting.txt"""
+        let fname = File.assumeValidFilename fnameStr
+        match IO.run <| File.setLastAccessTimeUTC dt fname with
+        |IOSuccess _ -> dt = System.IO.File.GetLastAccessTimeUtc fnameStr
+        |IOError err -> failwith "error"
+
+    [<Property>]
+    static member ``Function: setLastWriteTime sets correct date/time for test file`` (dt : System.DateTime) =
+        let fnameStr = """creationtimetestwriting.txt"""
+        let fname = File.assumeValidFilename fnameStr
+        match IO.run <| File.setLastWriteTime dt fname with
+        |IOSuccess _ -> dt = System.IO.File.GetLastWriteTime fnameStr
+        |IOError err -> failwith "error"
+
+    [<Property>]
+    static member ``Function: setLastWriteTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
+        let fnameStr = """creationtimetestwriting.txt"""
+        let fname = File.assumeValidFilename fnameStr
+        match IO.run <| File.setLastWriteTimeUTC dt fname with
+        |IOSuccess _ -> dt = System.IO.File.GetLastWriteTimeUtc fnameStr
         |IOError err -> failwith "error"
 
     [<Property>]
