@@ -23,7 +23,7 @@ open FsCheck.Xunit
 
 type ``TCP Integration Tests``() =
     [<Property>]
-    static member ``Function: createServer creates server on correct port which can be connected to be TCP Client`` () =
+    static member ``Function: createServer creates server on free port which can be connected to be TCP Client`` () =
         let res = IO.run <| io{
             let! server = TCP.createServerOnFreePort (IPAddress.Any)
             let! port = TCP.getServerPort server
@@ -34,4 +34,18 @@ type ``TCP Integration Tests``() =
         |IOSuccess port -> 
             use client = new System.Net.Sockets.TcpClient()
             client.Connect("127.0.0.1", port)
+            true
+        |IOError err -> failwith "An error occured"
+
+    [<Property>]
+    static member ``Function: connectSocket connects to created TCP Server`` () =
+        let res = IO.run <| io{
+            let! server = TCP.createServerOnFreePort (IPAddress.Any)
+            let! port = TCP.getServerPort server
+            do! IO.forkIO <| TCP.acceptConnection server // fork the client acceptance to new thread so we can return the port immediately
+            let! sock = TCP.connectSocket (IPAddress.Loopback) port
+            return ()
+          }
+        match res with
+        |IOSuccess _ -> true
         |IOError err -> failwith "An error occured"

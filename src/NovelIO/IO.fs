@@ -23,7 +23,6 @@ open System.Net
 type IO<'a> = 
     private 
     |Return of 'a
-    |Delay of (unit -> 'a)
     |Bind of (unit -> IO<'a>)
 
 /// Side effecting helper functions - this is where ugly things happen
@@ -86,23 +85,22 @@ module IO =
     /// Return a value as an IO value
     let return' x = Return x
     /// Creates an IO value from an effectful computation
-    let fromEffectful f = Delay f
+    let fromEffectful f = Bind (return' << f)
     /// Monadic bind for IO values
     let rec bind x f =
         match x with
         |Return a -> f a
-        |Delay (g) -> Bind (fun _ -> bind (return' <| g()) f)
         |Bind (g) -> Bind (fun _ -> bind (g ()) f)
 
     /// Builder for IO computation expressions
     type IOBuilder() =
         /// Monadic return for IO values
-        member this.Return a = return' a
+        member this.Return a : IO<'a> = return' a
         /// Bare return for IO Values
-        member this.ReturnFrom a = a
+        member this.ReturnFrom a : IO<'a> = a
         /// Monadic bind for IO values
-        member this.Bind (x, f) = bind x f
-        member this.Delay f : IO<_> = f()
+        member this.Bind (x : IO<'a>, f : 'a -> IO<'b>) = bind x f
+        member this.Delay f : IO<'a> = f()
         member this.Combine(f1, f2) =
             bind f1 (fun () -> f2)
         /// The zero IO value
@@ -153,11 +151,11 @@ module IO =
     // ----- GENERAL ----- //
             
     /// Reads a line from the file or channel
-    let hGetLine handle = Delay (fun _ -> SideEffectingIO.hGetLine handle)
+    let hGetLine handle = fromEffectful (fun _ -> SideEffectingIO.hGetLine handle)
     /// Determines if the handle has data available
-    let hIsReady handle = Delay (fun _ -> SideEffectingIO.isHandleReadyToRead handle)
+    let hIsReady handle = fromEffectful (fun _ -> SideEffectingIO.isHandleReadyToRead handle)
     /// Writes a line to the final or channel
-    let hPutStrLn handle str = Delay (fun _ -> SideEffectingIO.hPutStrLn str handle)
+    let hPutStrLn handle str = fromEffectful (fun _ -> SideEffectingIO.hPutStrLn str handle)
 
     // ------- RUN ------- //
 
@@ -166,14 +164,13 @@ module IO =
         let rec runRec (io : IO<'a>) =
             match io with
             |Return a -> a            
-            |Delay a -> a()
             |Bind (a) -> runRec <| a()
         // run recursively and handle exceptions in IO
         IOResult.withExceptionCheck (runRec) io
 
     /// Sparks off a new thread to run the IO computation passed as the first argument
     let forkIO io = 
-        Delay(fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
+        fromEffectful (fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
 
     // ------ LOOPS ------ //
 
@@ -250,20 +247,20 @@ module IO =
 /// Console functions
 module Console =
     /// print a string to the console using the supplied formatter
-    let printf fmt str = IO.Delay (fun () -> Core.Printf.printf fmt str)
+    let printf fmt str = IO.fromEffectful (fun () -> Core.Printf.printf fmt str)
     /// print a line to the console using the supplied formatter
-    let printfn fmt str = IO.Delay (fun () -> Core.Printf.printfn fmt str)
+    let printfn fmt str = IO.fromEffectful (fun () -> Core.Printf.printfn fmt str)
     /// read a key from the console
-    let readKey = IO.Delay (fun () -> System.Console.ReadKey())
+    let readKey = IO.fromEffectful (fun () -> System.Console.ReadKey())
     /// read a line from the console
-    let readLine = IO.Delay (fun () -> System.Console.ReadLine())
+    let readLine = IO.fromEffectful (fun () -> System.Console.ReadLine())
 
 /// Provides purely functional Date/Time functions
 module DateTime =
     /// Get the current local time
-    let localNow = IO.Delay (fun () -> System.DateTime.Now)
+    let localNow = IO.fromEffectful (fun () -> System.DateTime.Now)
     /// Get the current UTC time
-    let utcNow = IO.Delay (fun () -> System.DateTime.UtcNow)
+    let utcNow = IO.fromEffectful (fun () -> System.DateTime.UtcNow)
 
 /// Module to provide the definition of the io computation expression
 [<AutoOpen>]
