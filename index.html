@@ -80,7 +80,7 @@
         <span onmouseout="hideTip(event, 'fs26', 36)" onmouseover="showTip(event, 'fs26', 36)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%f</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs25', 37)" onmouseover="showTip(event, 'fs25', 37)" class="i">fLine</span>
 </code></pre>
 <p>This code appears to be relatively safe - we have a comforting <code>try</code>/<code>with</code> block around a function that may fail at runtime.  This code, however, does not function in the way it immediately appears to.</p>
-<p>In reality, the map is not actually evaluated until <code>Seq.iter</code> is called, this means that despite the presence of the <code>try</code>/<code>with</code> block, our program can still crash at runtime.</p>
+<p>In reality, the map is not actually evaluated until we enumerate the sequence in the <code>for</code> loop, this means that any exception, if triggered, will actually be thrown outside the <code>try</code>/<code>with</code> block causing the program to crash.</p>
 <p>Consider an alternative using NovelIO's expression of IO:</p>
 <pre class="fssnip highlighted"><code lang="fsharp"><span class="k">module</span> <span onmouseout="hideTip(event, 'fs27', 38)" onmouseover="showTip(event, 'fs27', 38)" class="t">Example4</span> <span class="o">=</span>
 
