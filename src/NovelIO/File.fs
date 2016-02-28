@@ -18,6 +18,19 @@ namespace NovelFS.NovelIO
 
 open System.IO
 
+/// Side effecting File IO functions used to implement the pure versions
+module private SideEffectingFileIO =
+    /// Gets the bare string from a filename
+    let toFileInfo (filename : Filename) = FileInfo(filename.PathString)
+
+    /// Returns true if the file is readonly, false otherwise
+    let isFileReadOnly file = (toFileInfo file).IsReadOnly
+
+    /// Returns the filesize in bytes
+    let fileSize (file) = 
+        (toFileInfo file).Length
+        |> LanguagePrimitives.Int64WithMeasure<Bytes>
+
 /// Provides functions relating to the creating, copying, deleting, moving, opening and reading of files
 module File =
     /// Turns a string into a filename by assuming the supplied string is a valid filename.  
@@ -47,8 +60,12 @@ module File =
         IO.fromEffectful (fun _ -> File.Delete <| getPathString filename)
 
     /// Determines whether or not the specified file exists
-    let fileExists filename = 
+    let exists filename = 
         IO.fromEffectful (fun _ -> File.Exists <| getPathString filename)
+
+    /// Determines whether or not the specified file is readonly
+    let isReadOnly filename =
+        IO.fromEffectful (fun _ -> SideEffectingFileIO.isFileReadOnly filename)
 
     /// Determines the date / time at which the specified file was last accessed
     let lastAccessTime filename = 
@@ -109,3 +126,7 @@ module File =
     /// Sets the UTC date / time at which the specified file was last written
     let setLastWriteTimeUTC datetime filename = 
         IO.fromEffectful (fun _ -> File.SetLastWriteTimeUtc(getPathString filename, datetime))
+
+    /// Determines the size of the specified file in bytes
+    let size filename =
+        IO.fromEffectful (fun _ -> SideEffectingFileIO.fileSize filename)

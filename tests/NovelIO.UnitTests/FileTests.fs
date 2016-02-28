@@ -164,7 +164,7 @@ type ``File Unit Tests``() =
     static member ``File that does not exist is not found``() =
         let fnameStr = firstRandomFileThatDoesNotExist()
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.fileExists fname with
+        match IO.run <| File.exists fname with
         |IOSuccess b -> b = false
         |IOError err -> failwith "error"
 
@@ -174,7 +174,7 @@ type ``File Unit Tests``() =
         System.IO.File.WriteAllLines(fnameStr, [|""|])
         try
             let fname = File.assumeValidFilename fnameStr
-            match IO.run <| File.fileExists fname with
+            match IO.run <| File.exists fname with
             |IOSuccess b -> b = true
             |IOError err -> failwith "error"
         finally
