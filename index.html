@@ -1,65 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <meta charset="utf-8"/>
+    <title>#NovelIO
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="F# Functional IO Library"/>
+    <meta name="author" content="Phil Curzon"/>
 
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="/NovelIO/content/style.css" />
+    <script type="text/javascript" src="/NovelIO/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
     <![endif]-->
-
-    <title>NovelIO by TheInnerLight</title>
   </head>
-
   <body>
-    <header>
-      <div class="inner">
-        <h1>NovelIO</h1>
-        <h2>F# Functional IO Library</h2>
-        <a href="https://github.com/TheInnerLight/NovelIO" class="button"><small>View project on</small> GitHub</a>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+          <li><a href="http://github.com/TheInnerLight/NovelIO">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="/NovelIO/index.html">NovelIO</a></h3>
       </div>
-    </header>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1><a name="NovelIO" class="anchor" href="#NovelIO">#NovelIO</a></h1>
+<h2><a name="Introduction" class="anchor" href="#Introduction">Introduction</a></h2>
+<p>NovelIO is a library designed to bring the explicit safety and robustness of Haskell's IO monad to the .NET framework. The result is a purely functional approach to describing I/O operations whereby the evaluation of functions do not produce side-effects, rather they describe sequenced operations which can later be evaluated.</p>
+<p>Much like in Haskell, we introduce the <code>IO&lt;'a&gt;</code> type which represents some action that, when performed successfully, returns some result <code>'a.</code>  Here are some examples:</p>
+<ul>
+<li><p>An IO action that prints the string "Hello World" to the screen has type <code>IO&lt;unit&gt;</code>.</p></li>
+<li>An IO action that gets a line of text from the Console has type 'IO<string>`.</li>
+<li><p>An IO action that opens a TCP connection to google.com on port 80 has type <code>IO&lt;TCPConnectedSocket&gt;</code>.</p></li>
+</ul>
+<p>Values of type <code>IO&lt;'a&gt;</code> are distinct from traditional values in that they do not represent the result of some side effect, they rather represent an action that can be <code>run</code> to produce a particular result.</p>
+<h2><a name="Running-IO-Actions" class="anchor" href="#Running-IO-Actions">Running IO Actions</a></h2>
+<p><code>IO&lt;'a&gt;</code> Actions can be <code>run</code> using the <code>IO.run</code> function.  This results in all of the side-effects being evaluated, resulting in something of type <code>IOResult&lt;'a&gt;</code>.</p>
+<p><code>IOResult&lt;'a&gt;</code> is a Discriminated Union defined as follows:</p>
+<pre class="fssnip highlighted"><code lang="fsharp">    <span class="k">type</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="t">IOResult</span><span class="o">&lt;</span><span class="o">&#39;</span><span class="i">a</span><span class="o">&gt;</span> <span class="o">=</span>
+        |<span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="p">IOSuccess</span> <span class="k">of</span> <span class="o">&#39;</span><span class="i">a</span>
+        |<span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="p">IOError</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs6', 6)" onmouseover="showTip(event, 'fs6', 6)" class="t">IOErrorResult</span>
+</code></pre>
+<p>Thus, our IO action can either be successful, returning the desired result of type <code>'a</code> or it can fail, returning some error.</p>
+<p>It is possible to sequence I/O operations using the io computation expression, this results in syntax very similar to the do notation found in Haskell.</p>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h3>
-<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h3>
+<div class="tip" id="fs1">namespace NovelFS</div>
+<div class="tip" id="fs2">namespace NovelFS.NovelIO</div>
+<div class="tip" id="fs3">type IOResult&lt;&#39;a&gt; =<br />&#160;&#160;| IOSuccess of &#39;a<br />&#160;&#160;| IOError of IOErrorResult<br /><br />Full name: Index.IOResult&lt;_&gt;</div>
+<div class="tip" id="fs4">union case IOResult.IOSuccess: &#39;a -&gt; IOResult&lt;&#39;a&gt;</div>
+<div class="tip" id="fs5">union case IOResult.IOError: IOErrorResult -&gt; IOResult&lt;&#39;a&gt;</div>
+<div class="tip" id="fs6">type IOErrorResult =<br />&#160;&#160;| Other of IOException<br />&#160;&#160;| DirectoryNotFound of DirectoryNotFoundException<br />&#160;&#160;| DriveNotFound of DriveNotFoundException<br />&#160;&#160;| FileNotFound of FileNotFoundException<br />&#160;&#160;| PathTooLong of PathTooLongException<br />&#160;&#160;| UnauthourisedAccess of UnauthorizedAccessException<br />&#160;&#160;| StreamClosed of ObjectDisposedException<br />&#160;&#160;| HandleDoesNotSupportReading<br />&#160;&#160;| HandleDoesNotSupportWriting<br />&#160;&#160;| PastEndOfStream of EndOfStreamException<br />&#160;&#160;...<br /><br />Full name: NovelFS.NovelIO.IOErrorResult</div>
 
-<p>NovelIO is a library designed to bring the explicit safety and robustness of Haskell's IO monad to the .NET framework.  The result is a purely functional approach to describing I/O operations whereby the evaluation of functions do not produce side-effects, rather they describe sequenced operations which can later be evaluated.</p>
+        </div>
+        <div class="span3">
+          <img src="/NovelIO/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />  
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">NovelIO</li>
+            <li><a href="/NovelIO/index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="http://nuget.org/packages/NovelIO">Get Library via NuGet</a></li>
+            <li><a href="http://github.com/TheInnerLight/NovelIO">Source Code on GitHub</a></li>
+            <li><a href="/NovelIO/license.html">License</a></li>
+            <li><a href="/NovelIO/release-notes.html">Release Notes</a></li>
+            
+            <li class="nav-header">Getting started</li>
+            <li><a href="/NovelIO/tutorial.html">Sample tutorial</a></li>
 
-<p>Much like in Haskell, we introduce the <code>IO&lt;'a&gt;</code> type which represents some action that, when performed successfully, results in some type <code>'a</code>.</p>
-
-<p>It is possible to sequence I/O operations using the <code>io</code> computation expression, this results in syntax very similar to the do notation found in Haskell.</p>
-
-<h3>
-<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>NovelIO was conceived and created by <a href="https://github.com/TheInnerLight" class="user-mention">@TheInnerLight</a></p>
-        </section>
-
-        <aside id="sidebar">
-          <a href="https://github.com/TheInnerLight/NovelIO/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/TheInnerLight/NovelIO/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
-
-          <p class="repo-owner"><a href="https://github.com/TheInnerLight/NovelIO"></a> is maintained by <a href="https://github.com/TheInnerLight">TheInnerLight</a>.</p>
-
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
+            <li class="nav-header">Documentation</li>
+            <li><a href="/NovelIO/reference/index.html">API Reference</a></li>
+          </ul>
+        </div>
       </div>
     </div>
-
-  
+    <a href="http://github.com/TheInnerLight/NovelIO"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
   </body>
-</html>
+  </html>
