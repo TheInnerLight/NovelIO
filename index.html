@@ -51,7 +51,17 @@
         |<span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="p">IOError</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs6', 6)" onmouseover="showTip(event, 'fs6', 6)" class="t">IOErrorResult</span>
 </code></pre>
 <p>Thus, our IO action can either be successful, returning the desired result of type <code>'a</code> or it can fail, returning some error.</p>
-<p>It is possible to sequence I/O operations using the io computation expression, this results in syntax very similar to the do notation found in Haskell.</p>
+<h2><a name="Sequencing-IO-Actions" class="anchor" href="#Sequencing-IO-Actions">Sequencing IO Actions</a></h2>
+<p>It is possible to sequence I/O operations using the <code>io</code> computation expression (very similar to the do notation found in Haskell).</p>
+<pre class="fssnip highlighted"><code lang="fsharp">    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs7', 7)" onmouseover="showTip(event, 'fs7', 7)" class="i">testIO</span> <span class="o">=</span>
+        <span onmouseout="hideTip(event, 'fs8', 8)" onmouseover="showTip(event, 'fs8', 8)" class="i">io</span> {
+            <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs9', 9)" onmouseover="showTip(event, 'fs9', 9)" class="i">l1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs10', 10)" onmouseover="showTip(event, 'fs10', 10)" class="t">Console</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 11)" onmouseover="showTip(event, 'fs11', 11)" class="i">readLine</span>
+            <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs12', 12)" onmouseover="showTip(event, 'fs12', 12)" class="i">l2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs10', 13)" onmouseover="showTip(event, 'fs10', 13)" class="t">Console</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 14)" onmouseover="showTip(event, 'fs11', 14)" class="i">readLine</span>
+            <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs13', 15)" onmouseover="showTip(event, 'fs13', 15)" class="i">l3</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs10', 16)" onmouseover="showTip(event, 'fs10', 16)" class="t">Console</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 17)" onmouseover="showTip(event, 'fs11', 17)" class="i">readLine</span>
+            <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs10', 18)" onmouseover="showTip(event, 'fs10', 18)" class="t">Console</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs14', 19)" onmouseover="showTip(event, 'fs14', 19)" class="f">printf</span> <span class="s">&quot;You entered: </span><span class="pf">%A</span><span class="s">&quot;</span> [<span onmouseout="hideTip(event, 'fs9', 20)" onmouseover="showTip(event, 'fs9', 20)" class="i">l1</span>; <span onmouseout="hideTip(event, 'fs12', 21)" onmouseover="showTip(event, 'fs12', 21)" class="i">l2</span>; <span onmouseout="hideTip(event, 'fs13', 22)" onmouseover="showTip(event, 'fs13', 22)" class="i">l3</span>]
+        }
+</code></pre>
+<p>Here we simply read three lines from the console and print the result back to the console as a list.</p>
 
 <div class="tip" id="fs1">namespace NovelFS</div>
 <div class="tip" id="fs2">namespace NovelFS.NovelIO</div>
@@ -59,6 +69,14 @@
 <div class="tip" id="fs4">union case IOResult.IOSuccess: &#39;a -&gt; IOResult&lt;&#39;a&gt;</div>
 <div class="tip" id="fs5">union case IOResult.IOError: IOErrorResult -&gt; IOResult&lt;&#39;a&gt;</div>
 <div class="tip" id="fs6">type IOErrorResult =<br />&#160;&#160;| Other of IOException<br />&#160;&#160;| DirectoryNotFound of DirectoryNotFoundException<br />&#160;&#160;| DriveNotFound of DriveNotFoundException<br />&#160;&#160;| FileNotFound of FileNotFoundException<br />&#160;&#160;| PathTooLong of PathTooLongException<br />&#160;&#160;| UnauthourisedAccess of UnauthorizedAccessException<br />&#160;&#160;| StreamClosed of ObjectDisposedException<br />&#160;&#160;| HandleDoesNotSupportReading<br />&#160;&#160;| HandleDoesNotSupportWriting<br />&#160;&#160;| PastEndOfStream of EndOfStreamException<br />&#160;&#160;...<br /><br />Full name: NovelFS.NovelIO.IOErrorResult</div>
+<div class="tip" id="fs7">val testIO : IO&lt;unit&gt;<br /><br />Full name: Index.testIO</div>
+<div class="tip" id="fs8">val io : IO.IOBuilder<br /><br />Full name: NovelFS.NovelIO.IOBuilders.io</div>
+<div class="tip" id="fs9">val l1 : string</div>
+<div class="tip" id="fs10">module Console<br /><br />from NovelFS.NovelIO</div>
+<div class="tip" id="fs11">val readLine : IO&lt;string&gt;<br /><br />Full name: NovelFS.NovelIO.Console.readLine</div>
+<div class="tip" id="fs12">val l2 : string</div>
+<div class="tip" id="fs13">val l3 : string</div>
+<div class="tip" id="fs14">val printf : fmt:Printf.TextWriterFormat&lt;(&#39;a -&gt; &#39;b)&gt; -&gt; str:&#39;a -&gt; IO&lt;&#39;b&gt;<br /><br />Full name: NovelFS.NovelIO.Console.printf</div>
 
         </div>
         <div class="span3">
