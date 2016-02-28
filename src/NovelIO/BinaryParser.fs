@@ -54,38 +54,38 @@ module BinaryParser =
     /// Monadic bind operator for Binary Parsers
     let (>>=) x f = bind x f
     /// Map function for Binary Parsers
-    let map f x = x >>= (return' << f)
+    let map (f : 'a -> 'b) (x  : BinaryParser<'state,'a>) = x >>= (return' << f)
     /// Map operator for Binary Parsers
-    let (<!>) f x = map f x
+    let (<!>) (f : 'a -> 'b) (x  : BinaryParser<'state,'a>) = map f x
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results.
-    let mapM mFunc list =
+    let mapM (mFunc : 'a -> BinaryParser<'state,'b>) list =
         let folder head tail = 
             mFunc head >>= (fun h -> 
                 tail >>= (fun t ->
                     return' (h::t) ))
         List.foldBack (folder) list (return' [])
     /// As mapM but ignores the result.
-    let mapM_ mFunc list =
+    let mapM_ (mFunc : 'a -> BinaryParser<'state,'b>) list =
         mapM mFunc list >>= (fun _ -> return' ())
     /// Evaluate each action in the list from left to right, and and collect the results.
-    let sequence list =
+    let sequence (list : BinaryParser<'state,'a> list) =
         mapM (id) list
     /// Performs the action mFunc n times, gathering the results.
-    let replicateM mFunc n =
-        sequence (List.init n (fun _ -> mFunc))
+    let replicateM (bParser : BinaryParser<'state,'a>) n =
+        sequence (List.init n (fun _ -> bParser))
     /// As replicateM but ignores the results
-    let replicateM_ mFunc n  =
-        replicateM mFunc n >>= (fun _ -> return' ())
+    let replicateM_ (bParser : BinaryParser<'state,'a>) n  =
+        replicateM bParser n >>= (fun _ -> return' ())
     /// Applicative for Binary Parsers
-    let apply f x =
+    let apply (f : BinaryParser<'state,'a -> 'b>) (x : BinaryParser<'state,'a>) =
         f >>= (fun fe -> map fe x)
     /// Apply operator for Binary Parsers 
-    let (<*>) f x = apply f x
+    let (<*>) (f : BinaryParser<'state,'a -> 'b>) (x : BinaryParser<'state,'a>) = apply f x
     /// Combines two Binary Parsers using a specified function
-    let lift2 f x1 x2 =
+    let lift2 (f : 'a -> 'b -> 'c) (x1 : BinaryParser<'state,'a>) (x2 : BinaryParser<'state,'b>) =
         f <!> x1 <*> x2
     /// Combines three Binary Parsers using a specified function
-    let lift3 f x1 x2 x3 =
+    let lift3 (f : 'a -> 'b -> 'c -> 'd) (x1 : BinaryParser<'state,'a>) (x2 : BinaryParser<'state,'b>) (x3 : BinaryParser<'state,'c>) =
         f <!> x1 <*> x2 <*> x3
     /// Combines four Binary Parsers using a specified function
     let lift4 f x1 x2 x3 x4 =

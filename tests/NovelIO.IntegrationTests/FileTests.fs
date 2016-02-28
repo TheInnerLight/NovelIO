@@ -21,7 +21,7 @@ open NovelFS.NovelIO.BinaryParser
 open FsCheck
 open FsCheck.Xunit
 
-type ``IO Integration Tests``() =
+type ``File Integration Tests``() =
 
     [<Property>]
     static member ``Read All Bytes from file`` (bytes : byte[]) =
@@ -46,6 +46,24 @@ type ``IO Integration Tests``() =
             io {
                 let! lineSeq = File.readLines fname
                 return! lineSeq |> List.ofSeq |> IO.listM
+            }
+        match IO.run lineIO with
+        |IOSuccess lines ->
+            lines = lstStrs
+        |IOError err -> failwith "error"
+
+    [<Property>]
+    static member ``Read all lines from file`` (strA : NonEmptyArray<NonEmptyString>) =
+        let fnameStr = "readlinestest.tst"
+        let lstStrs = 
+            strA.Get 
+            |> Array.collect (fun str -> str.Get.Split('\r','\n'))
+            |> List.ofArray 
+        System.IO.File.WriteAllLines(fnameStr, lstStrs)
+        let fname = File.assumeValidFilename fnameStr
+        let lineIO =
+            io {
+                return! File.readAllLines fname
             }
         match IO.run lineIO with
         |IOSuccess lines ->

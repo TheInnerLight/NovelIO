@@ -56,6 +56,13 @@
     <Compile Include="BinaryTests.fs" />
     <Compile Include="FileTests.fs" />
     <Compile Include="TextTests.fs" />
+    <Compile Include="IOTests.fs" />
+    <Content Include="creationtimetest.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="creationtimetestwriting.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FsCheck">

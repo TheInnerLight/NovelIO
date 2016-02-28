@@ -19,16 +19,33 @@ namespace NovelFS.NovelIO
 open System.IO
 open System.Net
 
+/// Provides functions and types relating to network connectivity
+module Network =
+    /// Type abbreviation for System.Net.IPAddress
+    type IPAddress = System.Net.IPAddress
+
 /// Provides functions relating to TCP connections
 module TCP =
     /// Create a TCP server at the specfied IP on the specified port
-    let createServer ip port = IO.Delay (fun () -> SideEffectingIO.startTCPServer ip port)
+    let createServer ip port = IO.fromEffectful (fun () -> SideEffectingIO.startTCPServer ip port)
+
+    /// Create a TCP server at the specfied IP
+    let createServerOnFreePort ip = IO.fromEffectful (fun () -> SideEffectingIO.startTCPServer ip 0)
+
     /// Accept a connection from the supplied TCP server
-    let acceptConnection serv = IO.Delay (fun () -> SideEffectingIO.acceptSocketFromServer serv)
+    let acceptConnection serv = IO.fromEffectful (fun () -> SideEffectingIO.acceptSocketFromServer serv)
+
     /// Close a connected socket
-    let closeConnection socket = IO.Delay (fun () -> SideEffectingIO.closeSocket socket)
+    let closeConnection socket = IO.fromEffectful (fun () -> SideEffectingIO.closeSocket socket)
+
     /// Create a TCP connection to the supplied IP and specified port
-    let connectSocket ip port = IO.Delay (fun () -> SideEffectingIO.connectTCPSocket ip port)
+    let connectSocket ip port = IO.fromEffectful (fun () -> SideEffectingIO.connectTCPSocket ip port)
+
+    /// Retrieves the port the server is listening on
+    let getServerPort server = 
+        IO.fromEffectful (fun () -> 
+            let ipend = server.TCPListener.Server.LocalEndPoint :?> System.Net.IPEndPoint
+            ipend.Port)
 
     /// Create a handle from a connected socket
     let socketToHandle tcpSocket =
