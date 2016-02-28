@@ -39,7 +39,7 @@
 <p>Much like in Haskell, we introduce the <code>IO&lt;'a&gt;</code> type which represents some action that, when performed successfully, returns some result <code>'a.</code>  Here are some examples:</p>
 <ul>
 <li>An IO action that prints the string "Hello World" to the screen has type <code>IO&lt;unit&gt;</code>.</li>
-<li>An IO action that gets a line of text from the Console has type 'IO<string>`.</li>
+<li>An IO action that gets a line of text from the Console has type <code>IO&lt;string&gt;</code>.</li>
 <li>An IO action that opens a TCP connection to google.com on port 80 has type <code>IO&lt;TCPConnectedSocket&gt;</code>.</li>
 </ul>
 <p>Values of type <code>IO&lt;'a&gt;</code> are distinct from traditional values in that they do not represent the result of some side effect, they rather represent an action that can be <code>run</code> to produce a particular result.</p>
