@@ -90,6 +90,6 @@ match IO.run fileIO with // side effects occur *only* on this line
 
 (**
 
-This code describes exactly the same problem but we know that side-effects can occur in exactly one place `IO.run`, in practise this means that no side-effects can 'escape' the `io` computation expression.
+This code describes exactly the same problem but we know that side-effects can occur in exactly one place `IO.run`.  That means that success or failure need be handled in only that one location.  We can therefore design complicated programs where IO is described using pure, referentially transparent functions and potentially error-prone behaviour is made very explicit and side-effects are restricted to very specific and obvious locations.
 
 *)
