@@ -87,7 +87,7 @@
 |<span onmouseout="hideTip(event, 'fs4', 61)" onmouseover="showTip(event, 'fs4', 61)" class="p">IOSuccess</span> _ <span class="k">-&gt;</span> () <span class="c">// success case</span>
 |<span onmouseout="hideTip(event, 'fs37', 62)" onmouseover="showTip(event, 'fs37', 62)" class="p">IOError</span> <span onmouseout="hideTip(event, 'fs38', 63)" onmouseover="showTip(event, 'fs38', 63)" class="i">err</span> <span class="k">-&gt;</span> () <span class="c">// error case</span>
 </code></pre>
-<p>This code describes exactly the same problem but we know that side-effects can occur in exactly one place <code>IO.run</code>, in practise this means that no side-effects can 'escape' the <code>io</code> computation expression.</p>
+<p>This code describes exactly the same problem but we know that side-effects can occur in exactly one place <code>IO.run</code>.  That means that success or failure need be handled in only that one location.  We can therefore design complicated programs where IO is described using pure, referentially transparent functions and potentially error-prone behaviour is made very explicit and side-effects are restricted to very specific and obvious locations.</p>
 
 <div class="tip" id="fs1">namespace NovelFS</div>
 <div class="tip" id="fs2">namespace NovelFS.NovelIO</div>
