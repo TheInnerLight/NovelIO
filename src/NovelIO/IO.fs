@@ -100,7 +100,9 @@ module IO =
         member this.ReturnFrom a : IO<'a> = a
         /// Monadic bind for IO values
         member this.Bind (x : IO<'a>, f : 'a -> IO<'b>) = bind x f
-        member this.Delay f : IO<'a> = f()
+        /// Delays a function of type unit -> IO<'a> as an IO<'a>
+        member this.Delay f : IO<'a> = Bind f
+        /// Combine an IO value of type unit an IO of value of type 'a into a combined IO value of type 'a
         member this.Combine(f1, f2) =
             bind f1 (fun () -> f2)
         /// The zero IO value
@@ -110,7 +112,6 @@ module IO =
             match guard() with
             |false -> this.Zero()
             |true -> bind (body) (fun () -> this.While(guard, body))
-        
 
     let private io = IOBuilder()
     /// Monadic bind operator for IO values
@@ -137,14 +138,14 @@ module IO =
     let listM list =
         mapM (id) list
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
-    let traverseM mFunc seq =
-        let folder acc value =
+    let traverseM mFunc sequ =
+        let folder ioAcc ioValue =
             io {
-                let! v = mFunc value
-                let! a = acc
-                return Seq.append (Seq.singleton v) a
+                let! value = mFunc ioValue
+                let! acc = ioAcc
+                return seq {yield value; yield! acc} 
             }
-        Seq.fold (folder) (return' Seq.empty) seq
+        Seq.fold (folder) (return' Seq.empty) sequ
     /// As traverseM but ignores the result.
     let traverseM_ mFunc seq =
         traverseM mFunc seq >>= (fun x -> return' ())

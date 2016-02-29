@@ -27,7 +27,7 @@ module private SideEffectingFileIO =
     let isFileReadOnly file = (toFileInfo file).IsReadOnly
 
     /// Returns the filesize in bytes
-    let fileSize (file) = 
+    let fileSize file = 
         (toFileInfo file).Length
         |> LanguagePrimitives.Int64WithMeasure<Bytes>
 
@@ -130,3 +130,7 @@ module File =
     /// Determines the size of the specified file in bytes
     let size filename =
         IO.fromEffectful (fun _ -> SideEffectingFileIO.fileSize filename)
+
+    /// Creates a new file, writes the specified lines to the file and then closes the file. 
+    let writeLines (lines : seq<string>) (filename : Filename)  =
+        IO.fromEffectful (fun _ -> File.WriteAllLines(filename.PathString, lines))
