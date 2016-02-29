@@ -79,7 +79,7 @@ let fName = File.assumeValidFilename "testfile.txt"
 
 let fileIO = io {
     let! lines = File.readLines fName // sequence of io actions which each read a line from a file
-    let! floatLines = IO.traverseM (IO.map float) lines // traverse the `seq<io<string>>` to an `io<seq<float>>` by parsing
+    let! floatLines = IO.traverseM (IO.map float) lines // parse each line, collecting the results
     do! IO.traverseM_ (Console.printfn "%f") floatLines // print each float to the console
 }
 
