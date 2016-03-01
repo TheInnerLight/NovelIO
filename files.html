@@ -37,19 +37,15 @@
 <p>Working with Files in NovelIO is a little different from standard .NET IO.  Perhaps the most significant change is the handling of file paths.</p>
 <p>Standard .NET IO uses <code>string</code> to represent file paths.  NovelIO instead uses the 'Filename' type, this is effectively a string wrapper that cannot contain invalid file name characters.</p>
 <h3><a name="Creating-Filepaths" class="anchor" href="#Creating-Filepaths">Creating Filepaths</a></h3>
-<ol>
-<li>The first method of creating <code>Filepath</code>s is to use active patterns on a string, for example:</li>
-</ol>
+<p>The first method of creating <code>Filepath</code>s is to use active patterns on a string, for example:</p>
 <pre class="fssnip highlighted"><code lang="fsharp"><span class="k">match</span> <span class="s">&quot;test.txt&quot;</span> <span class="k">with</span>
 |<span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="p">ValidFilename</span> <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="i">fName</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs4', 6)" onmouseover="showTip(event, 'fs4', 6)" class="i">fName</span> <span class="c">// do something with the valid filename</span>
 |<span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="p">InvalidFilename</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs7', 8)" onmouseover="showTip(event, 'fs7', 8)" class="p">None</span> <span class="c">// handle the invalid filename case</span>
 </code></pre>
-<ol>
-<li>If we know that a conversion to a <code>Filepath</code> is definitely going to be succesful, we can instead use <code>File.assumeValidFilename</code></li>
-</ol>
+<p>If we know that a conversion to a <code>Filepath</code> is definitely going to be succesful, we can instead use <code>File.assumeValidFilename</code></p>
 <pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs8', 9)" onmouseover="showTip(event, 'fs8', 9)" class="i">fName</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 10)" onmouseover="showTip(event, 'fs9', 10)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 11)" onmouseover="showTip(event, 'fs10', 11)" class="f">assumeValidFilename</span> <span class="s">&quot;test.txt&quot;</span>
 </code></pre>
-<p>Should we be mistaken about the supplied string being a valid filename, an ArgumentException will be thrown.</p>
+<p>Should we be mistaken about the supplied string being a valid filename, an <code>ArgumentException</code> will be thrown.</p>
 <h3><a name="Using-File-functions" class="anchor" href="#Using-File-functions">Using File functions</a></h3>
 <p>The <code>File</code> modules contains functions very similar to <code>System.IO.File</code> defined in standard .NET, these functions are presented using curried arguments and their returns are wrapped by the <code>IO&lt;'a&gt;</code> type.</p>
 <pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs11', 12)" onmouseover="showTip(event, 'fs11', 12)" class="i">io</span> {
