@@ -6,10 +6,8 @@
 open NovelFS.NovelIO
 
 (**
-#NovelIO
+Introduction
 ======================
-
-## Introduction
 
 NovelIO is a library designed to bring the explicit safety and robustness of Haskell's IO monad to the .NET framework. The result is a purely functional approach to describing I/O operations whereby the evaluation of functions do not produce side-effects, rather they describe sequenced operations which can later be evaluated.
 

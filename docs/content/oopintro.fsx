@@ -6,7 +6,8 @@
 open NovelFS.NovelIO
 
 (**
-## Introduction from an Object-Oriented Perspective
+Introduction from an Object-Oriented Perspective
+======================
 
 For those coming from an OOP background, the purpose of purely functional I/O might not seem immediately apparent.  Two principles that might be familiar to developers more generally are:
 

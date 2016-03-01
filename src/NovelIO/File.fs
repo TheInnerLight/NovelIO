@@ -43,6 +43,11 @@ module File =
     /// Gets the bare string from a filename
     let getPathString (filename : Filename) = filename.PathString
 
+    /// Appends lines to a file, and then closes the file. If the specified file does not exist, this function creates a 
+    /// file, writes the specified lines to the file and then closes the file.
+    let appendLines (lines : seq<string>) filename =
+        IO.fromEffectful (fun _ -> File.AppendAllLines(getPathString filename, lines))
+
     /// Copies an existing file to a location specified.  Overwriting is not allowed
     let copy sourceFile destFile =
         IO.fromEffectful (fun _ -> File.Copy(getPathString sourceFile, getPathString destFile))
