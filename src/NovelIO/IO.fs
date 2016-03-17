@@ -100,7 +100,9 @@ module IO =
         member this.ReturnFrom a : IO<'a> = a
         /// Monadic bind for IO values
         member this.Bind (x : IO<'a>, f : 'a -> IO<'b>) = bind x f
-        member this.Delay f : IO<'a> = f()
+        /// Delays a function of type unit -> IO<'a> as an IO<'a>
+        member this.Delay f : IO<'a> = Bind f
+        /// Combine an IO value of type unit an IO of value of type 'a into a combined IO value of type 'a
         member this.Combine(f1, f2) =
             bind f1 (fun () -> f2)
         /// The zero IO value
@@ -110,12 +112,6 @@ module IO =
             match guard() with
             |false -> this.Zero()
             |true -> bind (body) (fun () -> this.While(guard, body))
-        /// Definition of for loops within IO computation expressions
-        member this.For (sequence : seq<_>, body) =
-            use enum = sequence.GetEnumerator()
-            enum.MoveNext() |> ignore
-            this.While(enum.MoveNext, 
-                this.Delay(fun () -> bind (enum.Current) body ))
 
     let private io = IOBuilder()
     /// Monadic bind operator for IO values
@@ -138,15 +134,44 @@ module IO =
     /// As mapM but ignores the result.
     let mapM_ mFunc list =
         mapM mFunc list >>= (fun x -> return' ())
-    /// Evaluate each action in the list from left to right, and and collect the results.
+    /// Evaluate each action in the list from left to right and collect the results.
     let listM list =
         mapM (id) list
+    /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
+    let traverseM mFunc sequ =
+        let folder ioAcc ioValue =
+            io {
+                let! value = mFunc ioValue
+                let! acc = ioAcc
+                return seq {yield value; yield! acc} 
+            }
+        Seq.fold (folder) (return' Seq.empty) sequ
+    /// As traverseM but ignores the result.
+    let traverseM_ mFunc seq =
+        traverseM mFunc seq >>= (fun x -> return' ())
+
+    /// IOBuilder extensions so that traverseM_ can be used to define For
+    type IOBuilder with
+        /// Definition of for loops within IO computation expressions
+        member this.For (sequence : seq<_>, body) =
+            traverseM_ body sequence
+
+    /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
+    let sequence seq =
+        traverseM id seq
     /// Performs the action mFunc n times, gathering the results.
     let replicateM mFunc n =
         listM (List.init n (fun _ -> mFunc))
     /// As replicateM but ignores the results
     let replicateM_ mFunc n  =
         replicateM mFunc n >>= (fun f -> return' ())
+    /// Applicative for IO
+    let apply (f : IO<'a -> 'b>) (x : IO<'a>) =
+        f >>= (fun fe -> map fe x)
+    /// Apply operator IO
+    let (<*>) (f : IO<'a -> 'b>) (x : IO<'a>) = apply f x
+    /// Removes a level of IO structure
+    let join x = x >>= id
 
     // ----- GENERAL ----- //
             

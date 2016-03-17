@@ -33,11 +33,10 @@ let main argv =
     let test = 
         io {
             let! lines = File.readLines fName
-            let! lList = Seq.toList lines |> IO.listM
-            for line in lines do
-                do! Console.printf "%s" line
-                
-            return! IO.mapM_ (Console.printfn "%s") (lList)
+            let! lSeq = lines |> IO.sequence
+            for line in lSeq do
+                do! Console.printfn "%s" line
+            return! IO.traverseM_ (Console.printfn "%s") lSeq
         }
 
     let consoleTest = 

@@ -58,6 +58,9 @@ and IOErrorResult =
     /// IO failure due to an action being attempted on a stream which does not support it
     |StreamStateUnsupported of string
 
+/// Units of bytes
+[<Measure>] type Bytes
+
 /// Represents a filename of a valid format
 type Filename =
     private |Filename of string
