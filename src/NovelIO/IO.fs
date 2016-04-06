@@ -190,8 +190,12 @@ module IO =
             match io with
             |Return a -> a            
             |Bind (a) -> runRec <| a()
+        runRec io
+
+    /// Runs the IO actions and evaluates the result, handling success or failure using IOResult
+    let runGuarded io =
         // run recursively and handle exceptions in IO
-        IOResult.withExceptionCheck (runRec) io
+        IOResult.withExceptionCheck (run) io
 
     /// Sparks off a new thread to run the IO computation passed as the first argument
     let forkIO io = 

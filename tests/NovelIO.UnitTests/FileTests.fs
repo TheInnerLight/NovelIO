@@ -68,105 +68,85 @@ type ``File Unit Tests``() =
     static member ``Function: creationTime returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.creationTime fname with
-        |IOSuccess dt -> dt = System.IO.File.GetCreationTime fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.creationTime fname = System.IO.File.GetCreationTime fnameStr
 
     [<Property>]
     static member ``Function: creationTimeUTC returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.creationTimeUTC fname with
-        |IOSuccess dt -> dt = System.IO.File.GetCreationTimeUtc fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.creationTimeUTC fname = System.IO.File.GetCreationTimeUtc fnameStr
 
     [<Property>]
     static member ``Function: lastAccessTime returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.lastAccessTime fname with
-        |IOSuccess dt -> dt = System.IO.File.GetLastAccessTime fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.lastAccessTime fname = System.IO.File.GetLastAccessTime fnameStr
 
     [<Property>]
     static member ``Function: lastAccessTimeUTC returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.lastAccessTimeUTC fname with
-        |IOSuccess dt -> dt = System.IO.File.GetLastAccessTimeUtc fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.lastAccessTimeUTC fname = System.IO.File.GetLastAccessTimeUtc fnameStr
 
     [<Property>]
     static member ``Function: lastWriteTime returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.lastWriteTime fname with
-        |IOSuccess dt -> dt = System.IO.File.GetLastWriteTime fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.lastWriteTime fname = System.IO.File.GetLastWriteTime fnameStr
 
     [<Property>]
     static member ``Function: lastWriteTimeUTC returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.lastWriteTimeUTC fname with
-        |IOSuccess dt -> dt = System.IO.File.GetLastWriteTimeUtc fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.lastWriteTimeUTC fname = System.IO.File.GetLastWriteTimeUtc fnameStr
 
     [<Property>]
     static member ``Function: setCreationTime sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.setCreationTime dt fname with
-        |IOSuccess _ -> dt = System.IO.File.GetCreationTime fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.setCreationTime dt fname
+        dt = System.IO.File.GetCreationTime fnameStr
 
     [<Property>]
     static member ``Function: setCreationTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.setCreationTimeUTC dt fname with
-        |IOSuccess _ -> dt = System.IO.File.GetCreationTimeUtc fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.setCreationTimeUTC dt fname
+        dt = System.IO.File.GetCreationTimeUtc fnameStr
 
     [<Property>]
     static member ``Function: setLastAccessTime sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.setLastAccessTime dt fname with
-        |IOSuccess _ -> dt = System.IO.File.GetLastAccessTime fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.setLastAccessTime dt fname 
+        dt = System.IO.File.GetLastAccessTime fnameStr
 
     [<Property>]
     static member ``Function: setLastAccessTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.setLastAccessTimeUTC dt fname with
-        |IOSuccess _ -> dt = System.IO.File.GetLastAccessTimeUtc fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.setLastAccessTimeUTC dt fname 
+        dt = System.IO.File.GetLastAccessTimeUtc fnameStr
 
     [<Property>]
     static member ``Function: setLastWriteTime sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.setLastWriteTime dt fname with
-        |IOSuccess _ -> dt = System.IO.File.GetLastWriteTime fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.setLastWriteTime dt fname 
+        dt = System.IO.File.GetLastWriteTime fnameStr
 
     [<Property>]
     static member ``Function: setLastWriteTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.setLastWriteTimeUTC dt fname with
-        |IOSuccess _ -> dt = System.IO.File.GetLastWriteTimeUtc fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.setLastWriteTimeUTC dt fname 
+        dt = System.IO.File.GetLastWriteTimeUtc fnameStr
 
     [<Property>]
     static member ``File that does not exist is not found``() =
         let fnameStr = firstRandomFileThatDoesNotExist()
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.exists fname with
-        |IOSuccess b -> b = false
-        |IOError err -> failwith "error"
+        not << IO.run <| File.exists fname
 
     [<Property>]
     static member ``File that does exist can be found``() =
@@ -174,9 +154,7 @@ type ``File Unit Tests``() =
         System.IO.File.WriteAllLines(fnameStr, [|""|])
         try
             let fname = File.assumeValidFilename fnameStr
-            match IO.run <| File.exists fname with
-            |IOSuccess b -> b = true
-            |IOError err -> failwith "error"
+            IO.run <| File.exists fname
         finally
             System.IO.File.Delete fnameStr
 
@@ -185,9 +163,8 @@ type ``File Unit Tests``() =
         let fnameStr = firstRandomFileThatDoesNotExist()
         let fname = File.assumeValidFilename fnameStr
         System.IO.File.AppendAllLines(fnameStr, [""])
-        match IO.run <| File.delete fname with
-        |IOSuccess _ -> not <| System.IO.File.Exists fnameStr
-        |IOError err -> failwith "error"
+        IO.run <| File.delete fname
+        not <| System.IO.File.Exists fnameStr
 
     [<Property>]
     static member ``Random file can be copied``() =
@@ -196,16 +173,13 @@ type ``File Unit Tests``() =
         System.IO.File.AppendAllLines(fnameStr, [""])
         let fnameStr2 = firstRandomFileThatDoesNotExist()
         let fname2 = File.assumeValidFilename fnameStr2
-        match IO.run <| File.copy fname fname2 with
-        |IOSuccess _ -> 
-            try
-                System.IO.File.Exists fnameStr2
-            finally
-                System.IO.File.Delete fnameStr
-                System.IO.File.Delete fnameStr2
-        |IOError err ->
+        IO.run <| File.copy fname fname2 
+        try
+            System.IO.File.Exists fnameStr2
+        finally
             System.IO.File.Delete fnameStr
-            failwith "error"
+            System.IO.File.Delete fnameStr2
+
 
     [<Property>]
     static member ``Random file can be moved``() =
@@ -214,12 +188,13 @@ type ``File Unit Tests``() =
         System.IO.File.AppendAllLines(fnameStr, [""])
         let fnameStr2 = firstRandomFileThatDoesNotExist()
         let fname2 = File.assumeValidFilename fnameStr2
-        match IO.run <| File.move fname fname2 with
-        |IOSuccess _ -> 
+        try
+            IO.run <| File.move fname fname2 
             try
                 System.IO.File.Exists fnameStr2
             finally
                 System.IO.File.Delete fnameStr2
-        |IOError err ->
-            System.IO.File.Delete fnameStr
-            failwith "error"
+        with
+            |_ -> 
+                System.IO.File.Delete fnameStr
+                reraise ()

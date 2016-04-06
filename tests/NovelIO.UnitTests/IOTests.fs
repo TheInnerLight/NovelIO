@@ -24,12 +24,8 @@ open FsCheck.Xunit
 type ``IO Unit Tests``() =
     [<Property>]
     static member ``Function: return' of some test data returns the test data when run`` (testData : obj) =
-        match IO.run <| IO.return' testData with
-        |IOSuccess testDataRes -> testData = testDataRes
-        |IOError _ -> failwith "run produced an unexpected error"
+        IO.run <| IO.return' testData = testData
 
     [<Property>]
     static member ``Function: fromEffectful of function which produces test data returns the test data when run`` (testData : obj) =
-        match IO.run <| IO.fromEffectful (fun _ -> testData) with
-        |IOSuccess testDataRes -> testData = testDataRes
-        |IOError _ -> failwith "run produced an unexpected error"
+        IO.run <| IO.fromEffectful (fun _ -> testData) = testData
