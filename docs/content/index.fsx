@@ -43,9 +43,9 @@ And a NovelIO example:
 
 *)
 
-let exmpl = io {return! Console.readLine}
-printfn "%s" (IO.run exmpl)
-printfn "%s" (IO.run exmpl)
+let exmpl2 = io {return! Console.readLine}
+printfn "%s" (IO.run exmpl2)
+printfn "%s" (IO.run exmpl2)
 
 (**
 
@@ -65,7 +65,7 @@ io {
     let! l1 = Console.readLine
     let! l2 = Console.readLine
     let! l3 = Console.readLine
-    do! Console.printf "You entered: %A" [l1; l2; l3]
+    do! Console.printfn "You entered: %A" [l1; l2; l3]
 } |> IO.run
 
 (**
@@ -100,8 +100,8 @@ let fName = File.assumeValidFilename "testfile.txt"
 
 let fileIO = io {
     let! lines = File.readLines fName // sequence of io actions which each read a line from a file
-    let! floatLines = IO.traverseM (IO.map float) lines // parse each line, collecting the results
-    do! IO.traverseM_ (Console.printfn "%f") floatLines // print each float to the console
+    let! floatLines = IO.mapM (IO.map float) lines // parse each line, collecting the results
+    do! IO.iterM (Console.printfn "%f") floatLines // print each float to the console
 }
 
 try
