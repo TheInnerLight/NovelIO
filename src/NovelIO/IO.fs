@@ -120,51 +120,10 @@ module IO =
     let (>=>) f g x = f x >>= g
     /// Right to left Kleisli composition of IO values
     let (<=<) f g x = flip (>=>) f g x
-    /// Map function for IO Values
+    /// Map function for IO values
     let map f x = x >>= (return' << f)
-    /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results.
-    let mapM mFunc list =
-        let folder head tail =
-            io {
-                let! h = mFunc head
-                let! t = tail
-                return (h::t)
-            }
-        List.foldBack (folder) list (return' [])
-    /// As mapM but ignores the result.
-    let mapM_ mFunc list =
-        mapM mFunc list >>= (fun x -> return' ())
-    /// Evaluate each action in the list from left to right and collect the results.
-    let listM list =
-        mapM (id) list
-    /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
-    let traverseM mFunc sequ =
-        let folder ioAcc ioValue =
-            io {
-                let! value = mFunc ioValue
-                let! acc = ioAcc
-                return seq {yield value; yield! acc} 
-            }
-        Seq.fold (folder) (return' Seq.empty) sequ
-    /// As traverseM but ignores the result.
-    let traverseM_ mFunc seq =
-        traverseM mFunc seq >>= (fun x -> return' ())
-
-    /// IOBuilder extensions so that traverseM_ can be used to define For
-    type IOBuilder with
-        /// Definition of for loops within IO computation expressions
-        member this.For (sequence : seq<_>, body) =
-            traverseM_ body sequence
-
-    /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
-    let sequence seq =
-        traverseM id seq
-    /// Performs the action mFunc n times, gathering the results.
-    let replicateM mFunc n =
-        listM (List.init n (fun _ -> mFunc))
-    /// As replicateM but ignores the results
-    let replicateM_ mFunc n  =
-        replicateM mFunc n >>= (fun f -> return' ())
+    /// Map operator for IO values
+    let (<!>) f x = map f x
     /// Applicative for IO
     let apply (f : IO<'a -> 'b>) (x : IO<'a>) =
         f >>= (fun fe -> map fe x)
@@ -201,55 +160,57 @@ module IO =
     let forkIO io = 
         fromEffectful (fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
 
+    /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
+    let mapM mFunc sequ =
+        return' <| Seq.map (run << mFunc) sequ
+    /// As traverseM but ignores the result.
+    let iterM mFunc sequ =
+        fromEffectful (fun _ -> Seq.iter (run << mFunc) sequ)
+    /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
+    let sequence seq =
+        mapM id seq
+    /// Performs the action mFunc n times, gathering the results.
+    let replicateM mFunc n =
+        sequence (Seq.init n (fun _ -> mFunc))
+    /// As replicateM but ignores the results
+    let replicateM_ mFunc n  =
+        replicateM mFunc n >>= (return' << Seq.iter ignore)
+
+    /// IOBuilder extensions so that traverseM_ can be used to define For
+    type IOBuilder with
+        /// Definition of for loops within IO computation expressions
+        member this.For (sequence : seq<_>, body) =
+            iterM body sequence
+
     // ------ LOOPS ------ //
 
     /// IO looping constructs
     module Loops =
         /// Take elements repeatedly while a condition is met
-        let rec takeWhileM p xs =
-            match xs with
-            |[] -> return' []
-            |x::xs ->
-                io {
-                    let! v = x
-                    let! q = p v
-                    if q then 
-                        let! res = (takeWhileM p xs) 
-                        return (v::res)
-                    else return []
-                }
+        let takeWhileM p xs =
+            xs 
+            |> Seq.takeWhile p
+            |> Seq.map (run)
+            |> return'
         /// Drop elements repeatedly while a condition is met
-        let rec dropWhileM p xs =
-            match xs with
-            |[] -> return' []
-            |x::xs ->
-                io {
-                    let! v = x
-                    let! q = p v
-                    if q then return! dropWhileM p xs
-                    else return! listM (x::xs)
-                }
-        /// Execute an action repeatedly as long as the given boolean expression returns true
-        let rec whileM p f =
-            io {
-                let! x = p
-                let! x2 = f
-                let! xs = whileM p f
-                return x2 :: xs
-            }
-        /// As long as the supplied "Maybe" expression returns "Some _", the loopbody will be called and passed the value contained in the 'Some'.
-        /// Results are collected into a list.
-        let rec whileSome p f =
-            io {
-                let! x = p
-                match x with
-                |None -> return []
-                |Some x ->
-                    let! x = f x
-                    let! xs = whileSome p f
-                    return x :: xs
-            }
-
+        let skipWhileM p xs =
+            xs 
+            |> Seq.skipWhile p
+            |> Seq.map (run)
+            |> return'
+        /// Execute an action repeatedly as long as the given boolean IO action returns true
+        let whileM (pAct : IO<bool>) (f : IO<'a>) =
+            Seq.initInfinite (fun _ -> f)
+            |> Seq.map (run)
+            |> Seq.takeWhile (fun _ -> run pAct)
+            |> return'
+        /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
+        /// Results are collected into a sequence.
+        let whileSome act f =
+            Seq.initInfinite (fun _ -> run act)
+            |> Seq.takeWhile (Option.isSome)
+            |> Seq.map (run << f << Option.get)
+            |> return'
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =
             match p v with
@@ -262,23 +223,23 @@ module IO =
         /// Execute an action repeatedly until its result fails to satisfy a predicate and return that result (discarding all others).
         let iterateWhile p x = iterateUntil (not << p) x
 
-        /// Repeatedly evaluates the second argument until the value satisfies the given predicate, and returns a list of all
+        /// Repeatedly evaluates the second argument while the value satisfies the given predicate, and returns a list of all
         /// values that satisfied the predicate.  Discards the final one (which failed the predicate).
-        let rec unfoldWhileM p m =
-            io {
-                let! x = m
-                if p x then
-                    let! xs = unfoldWhileM p m
-                    return x :: xs
-                else return []
-             }
+        let unfoldWhileM p (f : IO<'a>) =
+            Seq.initInfinite (fun _ -> f)
+            |> Seq.map (run)
+            |> Seq.takeWhile p
+            |> return'
 
 /// Console functions
 module Console =
+
     /// print a string to the console using the supplied formatter
-    let printf fmt str = IO.fromEffectful (fun () -> Core.Printf.printf fmt str)
+    let printf fmt = 
+         IO.fromEffectful (fun () -> Printf.printf fmt)
     /// print a line to the console using the supplied formatter
-    let printfn fmt str = IO.fromEffectful (fun () -> Core.Printf.printfn fmt str)
+    let printfn fmt str =
+         IO.fromEffectful (fun () -> Printf.printfn fmt str)
     /// read a key from the console
     let readKey = IO.fromEffectful (fun () -> System.Console.ReadKey())
     /// read a line from the console

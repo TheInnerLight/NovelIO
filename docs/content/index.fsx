@@ -37,15 +37,17 @@ let exmpl = System.Console.ReadLine()
 printfn "%s" exmpl
 printfn "%s" exmpl
 
-(*
+(**
+
 And a NovelIO example:
+
 *)
 
 let exmpl = io {return! Console.readLine}
 printfn "%s" (IO.run exmpl)
 printfn "%s" (IO.run exmpl)
 
-(*
+(**
 
 If you run these examples, you will note the different behaviour.
 

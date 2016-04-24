@@ -42,7 +42,8 @@ type ``File Integration Tests``() =
         let lineIO =
             io {
                 let! lineSeq = File.readLines fname
-                return! lineSeq |> List.ofSeq |> IO.listM
+                let! uwSeq = IO.sequence lineSeq
+                return List.ofSeq uwSeq
             }
         IO.run lineIO = lstStrs
 
