@@ -9,7 +9,7 @@ open NovelFS.NovelIO
 Introduction
 ======================
 
-NovelIO is a library designed to bring the explicit safety and robustness of Haskell's IO monad to the .NET framework. The result is a purely functional approach to describing I/O operations whereby the evaluation of functions do not produce side-effects, rather they describe sequenced operations which can later be evaluated.
+NovelIO is a library designed to bring the explicit safety and robustness of Haskell's IO monad to the .NET framework. The result is a purely functional approach to describing I/O operations whereby the application of functions does not perform side-effecting computations but rather constructs a data type representing a sequence of actions that can later be executed.
 
 Much like in Haskell, we introduce the `IO<'a>` type which represents some action that, when performed successfully, returns some result `'a.`  Here are some examples:
 
@@ -17,20 +17,43 @@ Much like in Haskell, we introduce the `IO<'a>` type which represents some actio
 * An IO action that gets a line of text from the Console has type `IO<string>`.
 * An IO action that opens a TCP connection to google.com on port 80 has type `IO<TCPConnectedSocket>`.
 
-Values of type `IO<'a>` are distinct from traditional values in that they do not represent the result of some side effect, they rather represent an action that can be `run` to produce a particular result.
+The IO action can equally represent a sequence of actions:
+
+* An IO action that requests a Name, then that person's Date of Birth from a service might have type `IO<string, DateTime>`
+
+Values of type `IO<'a>` are distinct from traditional values in that they do not represent the result of some side effect, they rather represent an action (or sequence of actions) that can be `run` to produce a particular result.
 
 ## Running IO Actions
 
-`IO<'a>` Actions can be `run` using the `IO.run` function.  This results in all of the side-effects being evaluated, resulting in something of type `IOResult<'a>`.
+`IO<'a>` Actions can be `run` using the `IO.run` function.  This results in all of the side-effects being evaluated, resulting in something of type `'a`.
 
-`IOResult<'a>` is a Discriminated Union defined as follows:
+These values can then be re-used and run again to evaluate the side-effects once more.
 
+Consider a standard .NET impure IO example:
 
-    type IOResult<'a> =
-        |IOSuccess of 'a
-        |IOError of IOErrorResult
+*)
 
-Thus, our IO action can either be successful, returning the desired result of type `'a` or it can fail, returning some error.
+let exmpl = System.Console.ReadLine()
+printfn "%s" exmpl
+printfn "%s" exmpl
+
+(**
+
+And a NovelIO example:
+
+*)
+
+let exmpl2 = io {return! Console.readLine}
+printfn "%s" (IO.run exmpl2)
+printfn "%s" (IO.run exmpl2)
+
+(**
+
+If you run these examples, you will note the different behaviour.
+
+In the first example `exmpl` represents the result of the user input from the console, we perform that side effect only once and print the same value to the console twice.
+
+In the second example `exmpl` represents the action of reading user input from the console and running it gives us the result.  Hence, in this case, the user is prompted for input twice and potentially different results are printed.
 
 ## Sequencing IO Actions
 
@@ -42,7 +65,7 @@ io {
     let! l1 = Console.readLine
     let! l2 = Console.readLine
     let! l3 = Console.readLine
-    do! Console.printf "You entered: %A" [l1; l2; l3]
+    do! Console.printfn "You entered: %A" [l1; l2; l3]
 } |> IO.run
 
 (**
@@ -77,13 +100,14 @@ let fName = File.assumeValidFilename "testfile.txt"
 
 let fileIO = io {
     let! lines = File.readLines fName // sequence of io actions which each read a line from a file
-    let! floatLines = IO.traverseM (IO.map float) lines // parse each line, collecting the results
-    do! IO.traverseM_ (Console.printfn "%f") floatLines // print each float to the console
+    let! floatLines = IO.mapM (IO.map float) lines // parse each line, collecting the results
+    do! IO.iterM (Console.printfn "%f") floatLines // print each float to the console
 }
 
-match IO.run fileIO with // side effects occur *only* on this line
-|IOSuccess _ -> () // success case
-|IOError err -> () // error case
+try
+    IO.run fileIO // side effects occur *only* on this line
+with 
+    |_ -> () // error case
 
 
 (**

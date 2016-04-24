@@ -28,10 +28,7 @@ type ``File Integration Tests``() =
         let fnameStr = "readbytestest.tst"
         System.IO.File.WriteAllBytes(fnameStr, bytes)
         let fname = File.assumeValidFilename fnameStr
-        match IO.run <| File.readAllBytes fname with
-        |IOSuccess readBytes ->
-            readBytes = bytes
-        |IOError err -> failwith "error"
+        IO.run <| File.readAllBytes fname = bytes
 
     [<Property>]
     static member ``Read lines from file`` (strA : NonEmptyArray<NonEmptyString>) =
@@ -45,12 +42,10 @@ type ``File Integration Tests``() =
         let lineIO =
             io {
                 let! lineSeq = File.readLines fname
-                return! lineSeq |> List.ofSeq |> IO.listM
+                let! uwSeq = IO.sequence lineSeq
+                return List.ofSeq uwSeq
             }
-        match IO.run lineIO with
-        |IOSuccess lines ->
-            lines = lstStrs
-        |IOError err -> failwith "error"
+        IO.run lineIO = lstStrs
 
     [<Property>]
     static member ``Read all lines from file`` (strA : NonEmptyArray<NonEmptyString>) =
@@ -65,10 +60,7 @@ type ``File Integration Tests``() =
             io {
                 return! File.readAllLines fname
             }
-        match IO.run lineIO with
-        |IOSuccess lines ->
-            lines = lstStrs
-        |IOError err -> failwith "error"
+        IO.run lineIO  = lstStrs
 
     
 

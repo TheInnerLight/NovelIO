@@ -18,6 +18,7 @@ open NovelFS.NovelIO
 open NovelFS.NovelIO.BinaryParser
 open System.Net
 open System.Text
+open NovelFS.NovelIO.IO
 
 [<EntryPoint>]
 let main argv = 
@@ -35,14 +36,15 @@ let main argv =
             let! lines = File.readLines fName
             let! lSeq = lines |> IO.sequence
             for line in lSeq do
-                do! Console.printfn "%s" line
-            return! IO.traverseM_ (Console.printfn "%s") lSeq
+                do! (Console.printf "%s%d") <*> (IO.return' line) <*> (IO.return' 5)
+            let! test = IO.mapM (IO.return' << sprintf "%s") lSeq
+            return! Console.printfn "%A" test
         }
 
     let consoleTest = 
         io{
             let! inputStrs = IO.Loops.unfoldWhileM (fun str -> str <> "") (Console.readLine)
-            do! IO.mapM_ (Console.printfn "%s") inputStrs
+            do! IO.iterM (Console.printfn "%s") inputStrs
         }
 
     let results = IO.run test
@@ -79,7 +81,6 @@ let main argv =
             //do! httpResponse handle "<html>Test response</html>"
         }
         
-
 
     let test = IO.run testServ
 
