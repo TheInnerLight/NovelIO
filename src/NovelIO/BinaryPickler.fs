@@ -22,7 +22,7 @@ exception PicklingExceededArrayLengthException of int * int
 type BinaryUnpicklerState = {Raw : byte array; Position : int}
 type BinaryPicklerState = {Raw : byte list}
 
-type BinaryPU<'a> = {Pickle : unit -> 'a * BinaryPicklerState; Unpickle : BinaryUnpicklerState -> 'a * BinaryUnpicklerState}
+type BinaryPU<'a> = {Pickle : 'a * BinaryPicklerState -> BinaryPicklerState; Unpickle : BinaryUnpicklerState -> 'a * BinaryUnpicklerState}
 
 module private PickleConvertors =
     let private checkConversionException f pos array =
@@ -56,28 +56,46 @@ module BinaryPickler =
         match x with
         |{Unpickle = g; Pickle = _} -> g state
 
-    let private runPickle  x =
+    let private runPickle (a, st) x =
         match x with
-        |{Unpickle = _; Pickle = g} -> g  ()
+        |{Unpickle = _; Pickle = g} -> g (a, st)
 
-    let return' x = {Pickle = (fun _ -> x, {Raw = []}); Unpickle = (fun s -> x, s)}
+    let return' x = {Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
 
-    let bind (x : BinaryPU<'a>) (f : 'a -> BinaryPU<'b>) = 
-        match x with
-        |{Unpickle = u; Pickle = p} ->
-            let unpickler2 = 
-                fun s ->
-                    let (a, s') = runUnpickle s x 
-                    runUnpickle s' (f a)
-            let pickler2 =
-                fun _ ->
-                    let (a', s') = runPickle x
-                    runPickle (f a')
-            {Pickle = pickler2; Unpickle = unpickler2}
+    let sequ (f : 'b -> 'a) (pa : BinaryPU<'a>) (k : 'a -> BinaryPU<'b>) : BinaryPU<'b> =
+        match pa with
+        |{Unpickle = g; Pickle = u} ->
+            let g' = fun s ->
+                let a, s' = runUnpickle s pa
+                runUnpickle s' (k a)
+            let u' = fun (b, s) ->
+                let a = f b
+                let pb = k a
+                runPickle (a, runPickle (b, s) pb) pa
+            {Unpickle = g'; Pickle = u'}
+
+    let tuple2 pa pb =
+        sequ fst pa (fun a ->
+            sequ snd pb  (fun b -> return' (a, b)))
+
+    let tuple3 pa pb pc =
+        sequ (fun (a,_,_) -> a) pa (fun a ->
+            sequ (fun (_,b,_) -> b) pb  (fun b ->
+                sequ (fun (_,_,c) -> c) pc  (fun c ->
+                    return' (a, b, c))))
+
+    let tuple4 pa pb pc pd =
+        sequ (fun (a,_,_,_) -> a) pa (fun a ->
+            sequ (fun (_,b,_,_) -> b) pb  (fun b ->
+                sequ (fun (_,_,c,_) -> c) pc  (fun c ->
+                    sequ (fun (_,_,_,d) -> d) pd  (fun d ->
+                        return' (a, b, c, d)))))
+
+    let wrap (fab, fba) pa = sequ fba pa (return' << fab) 
 
     let pickleByte b =
         {
-        Pickle = fun _ -> b, {Raw = [b]};
+        Pickle = fun (b, s) -> {Raw = b :: s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
             let result = Array.item (pos) st.Raw
@@ -86,16 +104,16 @@ module BinaryPickler =
 
     let pickleInt16 (i16 : int16) =
         {
-        Pickle = fun _ -> i16, {Raw = (PickleConvertors.convFromInt16 i16)};
+        Pickle = fun (i16, s) -> {Raw = (PickleConvertors.convFromInt16 i16) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
             let result = PickleConvertors.convInt16 pos (st.Raw)
             result, {st with Position = pos + sizeof<int16>}
         }
 
-    let pickleInt32 (i32 : int32) =
+    let pickleInt32 =
         {
-        Pickle = fun _ -> i32, {Raw = (PickleConvertors.convFromInt32 i32)};
+        Pickle = fun (i32, s) -> {Raw = (PickleConvertors.convFromInt32 i32) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
             let result = PickleConvertors.convInt32 pos (st.Raw)
@@ -104,7 +122,7 @@ module BinaryPickler =
 
     let pickleInt64 (i64 : int64) =
         {
-        Pickle = fun _ -> i64, {Raw = (PickleConvertors.convFromInt64 i64)};
+        Pickle = fun (i64, s) -> {Raw = (PickleConvertors.convFromInt64 i64) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
             let result = PickleConvertors.convInt64 pos (st.Raw)
@@ -113,7 +131,7 @@ module BinaryPickler =
 
     let pickleFloat32 (f32 : float32) =
         {
-        Pickle = fun _ -> f32, {Raw = (PickleConvertors.convFromFloat32 f32)};
+        Pickle = fun (f32, s) -> {Raw = (PickleConvertors.convFromFloat32 f32) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
             let result = PickleConvertors.convFloat32 pos (st.Raw)
@@ -122,7 +140,7 @@ module BinaryPickler =
 
     let pickleFloat64 (f64 : float) =
         {
-        Pickle = fun _ -> f64, {Raw = (PickleConvertors.convFromFloat64 f64)};
+        Pickle = fun (f64, s) -> {Raw = (PickleConvertors.convFromFloat64 f64) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
             let result = PickleConvertors.convFloat64 pos (st.Raw)
