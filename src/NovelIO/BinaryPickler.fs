@@ -106,6 +106,10 @@ module BinaryPickler =
         |_ ->
             let pb = tuple2 pa (repeat pa (n-1))
             wrap ((fun (a, b) -> (a::b)),(fun (a::b) -> (a,b))) pb
+
+    /// Repeats a pickler n times to create an array pickler
+    let repeatA pa n =
+        wrap (Array.ofList, List.ofArray) (repeat pa n)
     
     /// Pickles a byte
     let pickleByte =
@@ -169,6 +173,9 @@ module BinaryPickler =
 
     /// Pickles a general list by prefixing with the length of the list
     let list pa = sequ (List.length) pickleInt32 << repeat <| pa
+
+    /// Pickles a general array by prefixing with the length of the array
+    let array pa = sequ (Array.length) pickleInt32 << repeatA <| pa
 
 
 
