@@ -60,40 +60,54 @@ module BinaryPickler =
         match x with
         |{Unpickle = _; Pickle = g} -> g (a, st)
 
-    let return' x = {Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
+    /// Given a value of x, returns a pickler of x
+    let pure' x = {Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
 
     let sequ (f : 'b -> 'a) (pa : BinaryPU<'a>) (k : 'a -> BinaryPU<'b>) : BinaryPU<'b> =
         match pa with
-        |{Unpickle = g; Pickle = u} ->
-            let g' = fun s ->
+        |{Unpickle = unPck; Pickle = pck} ->
+            let unPck' = fun s ->
                 let a, s' = runUnpickle s pa
                 runUnpickle s' (k a)
-            let u' = fun (b, s) ->
+            let pck' = fun (b, s) ->
                 let a = f b
                 let pb = k a
                 runPickle (a, runPickle (b, s) pb) pa
-            {Unpickle = g'; Pickle = u'}
+            {Unpickle = unPck'; Pickle = pck'}
 
+    /// Combines two picklers into a pickler that pickles a tuple-2
     let tuple2 pa pb =
         sequ fst pa (fun a ->
-            sequ snd pb  (fun b -> return' (a, b)))
+            sequ snd pb  (fun b -> pure' (a, b)))
 
+    /// Combines three picklers into a pickler that pickles a tuple-3
     let tuple3 pa pb pc =
         sequ (fun (a,_,_) -> a) pa (fun a ->
             sequ (fun (_,b,_) -> b) pb  (fun b ->
                 sequ (fun (_,_,c) -> c) pc  (fun c ->
-                    return' (a, b, c))))
+                    pure' (a, b, c))))
 
+    /// Combines four picklers into a pickler that pickles a tuple-4
     let tuple4 pa pb pc pd =
         sequ (fun (a,_,_,_) -> a) pa (fun a ->
             sequ (fun (_,b,_,_) -> b) pb  (fun b ->
                 sequ (fun (_,_,c,_) -> c) pc  (fun c ->
                     sequ (fun (_,_,_,d) -> d) pd  (fun d ->
-                        return' (a, b, c, d)))))
+                        pure' (a, b, c, d)))))
 
-    let wrap (fab, fba) pa = sequ fba pa (return' << fab) 
+    /// When supplied with a method of transforming between two types reversably and a pickler of the first of those types, returns a 
+    /// pickler of the second type.
+    let wrap (fab, fba) pa = sequ fba pa (pure' << fab)
 
-    let pickleByte b =
+    /// Repeats a pickler n times to create a list pickler
+    let rec repeat pa n =
+        match n with
+        |0 -> pure' []
+        |_ ->
+            let pb = tuple2 pa (repeat pa (n-1))
+            wrap ((fun (a, b) -> (a::b)),(fun (a::b) -> (a,b))) pb
+
+    let pickleByte =
         {
         Pickle = fun (b, s) -> {Raw = b :: s.Raw}
         Unpickle = fun st ->
@@ -102,7 +116,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<byte>}
         }
 
-    let pickleInt16 (i16 : int16) =
+    let pickleInt16 =
         {
         Pickle = fun (i16, s) -> {Raw = (PickleConvertors.convFromInt16 i16) @ s.Raw}
         Unpickle = fun st ->
@@ -120,7 +134,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<int32>}
         }
 
-    let pickleInt64 (i64 : int64) =
+    let pickleInt64 =
         {
         Pickle = fun (i64, s) -> {Raw = (PickleConvertors.convFromInt64 i64) @ s.Raw}
         Unpickle = fun st ->
@@ -129,7 +143,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<int64>}
         }
 
-    let pickleFloat32 (f32 : float32) =
+    let pickleFloat32 =
         {
         Pickle = fun (f32, s) -> {Raw = (PickleConvertors.convFromFloat32 f32) @ s.Raw}
         Unpickle = fun st ->
@@ -138,7 +152,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<float32>}
         }
 
-    let pickleFloat64 (f64 : float) =
+    let pickleFloat64 =
         {
         Pickle = fun (f64, s) -> {Raw = (PickleConvertors.convFromFloat64 f64) @ s.Raw}
         Unpickle = fun st ->
