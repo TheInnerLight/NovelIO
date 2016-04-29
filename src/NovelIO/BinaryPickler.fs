@@ -177,6 +177,22 @@ module BinaryPickler =
     /// Pickles a general array by prefixing with the length of the array
     let array pa = sequ (Array.length) pickleInt32 << repeatA <| pa
 
+    /// Pickles an ASCII string
+    let pickleAscii =
+        wrap (System.Text.Encoding.ASCII.GetString, System.Text.Encoding.ASCII.GetBytes) (array pickleByte)
+
+    /// Pickles a UTF-7 string
+    let pickleUTF7 =
+        wrap (System.Text.Encoding.UTF7.GetString, System.Text.Encoding.UTF7.GetBytes) (array pickleByte)
+
+    /// Pickles a UTF-8 string
+    let pickleUTF8 =
+        wrap (System.Text.Encoding.UTF8.GetString, System.Text.Encoding.UTF8.GetBytes) (array pickleByte)
+
+    /// Pickles a UTF-32 string
+    let pickleUTF32 =
+        wrap (System.Text.Encoding.UTF32.GetString, System.Text.Encoding.UTF32.GetBytes) (array pickleByte)
+
 
 
 
