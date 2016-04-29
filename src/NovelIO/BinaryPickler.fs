@@ -110,7 +110,7 @@ module BinaryPickler =
     /// Repeats a pickler n times to create an array pickler
     let repeatA pa n =
         wrap (Array.ofList, List.ofArray) (repeat pa n)
-    
+
     /// Pickles a byte
     let pickleByte =
         {
@@ -171,11 +171,20 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<float>}
         }
 
+    let alt tag ps = sequ tag pickleInt32 (fun i -> List.item i ps)
+
     /// Pickles a general list by prefixing with the length of the list
     let list pa = sequ (List.length) pickleInt32 << repeat <| pa
 
     /// Pickles a general array by prefixing with the length of the array
     let array pa = sequ (Array.length) pickleInt32 << repeatA <| pa
+
+    /// Pickles an option type
+    let pickleOption pa = 
+        let tag = function
+            |Some _ -> 1
+            |None -> 0
+        alt tag [lift None; wrap (Some, Option.get) pa]
 
     /// Pickles an ASCII string
     let pickleAscii =
