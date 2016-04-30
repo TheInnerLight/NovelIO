@@ -34,6 +34,8 @@ module private PickleConvertors =
             | :? System.ArgumentOutOfRangeException as aoex -> raise <| PicklingExceededArrayLengthException(pos, Array.length array)
             | :? System.ArgumentException as aex -> raise <| PicklingExceededArrayLengthException(pos, Array.length array)
 
+    /// Convert a chunk of a byte array into an bool with exception checking
+    let convBool pos array = checkConversionException (fun arr -> System.BitConverter.ToBoolean(arr, pos)) pos array
     /// Convert a chunk of a byte array into an int16 with exception checking
     let convInt16 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt16(arr, pos)) pos array
     /// Convert a chunk of a byte array into an int32 with exception checking
@@ -48,6 +50,9 @@ module private PickleConvertors =
     /// Flips an array to produce a list in the opposite order
     let arrayFlipToList a =  Array.fold(fun lst it -> it :: lst) [] a
 
+    /// Converts a bool to a byte list in reverse order
+    let convFromBool (b : bool) = 
+        System.BitConverter.GetBytes(b) |> arrayFlipToList
     /// Converts an int16 to a byte list in reverse order
     let convFromInt16 (i16 : int16) = 
         System.BitConverter.GetBytes(i16) |> arrayFlipToList
@@ -127,6 +132,16 @@ module BinaryPickler =
     /// Repeats a pickler n times to create an array pickler
     let repeatA pa n =
         wrap (Array.ofList, List.ofArray) (repeat pa n)
+
+    /// Pickles a byte
+    let pickleBool =
+        {
+        Pickle = fun (b, s) -> {Raw = (PickleConvertors.convFromBool b) @ s.Raw}
+        Unpickle = fun st ->
+            let pos = st.Position
+            let result = PickleConvertors.convBool pos (st.Raw)
+            result, {st with Position = pos + sizeof<bool>}
+        }
 
     /// Pickles a byte
     let pickleByte =
