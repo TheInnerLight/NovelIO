@@ -24,7 +24,9 @@ type BinaryPicklerState = {Raw : byte list}
 
 type BinaryPU<'a> = {Pickle : 'a * BinaryPicklerState -> BinaryPicklerState; Unpickle : BinaryUnpicklerState -> 'a * BinaryUnpicklerState}
 
+/// Conversions functions
 module private PickleConvertors =
+    /// perform some type conversion with exception checks on the array bounds
     let private checkConversionException f pos array =
         try
             f array
@@ -32,25 +34,37 @@ module private PickleConvertors =
             | :? System.ArgumentOutOfRangeException as aoex -> raise <| PicklingExceededArrayLengthException(pos, Array.length array)
             | :? System.ArgumentException as aex -> raise <| PicklingExceededArrayLengthException(pos, Array.length array)
 
+    /// Convert a chunk of a byte array into an int16 with exception checking
     let convInt16 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt16(arr, pos)) pos array
+    /// Convert a chunk of a byte array into an int32 with exception checking
     let convInt32 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt32(arr, pos)) pos array
+    /// Convert a chunk of a byte array into an int64 with exception checking
     let convInt64 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt64(arr, pos)) pos array
+    /// Convert a chunk of a byte array into an float32 with exception checking
     let convFloat32 pos array = checkConversionException (fun arr -> System.BitConverter.ToSingle(arr, pos)) pos array
+    /// Convert a chunk of a byte array into an float64 with exception checking
     let convFloat64 pos array = checkConversionException (fun arr -> System.BitConverter.ToDouble(arr, pos)) pos array
+    
+    /// Flips an array to produce a list in the opposite order
+    let arrayFlipToList a =  Array.fold(fun lst it -> it :: lst) [] a
 
-    let arrayFlipToList a =  a |> Array.fold(fun lst it -> it :: lst) []
-
+    /// Converts an int16 to a byte list in reverse order
     let convFromInt16 (i16 : int16) = 
         System.BitConverter.GetBytes(i16) |> arrayFlipToList
+    /// Converts an int32 to a byte list in reverse order
     let convFromInt32 (i32 : int32) = 
         System.BitConverter.GetBytes(i32) |> arrayFlipToList
+    /// Converts an int64 to a byte list in reverse order
     let convFromInt64 (i64 : int64) = 
         System.BitConverter.GetBytes(i64) |> arrayFlipToList
+    /// Converts an float32 to a byte list in reverse order
     let convFromFloat32 (f32 : float32) = 
-        System.BitConverter.GetBytes(f32) |> arrayFlipToList   
+        System.BitConverter.GetBytes(f32) |> arrayFlipToList
+    /// Converts an float64 to a byte list in reverse order  
     let convFromFloat64 (f64 : float) = 
         System.BitConverter.GetBytes(f64) |> arrayFlipToList   
 
+/// Provides functions for pickling binary data
 module BinaryPickler =
     let private runUnpickle state x =
         match x with
@@ -63,13 +77,16 @@ module BinaryPickler =
     /// Given a value of x, returns a pickler of x
     let lift x = {Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
 
+    /// Creates a sequential combination of picklers 
     let sequ (f : 'b -> 'a) (pa : BinaryPU<'a>) (k : 'a -> BinaryPU<'b>) : BinaryPU<'b> =
         match pa with
         |{Unpickle = unPck; Pickle = pck} ->
-            let unPck' = fun s ->
+            // unpickling is sequenced like bind in the reader monad
+            let unPck' s =
                 let a, s' = runUnpickle s pa
                 runUnpickle s' (k a)
-            let pck' = fun (b, s) ->
+            // pickling requires the extra projection function: f
+            let pck' (b, s) =
                 let a = f b
                 let pb = k a
                 runPickle (a, runPickle (b, s) pb) pa
@@ -202,6 +219,7 @@ module BinaryPickler =
     let pickleUTF32 =
         wrap (System.Text.Encoding.UTF32.GetString, System.Text.Encoding.UTF32.GetBytes) (array pickleByte)
 
-
-
-
+    /// Pickles a decimal
+    let pickleDecimal =
+        let intAToDecimal (a : int[]) = System.Decimal a
+        wrap (intAToDecimal, System.Decimal.GetBits) (repeatA pickleInt32 4)
