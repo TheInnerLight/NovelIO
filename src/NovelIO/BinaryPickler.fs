@@ -188,7 +188,8 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<float>}
         }
 
-    let alt tag ps = sequ tag pickleInt32 (fun i -> List.item i ps)
+    /// Accepts a tagging function that partitions the type to be pickled into two sets, then accepts a pickler for each set
+    let alt tag ps = sequ tag pickleInt32 (fun i -> Map.find i ps)
 
     /// Pickles a general list by prefixing with the length of the list
     let list pa = sequ (List.length) pickleInt32 << repeat <| pa
@@ -201,7 +202,8 @@ module BinaryPickler =
         let tag = function
             |Some _ -> 1
             |None -> 0
-        alt tag [lift None; wrap (Some, Option.get) pa]
+        let map = Map.ofList [(0, lift None); (1, wrap (Some, Option.get) pa)]
+        alt tag map
 
     /// Pickles an ASCII string
     let pickleAscii =
