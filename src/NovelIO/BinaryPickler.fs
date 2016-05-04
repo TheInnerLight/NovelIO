@@ -241,6 +241,10 @@ module BinaryPickler =
         let intAToDecimal (a : int[]) = System.Decimal a
         wrap (intAToDecimal, System.Decimal.GetBits) (repeatA pickleInt32 4)
 
-    /// Uses the pickler to unpickle the supplied byte array into some type 'a 
+    /// Uses the supplied pickler to unpickle the supplied byte array into some type 'a 
     let unpickle pickler array =
         fst <| runUnpickle {Raw = array; Position = 0} pickler
+
+    /// Uses the supplied pickler to pickle the supplied value into a byte array
+    let pickle pickler value =
+        runPickle (value, {Raw = []}) pickler
