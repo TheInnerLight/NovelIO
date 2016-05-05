@@ -94,7 +94,7 @@ module BinaryPickler =
             let pck' (b, s) =
                 let a = f b
                 let pb = k a
-                runPickle (a, runPickle (b, s) pb) pa
+                runPickle (b, runPickle (a, s) pa) pb
             {Unpickle = unPck'; Pickle = pck'}
 
     /// Combines two picklers into a pickler that pickles a tuple-2
@@ -247,4 +247,6 @@ module BinaryPickler =
 
     /// Uses the supplied pickler to pickle the supplied value into a byte array
     let pickle pickler value =
-        runPickle (value, {Raw = []}) pickler
+        (runPickle (value, {Raw = []}) pickler).Raw 
+        |> Seq.rev
+        |> Array.ofSeq

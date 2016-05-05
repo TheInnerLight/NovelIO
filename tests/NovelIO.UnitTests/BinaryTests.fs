@@ -116,6 +116,76 @@ type ``Binary Parser Tests`` =
         let result = BinaryPickler.unpickle stringPickler bytes
         result = str
 
+    [<Property>]
+    static member ``Pickle byte from one byte`` (byte : byte) =
+        let bytes = [|byte|]
+        let bytePickler = BinaryPickler.pickleByte
+        let result = BinaryPickler.pickle bytePickler byte 
+        result = bytes
+
+    [<Property>]
+    static member ``Pickle int16 from one int16`` (i16 : int16) =
+        let int16Pickler = BinaryPickler.pickleInt16
+        let bytes = BinaryPickler.pickle int16Pickler i16
+        let result = BinaryPickler.unpickle int16Pickler bytes
+        result = i16
+
+    [<Property>]
+    static member ``Pickle int32 from one int32`` (i32 : int32) =
+        let int32Pickler = BinaryPickler.pickleInt32
+        let bytes = BinaryPickler.pickle int32Pickler i32
+        let result = BinaryPickler.unpickle int32Pickler bytes
+        result = i32
+
+    [<Property>]
+    static member ``Pickle int64 from one int64`` (i64 : int64) =
+        let int64Pickler = BinaryPickler.pickleInt64
+        let bytes = BinaryPickler.pickle int64Pickler i64
+        let result = BinaryPickler.unpickle int64Pickler bytes
+        result = i64
+
+    [<Property>]
+    static member ``Pickle float from one float`` (f64 : float) =
+        let floatPickler = BinaryPickler.pickleFloat
+        let bytes = BinaryPickler.pickle floatPickler f64
+        let result = BinaryPickler.unpickle floatPickler bytes
+        match result with
+        |x when System.Double.IsNaN(x) -> System.Double.IsNaN(f64)
+        |_ -> result = f64
+
+    [<Property>]
+    static member ``Pickle float32 from one float32`` (f32 : float32) =
+        let floatPickler = BinaryPickler.pickleFloat32
+        let bytes = BinaryPickler.pickle floatPickler f32
+        let result = BinaryPickler.unpickle floatPickler bytes
+        match result with
+        |x when System.Single.IsNaN(x) -> System.Single.IsNaN(f32)
+        |_ -> result = f32
+
+    [<Property>]
+    static member ``Pickle UTF7 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF7
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle UTF8 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF8
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle UTF32 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF32
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
     
         
 
