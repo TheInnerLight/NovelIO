@@ -163,6 +163,14 @@ type ``Binary Parser Tests`` =
         |_ -> result = f32
 
     [<Property>]
+    static member ``Pickle Ascii from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleAscii
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
     static member ``Pickle UTF7 from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
         let strPickler = BinaryPickler.pickleUTF7
