@@ -21,7 +21,7 @@ open NovelFS.NovelIO.BinaryParser
 open FsCheck
 open FsCheck.Xunit
 
-type ``Binary Parser Tests`` =
+type ``Binary Pickler Tests`` =
     [<Property>]
     static member ``Unpickle byte from array of one byte`` (byte : byte) =
         let bytes = [|byte|]
