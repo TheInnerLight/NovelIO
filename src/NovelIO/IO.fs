@@ -86,7 +86,7 @@ module IO =
     let return' x = Return x
     /// Creates an IO action from an effectful computation, this simply takes a side effecting function and brings it into IO
     let fromEffectful f = Delay (return' << f)
-    /// Monadic bind for IO action, this is used to combine and sequence IO action
+    /// Monadic bind for IO action, this is used to combine and sequence IO actions
     let rec bind x f =
         match x with
         |Return a -> f a
@@ -96,7 +96,7 @@ module IO =
     type IOBuilder() =
         /// Return a value as an IO action
         member this.Return a : IO<'a> = return' a
-        /// Bare return for IO Values
+        /// Bare return for IO values
         member this.ReturnFrom a : IO<'a> = a
         /// Monadic bind for IO action, this is used to combine and sequence IO action
         member this.Bind (x : IO<'a>, f : 'a -> IO<'b>) = bind x f
@@ -126,7 +126,7 @@ module IO =
     /// Map operator for IO actions
     let (<!>) f x = map f x
     /// Takes an IO action which produces a function that maps from a value to another value and an IO action
-    /// which produces the first balue, producing a new IO action which produces the second value.  This is like 
+    /// which produces the first value, producing a new IO action which produces the second value.  This is like 
     /// map but the mapping function is contained within IO.
     let apply (f : IO<'a -> 'b>) (x : IO<'a>) =
         f >>= (fun fe -> map fe x)

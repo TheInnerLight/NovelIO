@@ -19,10 +19,11 @@ namespace NovelFS.NovelIO.BinaryPickler
 /// The attempted binary pickling exceeded the length of the supplied array
 exception PicklingExceededArrayLengthException of int * int
 
-type BinaryUnpicklerState = {Raw : byte array; Position : int}
-type BinaryPicklerState = {Raw : byte list}
+type private BinaryUnpicklerState = {Raw : byte array; Position : int}
+type private BinaryPicklerState = {Raw : byte list}
 
-type BinaryPU<'a> = {Pickle : 'a * BinaryPicklerState -> BinaryPicklerState; Unpickle : BinaryUnpicklerState -> 'a * BinaryUnpicklerState}
+/// A pickler/unpickler pair for type 'a
+type BinaryPU<'a> = private {Pickle : 'a * BinaryPicklerState -> BinaryPicklerState; Unpickle : BinaryUnpicklerState -> 'a * BinaryUnpicklerState}
 
 /// Conversions functions
 module private PickleConvertors =
