@@ -163,6 +163,13 @@ type ``Binary Pickler Tests`` =
         |_ -> result = f32
 
     [<Property>]
+    static member ``Pickle decimal from one decimal`` (dec : decimal) =
+        let decPickler = BinaryPickler.pickleDecimal
+        let bytes = BinaryPickler.pickle decPickler dec
+        let result = BinaryPickler.unpickle decPickler bytes
+        result = dec
+
+    [<Property>]
     static member ``Pickle Ascii from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
         let strPickler = BinaryPickler.pickleAscii
