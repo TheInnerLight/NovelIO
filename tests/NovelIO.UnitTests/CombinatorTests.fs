@@ -78,3 +78,13 @@ type ``Binary Pickler Combinator Tests`` =
         let arrPickler = BinaryPickler.array (BinaryPickler.pickleInt32)
         let result = BinaryPickler.unpickle arrPickler bytes 
         result = arr
+
+    [<Property>]
+    static member ``Unpickle int option should match 0 or 1 tagged int`` (opt : int option) =
+        let bytes =
+            match opt with
+            |Some i -> Array.concat [System.BitConverter.GetBytes 1; System.BitConverter.GetBytes i]
+            |None -> System.BitConverter.GetBytes 0
+        let arrPickler = BinaryPickler.pickleOption (BinaryPickler.pickleInt32)
+        let result = BinaryPickler.unpickle arrPickler bytes 
+        result = opt
