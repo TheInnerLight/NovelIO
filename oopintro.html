@@ -67,14 +67,12 @@
 <ol>
 <li>readIntFromFile : A function that gets an int from a file.</li>
 </ol>
-<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 16)" onmouseover="showTip(event, 'fs1', 16)" class="i">NovelFS</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 17)" onmouseover="showTip(event, 'fs2', 17)" class="i">NovelIO</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 18)" onmouseover="showTip(event, 'fs11', 18)" class="i">BinaryParser</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 16)" onmouseover="showTip(event, 'fs1', 16)" class="i">NovelFS</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 17)" onmouseover="showTip(event, 'fs2', 17)" class="i">NovelIO</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 18)" onmouseover="showTip(event, 'fs11', 18)" class="i">BinaryPickler</span>
 
 <span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 19)" onmouseover="showTip(event, 'fs12', 19)" class="f">readIntFromFile</span> <span onmouseout="hideTip(event, 'fs13', 20)" onmouseover="showTip(event, 'fs13', 20)" class="i">file</span> <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="i">io</span> {
         <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="i">bytes</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs16', 23)" onmouseover="showTip(event, 'fs16', 23)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 24)" onmouseover="showTip(event, 'fs17', 24)" class="f">readAllBytes</span> <span onmouseout="hideTip(event, 'fs13', 25)" onmouseover="showTip(event, 'fs13', 25)" class="i">file</span>
-        <span class="k">match</span> <span onmouseout="hideTip(event, 'fs18', 26)" onmouseover="showTip(event, 'fs18', 26)" class="t">BinaryParser</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs19', 27)" onmouseover="showTip(event, 'fs19', 27)" class="f">run</span> <span onmouseout="hideTip(event, 'fs15', 28)" onmouseover="showTip(event, 'fs15', 28)" class="i">bytes</span> (<span onmouseout="hideTip(event, 'fs18', 29)" onmouseover="showTip(event, 'fs18', 29)" class="t">BinaryParser</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 30)" onmouseover="showTip(event, 'fs20', 30)" class="i">parseInt32</span>) <span class="k">with</span>
-        |<span onmouseout="hideTip(event, 'fs21', 31)" onmouseover="showTip(event, 'fs21', 31)" class="p">ParseSuccess</span> <span onmouseout="hideTip(event, 'fs22', 32)" onmouseover="showTip(event, 'fs22', 32)" class="i">flt</span> <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'fs23', 33)" onmouseover="showTip(event, 'fs23', 33)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs22', 34)" onmouseover="showTip(event, 'fs22', 34)" class="i">flt</span>
-        |_ <span class="k">-&gt;</span> <span class="k">return</span> <span onmouseout="hideTip(event, 'fs24', 35)" onmouseover="showTip(event, 'fs24', 35)" class="p">None</span>
+        <span class="k">return</span> <span onmouseout="hideTip(event, 'fs18', 26)" onmouseover="showTip(event, 'fs18', 26)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs19', 27)" onmouseover="showTip(event, 'fs19', 27)" class="f">unpickle</span> (<span onmouseout="hideTip(event, 'fs18', 28)" onmouseover="showTip(event, 'fs18', 28)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 29)" onmouseover="showTip(event, 'fs20', 29)" class="i">pickleInt32</span>) <span onmouseout="hideTip(event, 'fs15', 30)" onmouseover="showTip(event, 'fs15', 30)" class="i">bytes</span>
     }
 </code></pre>
 <p>It is worth looking at the type signatures of these functions.</p>
@@ -93,20 +91,16 @@
 <div class="tip" id="fs8">val x : int</div>
 <div class="tip" id="fs9">val pown : x:&#39;T -&gt; n:int -&gt; &#39;T (requires member get_One and member ( * ) and member ( / ))<br /><br />Full name: Microsoft.FSharp.Core.Operators.pown</div>
 <div class="tip" id="fs10">val cube : x:int -&gt; int<br /><br />Full name: Oopintro.cube</div>
-<div class="tip" id="fs11">namespace NovelFS.NovelIO.BinaryParser</div>
-<div class="tip" id="fs12">val readIntFromFile : file:Filename -&gt; IO&lt;int option&gt;<br /><br />Full name: Oopintro.readIntFromFile</div>
+<div class="tip" id="fs11">namespace NovelFS.NovelIO.BinaryPickler</div>
+<div class="tip" id="fs12">val readIntFromFile : file:Filename -&gt; IO&lt;int32&gt;<br /><br />Full name: Oopintro.readIntFromFile</div>
 <div class="tip" id="fs13">val file : Filename</div>
 <div class="tip" id="fs14">val io : IO.IOBuilder<br /><br />Full name: NovelFS.NovelIO.IOBuilders.io</div>
 <div class="tip" id="fs15">val bytes : byte []</div>
 <div class="tip" id="fs16">module File<br /><br />from NovelFS.NovelIO</div>
 <div class="tip" id="fs17">val readAllBytes : filename:Filename -&gt; IO&lt;byte []&gt;<br /><br />Full name: NovelFS.NovelIO.File.readAllBytes</div>
-<div class="tip" id="fs18">Multiple items<br />module BinaryParser<br /><br />from NovelFS.NovelIO.BinaryParser<br /><br />--------------------<br />namespace NovelFS.NovelIO.BinaryParser<br /><br />--------------------<br />type BinaryParser&lt;&#39;s,&#39;a&gt; = private | RunState of (&#39;s -&gt; &#39;a * &#39;s)<br /><br />Full name: NovelFS.NovelIO.BinaryParser.BinaryParser&lt;_,_&gt;</div>
-<div class="tip" id="fs19">val run : array:byte array -&gt; x:BinaryParser&lt;BinaryParserState,&#39;a&gt; -&gt; BinaryParseResult&lt;&#39;a&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryParser.BinaryParser.run</div>
-<div class="tip" id="fs20">val parseInt32 : BinaryParser&lt;BinaryParserState,int&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryParser.BinaryParser.parseInt32</div>
-<div class="tip" id="fs21">union case BinaryParseResult.ParseSuccess: &#39;a -&gt; BinaryParseResult&lt;&#39;a&gt;</div>
-<div class="tip" id="fs22">val flt : int</div>
-<div class="tip" id="fs23">union case Option.Some: Value: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
-<div class="tip" id="fs24">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs18">Multiple items<br />module BinaryPickler<br /><br />from NovelFS.NovelIO.BinaryPickler<br /><br />--------------------<br />namespace NovelFS.NovelIO.BinaryPickler</div>
+<div class="tip" id="fs19">val unpickle : pickler:BinaryPU&lt;&#39;a&gt; -&gt; array:byte array -&gt; &#39;a<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.unpickle</div>
+<div class="tip" id="fs20">val pickleInt32 : BinaryPU&lt;int32&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.pickleInt32</div>
 
         </div>
         <div class="span3">
@@ -123,6 +117,7 @@
             <li class="nav-header">Getting started</li>
             <li><a href="/NovelIO/oopintro.html">From an OOP Perspective</a></li>
             <li><a href="/NovelIO/files.html">Working with Files</a></li>
+            <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="/NovelIO/reference/index.html">API Reference</a></li>

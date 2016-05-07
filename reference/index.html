@@ -87,7 +87,7 @@
           <td class="type-name">
             <a href="novelfs-novelio-io-1.html">IO<'a></a>
           </td>
-          <td class="xmldoc"><p>A value of type IO<'a> is a computation which, when performed, does some I/O before returning a value of type 'a.</p>
+          <td class="xmldoc"><p>A value of type IO<'a> represents an action which, when performed (e.g. by calling the IO.run function), does some I/O which results in a value of type 'a.</p>
 
 </td>
         </tr>
@@ -206,7 +206,7 @@
   </table>
 
     </div>
-  <h2>NovelFS.NovelIO.BinaryParser Namespace</h2>
+  <h2>NovelFS.NovelIO.BinaryPickler Namespace</h2>
     <div>
       <table class="table table-bordered type-list">
     <thead>
@@ -215,49 +215,27 @@
     <tbody>
         <tr>
           <td class="type-name">
-            <a href="novelfs-novelio-binaryparser-binaryparseresult-1.html">BinaryParseResult<'a></a>
+            <a href="novelfs-novelio-binarypickler-binarypu-1.html">BinaryPU<'a></a>
           </td>
-          <td class="xmldoc"><p>A binary parse result representing success or failure of the parsing operation</p>
-
-</td>
+          <td class="xmldoc"></td>
         </tr>
         <tr>
           <td class="type-name">
-            <a href="novelfs-novelio-binaryparser-binaryparser-2.html">BinaryParser<'s, 'a></a>
+            <a href="novelfs-novelio-binarypickler-binarypicklerstate.html">BinaryPicklerState</a>
           </td>
-          <td class="xmldoc"><p>A binary parser that parses some result 'a</p>
-
-</td>
+          <td class="xmldoc"></td>
         </tr>
         <tr>
           <td class="type-name">
-            <a href="novelfs-novelio-binaryparser-binaryparserbuilder.html">BinaryParserBuilder</a>
+            <a href="novelfs-novelio-binarypickler-binaryunpicklerstate.html">BinaryUnpicklerState</a>
           </td>
-          <td class="xmldoc"><p>A builder for binary parsing computation expressions</p>
-
-</td>
+          <td class="xmldoc"></td>
         </tr>
         <tr>
           <td class="type-name">
-            <a href="novelfs-novelio-binaryparser-binaryparserstate.html">BinaryParserState</a>
+            <a href="novelfs-novelio-binarypickler-picklingexceededarraylengthexception.html">PicklingExceededArrayLengthException</a>
           </td>
-          <td class="xmldoc"><p>Represents the current state of a binary parser of an in memory array</p>
-
-</td>
-        </tr>
-        <tr>
-          <td class="type-name">
-            <a href="novelfs-novelio-binaryparser-parseerror.html">ParseError</a>
-          </td>
-          <td class="xmldoc"><p>Represents failure modes of the binary parser</p>
-
-</td>
-        </tr>
-        <tr>
-          <td class="type-name">
-            <a href="novelfs-novelio-binaryparser-parseexceededarraylengthexception.html">ParseExceededArrayLengthException</a>
-          </td>
-          <td class="xmldoc"><p>The attempted binary parsing exceeded the length of the supplied array</p>
+          <td class="xmldoc"><p>The attempted binary pickling exceeded the length of the supplied array</p>
 
 </td>
         </tr>
@@ -270,9 +248,9 @@
     <tbody>
         <tr>
           <td class="module-name">
-            <a href="novelfs-novelio-binaryparser-binaryparser.html">BinaryParser</a>
+            <a href="novelfs-novelio-binarypickler-binarypickler.html">BinaryPickler</a>
           </td>
-          <td class="xmldoc"><p>Binary Parsing functions</p>
+          <td class="xmldoc"><p>Provides functions for pickling binary data</p>
 
 </td>
         </tr>
@@ -296,6 +274,7 @@
             <li class="nav-header">Getting started</li>
             <li><a href="/NovelIO/oopintro.html">From an OOP Perspective</a></li>
             <li><a href="/NovelIO/files.html">Working with Files</a></li>
+            <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="/NovelIO/reference/index.html">API Reference</a></li>
