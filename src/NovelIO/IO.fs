@@ -167,7 +167,10 @@ module IO =
 
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
     let mapM mFunc sequ =
-        return' <| Seq.map (run << mFunc) sequ
+        fromEffectful  (fun _ ->
+            sequ
+            |> Seq.map (run << mFunc)
+            |> Seq.cache)
 
     /// As mapM but ignores the result.
     let iterM mFunc sequ =
@@ -197,32 +200,36 @@ module IO =
     module Loops =
         /// Take elements repeatedly while a condition is met
         let takeWhileM p xs =
-            xs 
-            |> Seq.takeWhile p
-            |> Seq.map (run)
-            |> return'
+            fromEffectful  (fun _ ->
+                xs 
+                |> Seq.takeWhile p
+                |> Seq.map (run)
+                |> Seq.cache)
 
         /// Drop elements repeatedly while a condition is met
         let skipWhileM p xs =
-            xs 
-            |> Seq.skipWhile p
-            |> Seq.map (run)
-            |> return'
+            fromEffectful (fun _ ->
+                xs 
+                |> Seq.skipWhile p
+                |> Seq.map (run)
+                |> Seq.cache)
 
         /// Execute an action repeatedly as long as the given boolean IO action returns true
         let whileM (pAct : IO<bool>) (f : IO<'a>) =
-            Seq.initInfinite (fun _ -> f)
-            |> Seq.map (run)
-            |> Seq.takeWhile (fun _ -> run pAct)
-            |> return'
+            fromEffectful (fun _ ->
+                Seq.initInfinite (fun _ -> f)
+                |> Seq.map (run)
+                |> Seq.takeWhile (fun _ -> run pAct)
+                |> Seq.cache)
 
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
         let whileSome act binder =
-            Seq.initInfinite (fun _ -> run act)
-            |> Seq.takeWhile (Option.isSome)
-            |> Seq.map (run << binder << Option.get)
-            |> return'
+            fromEffectful (fun _ ->
+                Seq.initInfinite (fun _ -> run act)
+                |> Seq.takeWhile (Option.isSome)
+                |> Seq.map (run << binder << Option.get)
+                |> Seq.cache)
 
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =
@@ -239,10 +246,11 @@ module IO =
         /// Repeatedly evaluates the second argument while the value satisfies the given predicate, and returns a list of all
         /// values that satisfied the predicate.  Discards the final one (which failed the predicate).
         let unfoldWhileM p (f : IO<'a>) =
-            Seq.initInfinite (fun _ -> f)
-            |> Seq.map (run)
-            |> Seq.takeWhile p
-            |> return'
+            fromEffectful (fun _ ->
+                Seq.initInfinite (fun _ -> f)
+                |> Seq.map (run)
+                |> Seq.takeWhile p
+                |> Seq.cache)
 
 /// Console functions
 module Console =
