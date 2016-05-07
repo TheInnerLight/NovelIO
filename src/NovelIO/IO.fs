@@ -207,8 +207,8 @@ module IO =
                 xs 
                 |> Seq.takeWhile p
                 |> Seq.map (run)
-                |> Seq.toList
-                |> List.ofSeq)
+                |> List.ofSeq
+                |> Seq.ofList)
 
         /// Drop elements repeatedly while a condition is met
         let skipWhileM p xs =
@@ -216,8 +216,8 @@ module IO =
                 xs 
                 |> Seq.skipWhile p
                 |> Seq.map (run)
-                |> Seq.toList
-                |> List.ofSeq)
+                |> List.ofSeq
+                |> Seq.ofList)
 
         /// Execute an action repeatedly as long as the given boolean IO action returns true
         let whileM (pAct : IO<bool>) (f : IO<'a>) =
@@ -225,8 +225,8 @@ module IO =
                 Seq.initInfinite (fun _ -> f)
                 |> Seq.map (run)
                 |> Seq.takeWhile (fun _ -> run pAct)
-                |> Seq.toList
-                |> List.ofSeq)
+                |> List.ofSeq
+                |> Seq.ofList)
 
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
@@ -235,8 +235,8 @@ module IO =
                 Seq.initInfinite (fun _ -> run act)
                 |> Seq.takeWhile (Option.isSome)
                 |> Seq.map (run << binder << Option.get)
-                |> Seq.toList
-                |> List.ofSeq)
+                |> List.ofSeq
+                |> Seq.ofList)
 
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =
@@ -257,8 +257,8 @@ module IO =
                 Seq.initInfinite (fun _ -> f)
                 |> Seq.map (run)
                 |> Seq.takeWhile p
-                |> Seq.toList
-                |> List.ofSeq)
+                |> List.ofSeq
+                |> Seq.ofList)
 
 /// Console functions
 module Console =

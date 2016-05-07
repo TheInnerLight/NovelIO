@@ -11,7 +11,7 @@ Motivation
 
 ## Lazy evaluation and exceptions
 
-This example is more or less taken from Erik Maijer's Curse of the excluded middle (https://queue.acm.org/detail.cfm?ref=rss&id=2611829)
+This example is more or less taken from Erik Meijer's Curse of the excluded middle (https://queue.acm.org/detail.cfm?ref=rss&id=2611829)
 
 Consider the following code where we try to combine lazy evaluation with File IO:
 
