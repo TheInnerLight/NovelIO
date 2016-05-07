@@ -98,4 +98,6 @@ It is, of course, possible to combine several of these combinators to produce co
 *)
 
 let complexPickler = 
-    BinaryPickler.list (BinaryPickler.tuple3 BinaryPickler.pickleAscii BinaryPickler.pickleFloat BinaryPickler.pickleInt32)
+    BinaryPickler.list 
+        (BinaryPickler.tuple3 
+            BinaryPickler.pickleAscii BinaryPickler.pickleFloat BinaryPickler.pickleInt32)
