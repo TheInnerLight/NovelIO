@@ -21,226 +21,195 @@ open NovelFS.NovelIO.BinaryParser
 open FsCheck
 open FsCheck.Xunit
 
-type ``Binary Parser Tests`` =
+type ``Binary Pickler Tests`` =
     [<Property>]
-    static member ``Parse byte from array of one byte`` (byte : byte) =
+    static member ``Unpickle byte from array of one byte`` (byte : byte) =
         let bytes = [|byte|]
-        let bParser = BinaryParser.parseByte
-        let result =
-            match BinaryParser.run bytes bParser with
-            |ParseSuccess byte -> byte
-            |ParseFailure err -> failwith "failed"
+        let bytePickler = BinaryPickler.pickleByte
+        let result = BinaryPickler.unpickle bytePickler bytes 
         result = byte
 
     [<Property>]
-    static member ``Parse int16 from array of bytes`` (i16 : int16) =
+    static member ``Unpickle int16 from array of bytes`` (i16 : int16) =
         let bytes = System.BitConverter.GetBytes i16
-        let bParser = BinaryParser.parseInt16
-        let result =
-            match BinaryParser.run bytes bParser with
-            |ParseSuccess byte -> byte
-            |ParseFailure err -> failwith "failed"
+        let int16Pickler = BinaryPickler.pickleInt16
+        let result = BinaryPickler.unpickle int16Pickler bytes
         result = i16
 
     [<Property>]
-    static member ``Parse int32 from array of bytes`` (i32 : int32) =
+    static member ``Unpickle int32 from array of bytes`` (i32 : int32) =
         let bytes = System.BitConverter.GetBytes i32
-        let bParser = BinaryParser.parseInt32
-        let result =
-            match BinaryParser.run bytes bParser with
-            |ParseSuccess byte -> byte
-            |ParseFailure err -> failwith "failed"
+        let int32Pickler = BinaryPickler.pickleInt32
+        let result = BinaryPickler.unpickle int32Pickler bytes
         result = i32
 
     [<Property>]
-    static member ``Parse int64 from array of bytes`` (i64 : int64) =
+    static member ``Unpickle int64 from array of bytes`` (i64 : int64) =
         let bytes = System.BitConverter.GetBytes i64
-        let bParser = BinaryParser.parseInt64
-        let result =
-            match BinaryParser.run bytes bParser with
-            |ParseSuccess byte -> byte
-            |ParseFailure err -> failwith "failed"
+        let int64Pickler = BinaryPickler.pickleInt64
+        let result = BinaryPickler.unpickle int64Pickler bytes
         result = i64
 
     [<Property>]
-    static member ``Parse float64 from array of bytes`` (flt : float) =
+    static member ``Unpickle float64 from array of bytes`` (flt : float) =
         let bytes = System.BitConverter.GetBytes flt
-        let bParser = BinaryParser.parseFloat64
-        let result =
-            match BinaryParser.run bytes bParser with
-            |ParseSuccess byte -> byte
-            |ParseFailure err -> failwith "failed"
+        let floatPickler = BinaryPickler.pickleFloat
+        let result = BinaryPickler.unpickle floatPickler bytes
         match result with
         |x when System.Double.IsNaN(x) -> System.Double.IsNaN(flt)
         |_ -> result = flt
 
     [<Property>]
-    static member ``Parse float32 from array of bytes`` (flt : float32) =
+    static member ``Unpickle float32 from array of bytes`` (flt : float32) =
         let bytes = System.BitConverter.GetBytes flt
-        let bParser = BinaryParser.parseFloat32
-        let result =
-            match BinaryParser.run bytes bParser with
-            |ParseSuccess byte -> byte
-            |ParseFailure err -> failwith "failed"
+        let float32Pickler = BinaryPickler.pickleFloat32
+        let result = BinaryPickler.unpickle float32Pickler bytes
         match result with
         |x when System.Single.IsNaN(x) -> System.Single.IsNaN(flt)
         |_ -> result = flt
 
     [<Property>]
-    static member ``Parse too long value from array of one byte creates ArrayLengthInsufficient error`` (byte : byte) =
+    static member ``Unpickle decimal from array of bytes`` (dec : decimal) =
+        let bytes = 
+            System.Decimal.GetBits dec
+            |> Array.collect (System.BitConverter.GetBytes)
+        let decPickler = BinaryPickler.pickleDecimal
+        let result = BinaryPickler.unpickle decPickler bytes
+        result = dec
+
+    [<Property>]
+    static member ``Unpickle Ascii string from array of bytes`` (nStr : NonEmptyString) =
+        let str = nStr.Get 
+        let bytesWOPrefix = System.Text.Encoding.ASCII.GetBytes str
+        let bytes = 
+            Array.concat 
+                [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
+                 bytesWOPrefix]
+        let stringPickler = BinaryPickler.pickleAscii
+        let result = BinaryPickler.unpickle stringPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Unpickle UTF7 string from array of bytes`` (nStr : NonEmptyString) =
+        let str = nStr.Get 
+        let bytesWOPrefix = System.Text.Encoding.UTF7.GetBytes str
+        let bytes = 
+            Array.concat 
+                [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
+                 bytesWOPrefix]
+        let stringPickler = BinaryPickler.pickleUTF7
+        let result = BinaryPickler.unpickle stringPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Unpickle UTF8 string from array of bytes`` (nStr : NonEmptyString) =
+        let str = nStr.Get 
+        let bytesWOPrefix = System.Text.Encoding.UTF8.GetBytes str
+        let bytes = 
+            Array.concat 
+                [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
+                 bytesWOPrefix]
+        let stringPickler = BinaryPickler.pickleUTF8
+        let result = BinaryPickler.unpickle stringPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Unpickle UTF32 string from array of bytes`` (nStr : NonEmptyString) =
+        let str = nStr.Get 
+        let bytesWOPrefix = System.Text.Encoding.UTF32.GetBytes str
+        let bytes = 
+            Array.concat 
+                [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
+                 bytesWOPrefix]
+        let stringPickler = BinaryPickler.pickleUTF32
+        let result = BinaryPickler.unpickle stringPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle byte from one byte`` (byte : byte) =
         let bytes = [|byte|]
-        let bParser = BinaryParser.parseInt16
-        match BinaryParser.run bytes bParser with
-        |ParseSuccess byte -> failwith "did not fail"
-        |ParseFailure err -> 
-            match err with
-            |ArrayLengthInsufficient (pos, len) -> true
-            |_ -> failwith "incorrect error"
-//    [<Property>]
-//    static member ``readCharfrom array of one char`` (character : char) =
-//        let bytes = System.BitConverter.GetBytes(character)
-//        let result = 
-//            match BinaryIO.run (MemoryBlockRead (bytes, BinaryIO.readByte)) with
-//            |IOSuccess (byte,_) -> character
-//            |IOError (_) -> failwith "error"
-//        result = character
-//    [<Property>]
-//    static member ``readDecimal from array of one decimal`` (dec : decimal) =
-//        let memoryStream = new System.IO.MemoryStream()
-//        let binaryWriter = new System.IO.BinaryWriter(memoryStream);
-//        binaryWriter.Write(dec)
-//        let bytes = memoryStream.ToArray()
-//        let result = 
-//            match BinaryIO.run (MemoryBlockRead (bytes, BinaryIO.readDecimal)) with
-//            |IOSuccess (dec,_) -> dec
-//            |IOError (_) -> failwith "error"
-//        result = dec
-//    [<Property>]
-//    static member ``readFloat from array of one float`` (flt : float) =
-//        let bytes = System.BitConverter.GetBytes flt
-//        let result = 
-//            match BinaryIO.run (MemoryBlockRead (bytes, BinaryIO.readFloat)) with
-//            |IOSuccess (flt,_) -> flt
-//            |IOError (_) -> failwith "error"
-//        match flt with
-//        |_ when System.Double.IsNaN flt -> System.Double.IsNaN result
-//        |_ -> result = flt
-//    [<Property>]
-//    static member ``readFloat32 from array of one float32`` (flt : float32) =
-//        let bytes = System.BitConverter.GetBytes flt
-//        let result = 
-//            match BinaryIO.run (MemoryBlockRead (bytes, BinaryIO.readFloat32)) with
-//            |IOSuccess (flt,_) -> flt
-//            |IOError (_) -> failwith "error"
-//        match flt with
-//        |_ when System.Single.IsNaN flt -> System.Single.IsNaN result
-//        |_ -> result = flt
-//    [<Property>]
-//    static member ``readInt16 from array of one int16`` (int : int16) =
-//        let bytes = System.BitConverter.GetBytes int
-//        let result = 
-//            match BinaryIO.run (MemoryBlockRead (bytes, BinaryIO.readInt16)) with
-//            |IOSuccess (int,_) -> int
-//            |IOError (_) -> failwith "error"
-//        result = int
-//    [<Property>]
-//    static member ``readInt32 from array of one int32`` (int : int32) =
-//        let bytes = System.BitConverter.GetBytes int
-//        let result = 
-//            match BinaryIO.run (MemoryBlockRead (bytes, BinaryIO.readInt32)) with
-//            |IOSuccess (int,_) -> int
-//            |IOError (_) -> failwith "error"
-//        result = int
-//    [<Property>]
-//    static member ``readInt64 from array of one int64`` (int : int64) =
-//        let bytes = System.BitConverter.GetBytes int
-//        let result = 
-//            match BinaryIO.run (MemoryBlockRead (bytes, BinaryIO.readInt64)) with
-//            |IOSuccess (int,_) -> int
-//            |IOError (_) -> failwith "error"
-//        result = int
-//    [<Property>]
-//    static member ``readString from array of one string`` (str : NonNull<string>) =
-//        let str = str.Get
-//        use memoryStream = new System.IO.MemoryStream()
-//        use binaryWriter = new System.IO.BinaryWriter(memoryStream);
-//        binaryWriter.Write(str)
-//        let bytes = memoryStream.ToArray()
-//        let result = 
-//            match BinaryIO.run (MemoryBlockRead (bytes, BinaryIO.readString)) with
-//            |IOSuccess (dec,_) -> str
-//            |IOError (_) -> failwith "error"
-//        result = str
-//
-//module BinaryIOWriteTester =
-//    let getTestResult filename func =
-//        let mmapf = System.IO.MemoryMappedFiles.MemoryMappedFile.OpenExisting(filename)
-//        use reader = new System.IO.BinaryReader(mmapf.CreateViewStream())
-//        func reader
-//
-//type ``Binary IO Simple Write Tests`` =
-//    [<Property>]
-//    static member ``writeByte from one byte`` (byte : byte) =
-//        let mmapFID = System.IO.Path.GetRandomFileName()
-//        match BinaryIO.run (MemoryMappedFileWrite (mmapFID, 1L, BinaryIO.writeByte byte)) with
-//        |IOSuccess (_) -> 
-//            BinaryIOWriteTester.getTestResult mmapFID (fun br -> br.ReadByte()) = byte
-//        |IOError (_) -> failwith "error"
-//    [<Property>]
-//    static member ``writeChar from one char`` (character : char) =
-//        let mmapFID = System.IO.Path.GetRandomFileName()
-//        match BinaryIO.run (MemoryMappedFileWrite (mmapFID, 5L, BinaryIO.writeChar character)) with
-//        |IOSuccess (_) -> 
-//            BinaryIOWriteTester.getTestResult mmapFID (fun br -> br.ReadChar()) = character
-//        |IOError (_) -> failwith "error"
-//    [<Property>]
-//    static member ``writeDecimal from one decimal`` (dec : decimal) =
-//        let mmapFID = System.IO.Path.GetRandomFileName()
-//        match BinaryIO.run (MemoryMappedFileWrite (mmapFID, int64 sizeof<decimal>, BinaryIO.writeDecimal dec)) with
-//        |IOSuccess (_) -> 
-//            BinaryIOWriteTester.getTestResult mmapFID (fun br -> br.ReadDecimal()) = dec
-//        |IOError (_) -> failwith "error"
-//    [<Property>]
-//    static member ``writeFloat from one float`` (flt : float) =
-//        let mmapFID = System.IO.Path.GetRandomFileName()
-//        match BinaryIO.run (MemoryMappedFileWrite (mmapFID, int64 sizeof<float>, BinaryIO.writeFloat flt)) with
-//        |IOSuccess (_) -> 
-//            let rFlt = BinaryIOWriteTester.getTestResult mmapFID (fun br -> br.ReadDouble())
-//            match rFlt with
-//            |_ when System.Double.IsNaN rFlt -> System.Double.IsNaN flt
-//            |_ -> rFlt = flt
-//        |IOError (_) -> failwith "error"
-//    [<Property>]
-//    static member ``writeFloat32 from one float32`` (flt32 : float32) =
-//        let mmapFID = System.IO.Path.GetRandomFileName()
-//        match BinaryIO.run (MemoryMappedFileWrite (mmapFID, int64 sizeof<float32>, BinaryIO.writeFloat32 flt32)) with
-//        |IOSuccess (_) -> 
-//            let rFlt = BinaryIOWriteTester.getTestResult mmapFID (fun br -> br.ReadSingle())
-//            match rFlt with
-//            |_ when System.Single.IsNaN rFlt -> System.Single.IsNaN flt32
-//            |_ -> rFlt = flt32
-//        |IOError (_) -> failwith "error"
-//    [<Property>]
-//    static member ``writeInt16 from one int16`` (i16 : int16) =
-//        let mmapFID = System.IO.Path.GetRandomFileName()
-//        match BinaryIO.run (MemoryMappedFileWrite (mmapFID, int64 sizeof<int16>, BinaryIO.writeInt16 i16)) with
-//        |IOSuccess (_) -> 
-//            BinaryIOWriteTester.getTestResult mmapFID (fun br -> br.ReadInt16()) = i16
-//        |IOError (_) -> failwith "error"
-//    [<Property>]
-//    static member ``writeInt32 from one int32`` (i32 : int32) =
-//        let mmapFID = System.IO.Path.GetRandomFileName()
-//        match BinaryIO.run (MemoryMappedFileWrite (mmapFID, int64 sizeof<int32>, BinaryIO.writeInt32 i32)) with
-//        |IOSuccess (_) -> 
-//            BinaryIOWriteTester.getTestResult mmapFID (fun br -> br.ReadInt32()) = i32
-//        |IOError (_) -> failwith "error"
-//    [<Property>]
-//    static member ``writeInt64 from one int64`` (i64 : int64) =
-//        let mmapFID = System.IO.Path.GetRandomFileName()
-//        match BinaryIO.run (MemoryMappedFileWrite (mmapFID, int64 sizeof<int64>, BinaryIO.writeInt64 i64)) with
-//        |IOSuccess (_) -> 
-//            BinaryIOWriteTester.getTestResult mmapFID (fun br -> br.ReadInt64()) = i64
-//        |IOError (_) -> failwith "error"
+        let bytePickler = BinaryPickler.pickleByte
+        let result = BinaryPickler.pickle bytePickler byte 
+        result = bytes
+
+    [<Property>]
+    static member ``Pickle int16 from one int16`` (i16 : int16) =
+        let int16Pickler = BinaryPickler.pickleInt16
+        let bytes = BinaryPickler.pickle int16Pickler i16
+        let result = BinaryPickler.unpickle int16Pickler bytes
+        result = i16
+
+    [<Property>]
+    static member ``Pickle int32 from one int32`` (i32 : int32) =
+        let int32Pickler = BinaryPickler.pickleInt32
+        let bytes = BinaryPickler.pickle int32Pickler i32
+        let result = BinaryPickler.unpickle int32Pickler bytes
+        result = i32
+
+    [<Property>]
+    static member ``Pickle int64 from one int64`` (i64 : int64) =
+        let int64Pickler = BinaryPickler.pickleInt64
+        let bytes = BinaryPickler.pickle int64Pickler i64
+        let result = BinaryPickler.unpickle int64Pickler bytes
+        result = i64
+
+    [<Property>]
+    static member ``Pickle float from one float`` (f64 : float) =
+        let floatPickler = BinaryPickler.pickleFloat
+        let bytes = BinaryPickler.pickle floatPickler f64
+        let result = BinaryPickler.unpickle floatPickler bytes
+        match result with
+        |x when System.Double.IsNaN(x) -> System.Double.IsNaN(f64)
+        |_ -> result = f64
+
+    [<Property>]
+    static member ``Pickle float32 from one float32`` (f32 : float32) =
+        let floatPickler = BinaryPickler.pickleFloat32
+        let bytes = BinaryPickler.pickle floatPickler f32
+        let result = BinaryPickler.unpickle floatPickler bytes
+        match result with
+        |x when System.Single.IsNaN(x) -> System.Single.IsNaN(f32)
+        |_ -> result = f32
+
+    [<Property>]
+    static member ``Pickle decimal from one decimal`` (dec : decimal) =
+        let decPickler = BinaryPickler.pickleDecimal
+        let bytes = BinaryPickler.pickle decPickler dec
+        let result = BinaryPickler.unpickle decPickler bytes
+        result = dec
+
+    [<Property>]
+    static member ``Pickle Ascii from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleAscii
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle UTF7 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF7
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle UTF8 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF8
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle UTF32 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF32
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
     
         
 

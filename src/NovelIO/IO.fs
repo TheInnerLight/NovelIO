@@ -206,10 +206,10 @@ module IO =
             |> return'
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
-        let whileSome act f =
+        let whileSome act binder =
             Seq.initInfinite (fun _ -> run act)
             |> Seq.takeWhile (Option.isSome)
-            |> Seq.map (run << f << Option.get)
+            |> Seq.map (run << binder << Option.get)
             |> return'
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =

@@ -50,6 +50,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="BinaryPickler.fs" />
     <Compile Include="BinaryParser.fs" />
     <Compile Include="Definitions.fs" />
     <Compile Include="IO.fs" />
