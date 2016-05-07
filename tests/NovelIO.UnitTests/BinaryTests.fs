@@ -69,6 +69,15 @@ type ``Binary Pickler Tests`` =
         |_ -> result = flt
 
     [<Property>]
+    static member ``Unpickle decimal from array of bytes`` (dec : decimal) =
+        let bytes = 
+            System.Decimal.GetBits dec
+            |> Array.collect (System.BitConverter.GetBytes)
+        let decPickler = BinaryPickler.pickleDecimal
+        let result = BinaryPickler.unpickle decPickler bytes
+        result = dec
+
+    [<Property>]
     static member ``Unpickle Ascii string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.ASCII.GetBytes str
