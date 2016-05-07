@@ -60,11 +60,11 @@
             iterateUntil p x
           </code>
           <div class="tip" id="56">
-            <strong>Signature:</strong> p:(&#39;?7355 -&gt; bool) -&gt; x:IO&lt;&#39;?7355&gt; -&gt; IO&lt;&#39;?7355&gt;<br />
-                          <strong>Type parameters:</strong> '?7355          </div>
+            <strong>Signature:</strong> p:(&#39;?7358 -&gt; bool) -&gt; x:IO&lt;&#39;?7358&gt; -&gt; IO&lt;&#39;?7358&gt;<br />
+                          <strong>Type parameters:</strong> '?7358          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L241-241" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L248-248" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -80,11 +80,11 @@
             iterateUntilM p f v
           </code>
           <div class="tip" id="57">
-            <strong>Signature:</strong> p:(&#39;?7353 -&gt; bool) -&gt; f:(&#39;?7353 -&gt; IO&lt;&#39;?7353&gt;) -&gt; v:&#39;?7353 -&gt; IO&lt;&#39;?7353&gt;<br />
-                          <strong>Type parameters:</strong> '?7353          </div>
+            <strong>Signature:</strong> p:(&#39;?7356 -&gt; bool) -&gt; f:(&#39;?7356 -&gt; IO&lt;&#39;?7356&gt;) -&gt; v:&#39;?7356 -&gt; IO&lt;&#39;?7356&gt;<br />
+                          <strong>Type parameters:</strong> '?7356          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L235-235" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L242-242" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -100,11 +100,11 @@
             iterateWhile p x
           </code>
           <div class="tip" id="58">
-            <strong>Signature:</strong> p:(&#39;?7357 -&gt; bool) -&gt; x:IO&lt;&#39;?7357&gt; -&gt; IO&lt;&#39;?7357&gt;<br />
-                          <strong>Type parameters:</strong> '?7357          </div>
+            <strong>Signature:</strong> p:(&#39;?7360 -&gt; bool) -&gt; x:IO&lt;&#39;?7360&gt; -&gt; IO&lt;&#39;?7360&gt;<br />
+                          <strong>Type parameters:</strong> '?7360          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L244-244" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L251-251" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -120,11 +120,11 @@
             skipWhileM p xs
           </code>
           <div class="tip" id="59">
-            <strong>Signature:</strong> p:(IO&lt;&#39;?7346&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7346&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7346&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7346          </div>
+            <strong>Signature:</strong> p:(IO&lt;&#39;?7349&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7349&gt;&gt; -&gt; IO&lt;&#39;?7349 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7349          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L210-210" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L214-214" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -140,11 +140,11 @@
             takeWhileM p xs
           </code>
           <div class="tip" id="60">
-            <strong>Signature:</strong> p:(IO&lt;&#39;?7344&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7344&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7344&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7344          </div>
+            <strong>Signature:</strong> p:(IO&lt;&#39;?7347&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7347&gt;&gt; -&gt; IO&lt;&#39;?7347 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7347          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L202-202" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L205-205" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -160,11 +160,11 @@
             unfoldWhileM p f
           </code>
           <div class="tip" id="61">
-            <strong>Signature:</strong> p:(&#39;a -&gt; bool) -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;seq&lt;&#39;a&gt;&gt;<br />
+            <strong>Signature:</strong> p:(&#39;a -&gt; bool) -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;&#39;a list&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L248-248" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L255-255" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -181,11 +181,11 @@ values that satisfied the predicate.  Discards the final one (which failed the p
             whileM pAct f
           </code>
           <div class="tip" id="62">
-            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;seq&lt;&#39;a&gt;&gt;<br />
+            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;&#39;a list&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L218-218" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L223-223" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -201,11 +201,11 @@ values that satisfied the predicate.  Discards the final one (which failed the p
             whileSome act binder
           </code>
           <div class="tip" id="63">
-            <strong>Signature:</strong> act:IO&lt;&#39;?7350 option&gt; -&gt; binder:(&#39;?7350 -&gt; IO&lt;&#39;?7351&gt;) -&gt; IO&lt;seq&lt;&#39;?7351&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7350, '?7351          </div>
+            <strong>Signature:</strong> act:IO&lt;&#39;?7353 option&gt; -&gt; binder:(&#39;?7353 -&gt; IO&lt;&#39;?7354&gt;) -&gt; IO&lt;&#39;?7354 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7353, '?7354          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L227-227" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L233-233" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -231,6 +231,7 @@ Results are collected into a sequence.</p>
             <li><a href="/NovelIO/release-notes.html">Release Notes</a></li>
             
             <li class="nav-header">Getting started</li>
+            <li><a href="/NovelIO/motivation.html">Motivation</a></li>
             <li><a href="/NovelIO/oopintro.html">From an OOP Perspective</a></li>
             <li><a href="/NovelIO/files.html">Working with Files</a></li>
             <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>

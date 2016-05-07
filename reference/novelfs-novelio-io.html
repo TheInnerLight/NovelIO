@@ -340,11 +340,11 @@ map but the mapping function is contained within IO.</p>
             iterM mFunc sequ
           </code>
           <div class="tip" id="45">
-            <strong>Signature:</strong> mFunc:(&#39;?7326 -&gt; IO&lt;unit&gt;) -&gt; sequ:seq&lt;&#39;?7326&gt; -&gt; IO&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7326          </div>
+            <strong>Signature:</strong> mFunc:(&#39;?7326 -&gt; IO&lt;&#39;?7327&gt;) -&gt; sequ:seq&lt;&#39;?7326&gt; -&gt; IO&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7326, '?7327          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L176-176" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L177-177" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -441,11 +441,11 @@ the first value, producing a new IO action which produces the second value</p>
             repeatM mFunc n
           </code>
           <div class="tip" id="50">
-            <strong>Signature:</strong> mFunc:IO&lt;&#39;?7332&gt; -&gt; n:int -&gt; IO&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7332          </div>
+            <strong>Signature:</strong> mFunc:IO&lt;&#39;?7333&gt; -&gt; n:int -&gt; IO&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7333          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L188-188" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L191-191" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -461,11 +461,11 @@ the first value, producing a new IO action which produces the second value</p>
             replicateM mFunc n
           </code>
           <div class="tip" id="51">
-            <strong>Signature:</strong> mFunc:IO&lt;&#39;?7330&gt; -&gt; n:int -&gt; IO&lt;seq&lt;&#39;?7330&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7330          </div>
+            <strong>Signature:</strong> mFunc:IO&lt;&#39;?7331&gt; -&gt; n:int -&gt; IO&lt;seq&lt;&#39;?7331&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7331          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L184-184" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L187-187" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -541,11 +541,11 @@ the first value, producing a new IO action which produces the second value</p>
             sequence seq
           </code>
           <div class="tip" id="55">
-            <strong>Signature:</strong> seq:seq&lt;IO&lt;&#39;?7328&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7328&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7328          </div>
+            <strong>Signature:</strong> seq:seq&lt;IO&lt;&#39;?7329&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7329&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7329          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L180-180" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L183-183" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -570,6 +570,7 @@ the first value, producing a new IO action which produces the second value</p>
             <li><a href="/NovelIO/release-notes.html">Release Notes</a></li>
             
             <li class="nav-header">Getting started</li>
+            <li><a href="/NovelIO/motivation.html">Motivation</a></li>
             <li><a href="/NovelIO/oopintro.html">From an OOP Perspective</a></li>
             <li><a href="/NovelIO/files.html">Working with Files</a></li>
             <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
