@@ -167,14 +167,17 @@ module IO =
 
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
     let mapM mFunc sequ =
-        fromEffectful  (fun _ ->
+        fromEffectful (fun _ ->
             sequ
             |> Seq.map (run << mFunc)
-            |> Seq.cache)
+            |> List.ofSeq
+            |> Seq.ofList)
 
     /// As mapM but ignores the result.
     let iterM mFunc sequ =
-        fromEffectful (fun _ -> Seq.iter (run << mFunc) sequ)
+        fromEffectful (fun _ ->
+            sequ
+            |> Seq.iter (ignore << run << mFunc))
 
     /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
     let sequence seq =
@@ -186,7 +189,7 @@ module IO =
 
     /// As replicateM but ignores the results
     let repeatM mFunc n  =
-        replicateM mFunc n >>= (return' << Seq.iter ignore)
+        replicateM mFunc n >>= (return' << ignore)
 
     /// IOBuilder extensions so that traverseM_ can be used to define For
     type IOBuilder with
@@ -204,7 +207,8 @@ module IO =
                 xs 
                 |> Seq.takeWhile p
                 |> Seq.map (run)
-                |> Seq.cache)
+                |> Seq.toList
+                |> List.ofSeq)
 
         /// Drop elements repeatedly while a condition is met
         let skipWhileM p xs =
@@ -212,7 +216,8 @@ module IO =
                 xs 
                 |> Seq.skipWhile p
                 |> Seq.map (run)
-                |> Seq.cache)
+                |> Seq.toList
+                |> List.ofSeq)
 
         /// Execute an action repeatedly as long as the given boolean IO action returns true
         let whileM (pAct : IO<bool>) (f : IO<'a>) =
@@ -220,7 +225,8 @@ module IO =
                 Seq.initInfinite (fun _ -> f)
                 |> Seq.map (run)
                 |> Seq.takeWhile (fun _ -> run pAct)
-                |> Seq.cache)
+                |> Seq.toList
+                |> List.ofSeq)
 
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
@@ -229,7 +235,8 @@ module IO =
                 Seq.initInfinite (fun _ -> run act)
                 |> Seq.takeWhile (Option.isSome)
                 |> Seq.map (run << binder << Option.get)
-                |> Seq.cache)
+                |> Seq.toList
+                |> List.ofSeq)
 
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =
@@ -250,7 +257,8 @@ module IO =
                 Seq.initInfinite (fun _ -> f)
                 |> Seq.map (run)
                 |> Seq.takeWhile p
-                |> Seq.cache)
+                |> Seq.toList
+                |> List.ofSeq)
 
 /// Console functions
 module Console =

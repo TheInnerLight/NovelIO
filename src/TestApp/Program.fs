@@ -30,9 +30,10 @@ let main argv =
     let test = 
         io {
             let! lines = File.readLines fName
-            let! lSeq = lines |> IO.sequence
-            for line in lSeq do
+            for lineIO in lines do
+                let! line = lineIO
                 do! (putStrLn <| sprintf "%s%d" line 5)
+            let! lSeq = IO.sequence lines
             let! test = IO.mapM (IO.return' << sprintf "%s") lSeq
             return! putStrLn <| sprintf "%A" test
         }
