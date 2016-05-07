@@ -14,7 +14,7 @@
    limitations under the License.
 *)
 
-namespace NovelFS.NovelIO.BinaryParser
+namespace NovelFS.NovelIO.BinaryPickler
 
 /// The attempted binary pickling exceeded the length of the supplied array
 exception PicklingExceededArrayLengthException of int * int

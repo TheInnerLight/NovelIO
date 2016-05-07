@@ -19,11 +19,11 @@ namespace NovelFS.NovelIO
 open System.IO
 open System.Net
 
-/// A value of type IO<'a> is a computation which, when performed, does some I/O before returning a value of type 'a.
+/// A value of type IO<'a> represents an action which, when performed (e.g. by calling the IO.run function), does some I/O which results in a value of type 'a.
 type IO<'a> = 
     private 
     |Return of 'a
-    |Bind of (unit -> IO<'a>)
+    |Delay of (unit -> IO<'a>)
 
 /// Side effecting helper functions - this is where ugly things happen
 module internal SideEffectingIO =
@@ -82,30 +82,30 @@ module internal SideEffectingIO =
 
 /// Pure IO Functions
 module IO =
-    /// Return a value as an IO value
+    /// Return a value as an IO action
     let return' x = Return x
-    /// Creates an IO value from an effectful computation
-    let fromEffectful f = Bind (return' << f)
-    /// Monadic bind for IO values
+    /// Creates an IO action from an effectful computation, this simply takes a side effecting function and brings it into IO
+    let fromEffectful f = Delay (return' << f)
+    /// Monadic bind for IO action, this is used to combine and sequence IO action
     let rec bind x f =
         match x with
         |Return a -> f a
-        |Bind (g) -> Bind (fun _ -> bind (g ()) f)
+        |Delay (g) -> Delay (fun _ -> bind (g ()) f)
 
-    /// Builder for IO computation expressions
+    /// Computation Expression builder for IO actions
     type IOBuilder() =
-        /// Monadic return for IO values
+        /// Return a value as an IO action
         member this.Return a : IO<'a> = return' a
         /// Bare return for IO Values
         member this.ReturnFrom a : IO<'a> = a
-        /// Monadic bind for IO values
+        /// Monadic bind for IO action, this is used to combine and sequence IO action
         member this.Bind (x : IO<'a>, f : 'a -> IO<'b>) = bind x f
         /// Delays a function of type unit -> IO<'a> as an IO<'a>
-        member this.Delay f : IO<'a> = Bind f
-        /// Combine an IO value of type unit an IO of value of type 'a into a combined IO value of type 'a
+        member this.Delay f : IO<'a> = Delay f
+        /// Combine an IO action of type unit an IO action of type 'a into a combined IO action of type 'a
         member this.Combine(f1, f2) =
             bind f1 (fun () -> f2)
-        /// The zero IO value
+        /// The zero IO action
         member this.Zero() = return' ()
         /// Definition of while loops within IO computation expressions
         member this.While(guard, body) =
@@ -114,20 +114,23 @@ module IO =
             |true -> bind (body) (fun () -> this.While(guard, body))
 
     let private io = IOBuilder()
-    /// Monadic bind operator for IO values
+    /// Monadic bind operator for IO actions
     let (>>=) x f = bind x f
-    /// Left to right Kleisli composition of IO values
+    /// Left to right Kleisli composition of IO actions, allows composition of binding functions
     let (>=>) f g x = f x >>= g
-    /// Right to left Kleisli composition of IO values
+    /// Right to left Kleisli composition of IO actions, allows composition of binding functions
     let (<=<) f g x = flip (>=>) f g x
-    /// Map function for IO values
+    /// Takes a function which transforms a value to another value and an IO action which produces 
+    /// the first value, producing a new IO action which produces the second value
     let map f x = x >>= (return' << f)
-    /// Map operator for IO values
+    /// Map operator for IO actions
     let (<!>) f x = map f x
-    /// Applicative for IO
+    /// Takes an IO action which produces a function that maps from a value to another value and an IO action
+    /// which produces the first balue, producing a new IO action which produces the second value.  This is like 
+    /// map but the mapping function is contained within IO.
     let apply (f : IO<'a -> 'b>) (x : IO<'a>) =
         f >>= (fun fe -> map fe x)
-    /// Apply operator IO
+    /// Apply operator for IO actions
     let (<*>) (f : IO<'a -> 'b>) (x : IO<'a>) = apply f x
     /// Removes a level of IO structure
     let join x = x >>= id
@@ -140,6 +143,8 @@ module IO =
     let hIsReady handle = fromEffectful (fun _ -> SideEffectingIO.isHandleReadyToRead handle)
     /// Writes a line to the final or channel
     let hPutStrLn handle str = fromEffectful (fun _ -> SideEffectingIO.hPutStrLn str handle)
+    /// Writes a line to console
+    let putStrLn (str : string) = fromEffectful (fun _ -> System.Console.WriteLine str)
 
     // ------- RUN ------- //
 
@@ -148,7 +153,7 @@ module IO =
         let rec runRec (io : IO<'a>) =
             match io with
             |Return a -> a            
-            |Bind (a) -> runRec <| a()
+            |Delay (a) -> runRec <| a()
         runRec io
 
     /// Runs the IO actions and evaluates the result, handling success or failure using IOResult
@@ -156,24 +161,28 @@ module IO =
         // run recursively and handle exceptions in IO
         IOResult.withExceptionCheck (run) io
 
-    /// Sparks off a new thread to run the IO computation passed as the first argument
+    /// Sparks off a new thread to run the IO action passed as the first argument
     let forkIO io = 
         fromEffectful (fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
 
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
     let mapM mFunc sequ =
         return' <| Seq.map (run << mFunc) sequ
-    /// As traverseM but ignores the result.
+
+    /// As mapM but ignores the result.
     let iterM mFunc sequ =
         fromEffectful (fun _ -> Seq.iter (run << mFunc) sequ)
+
     /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
     let sequence seq =
         mapM id seq
+
     /// Performs the action mFunc n times, gathering the results.
     let replicateM mFunc n =
         sequence (Seq.init n (fun _ -> mFunc))
+
     /// As replicateM but ignores the results
-    let replicateM_ mFunc n  =
+    let repeatM mFunc n  =
         replicateM mFunc n >>= (return' << Seq.iter ignore)
 
     /// IOBuilder extensions so that traverseM_ can be used to define For
@@ -192,18 +201,21 @@ module IO =
             |> Seq.takeWhile p
             |> Seq.map (run)
             |> return'
+
         /// Drop elements repeatedly while a condition is met
         let skipWhileM p xs =
             xs 
             |> Seq.skipWhile p
             |> Seq.map (run)
             |> return'
+
         /// Execute an action repeatedly as long as the given boolean IO action returns true
         let whileM (pAct : IO<bool>) (f : IO<'a>) =
             Seq.initInfinite (fun _ -> f)
             |> Seq.map (run)
             |> Seq.takeWhile (fun _ -> run pAct)
             |> return'
+
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
         let whileSome act binder =
@@ -211,6 +223,7 @@ module IO =
             |> Seq.takeWhile (Option.isSome)
             |> Seq.map (run << binder << Option.get)
             |> return'
+
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =
             match p v with
@@ -233,13 +246,6 @@ module IO =
 
 /// Console functions
 module Console =
-
-    /// print a string to the console using the supplied formatter
-    let printf fmt = 
-         IO.fromEffectful (fun () -> Printf.printf fmt)
-    /// print a line to the console using the supplied formatter
-    let printfn fmt str =
-         IO.fromEffectful (fun () -> Printf.printfn fmt str)
     /// read a key from the console
     let readKey = IO.fromEffectful (fun () -> System.Console.ReadKey())
     /// read a line from the console

@@ -65,7 +65,7 @@ io {
     let! l1 = Console.readLine
     let! l2 = Console.readLine
     let! l3 = Console.readLine
-    do! Console.printfn "You entered: %A" [l1; l2; l3]
+    do! IO.putStrLn <| sprintf "You entered: %A" [l1; l2; l3]
 } |> IO.run
 
 (**
@@ -101,7 +101,7 @@ let fName = File.assumeValidFilename "testfile.txt"
 let fileIO = io {
     let! lines = File.readLines fName // sequence of io actions which each read a line from a file
     let! floatLines = IO.mapM (IO.map float) lines // parse each line, collecting the results
-    do! IO.iterM (Console.printfn "%f") floatLines // print each float to the console
+    do! IO.iterM (IO.putStrLn << sprintf "%f") floatLines // print each float to the console
 }
 
 try

@@ -17,7 +17,7 @@
 namespace NovelFS.NovelIO.IntegrationTests
 
 open NovelFS.NovelIO
-open NovelFS.NovelIO.BinaryParser
+open NovelFS.NovelIO.BinaryPickler
 open FsCheck
 open FsCheck.Xunit
 

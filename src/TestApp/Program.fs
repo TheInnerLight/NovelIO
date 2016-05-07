@@ -15,7 +15,7 @@
 *)
 
 open NovelFS.NovelIO
-open NovelFS.NovelIO.BinaryParser
+open NovelFS.NovelIO.BinaryPickler
 open System.Net
 open System.Text
 open NovelFS.NovelIO.IO
@@ -31,15 +31,15 @@ let main argv =
             let! lines = File.readLines fName
             let! lSeq = lines |> IO.sequence
             for line in lSeq do
-                do! (Console.printf "%s%d") <*> (IO.return' line) <*> (IO.return' 5)
+                do! (putStrLn <| sprintf "%s%d" line 5)
             let! test = IO.mapM (IO.return' << sprintf "%s") lSeq
-            return! Console.printfn "%A" test
+            return! putStrLn <| sprintf "%A" test
         }
 
     let consoleTest = 
         io{
             let! inputStrs = IO.Loops.unfoldWhileM (fun str -> str <> "") (Console.readLine)
-            do! IO.iterM (Console.printfn "%s") inputStrs
+            do! IO.iterM (putStrLn << sprintf "%s") inputStrs
         }
 
     let results = IO.run test
