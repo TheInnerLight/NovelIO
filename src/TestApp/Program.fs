@@ -23,11 +23,6 @@ open NovelFS.NovelIO.IO
 [<EntryPoint>]
 let main argv = 
     
-    let a = BinaryParser.parseByte
-    let b = BinaryParser.parseFloat64
-    let c = BinaryParser.parseInt16
-
-    let d = BinaryParser.lift3 (fun a b c -> a, b, c) a b c
 
     let fName = File.assumeValidFilename "test4.txt"
 

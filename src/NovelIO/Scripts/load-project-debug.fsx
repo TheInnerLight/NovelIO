@@ -2,7 +2,6 @@
 #I __SOURCE_DIRECTORY__
 #load "load-references-debug.fsx"
 #load "../BinaryPickler.fs"
-      "../BinaryParser.fs"
       "../Definitions.fs"
       "../IO.fs"
       "../File.fs"
