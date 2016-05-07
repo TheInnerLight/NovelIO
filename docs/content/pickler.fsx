@@ -9,30 +9,33 @@ open NovelFS.NovelIO.BinaryPickler
 Pickler Combinators
 ======================
 
-Pickler combinators are a concept described by Andrew J. Kennedy (http://research.microsoft.com/pubs/64036/picklercombinators.pdf).  
-The purpose is to give developers explicit control over their serialisation and deserialiation process while avoiding a tedious and
-error prone manual process.
+Pickler combinators are a concept described by Andrew J. Kennedy (http://research.microsoft.com/pubs/64036/picklercombinators.pdf).
+
+Their purpose is to present a serialisation/deserialiation mechanism that grants the developer explicit control over their serialisation format while avoiding the requirement to write lots of tedious, error prone code.
+
+Pickler primitives are used to handle simple data types and more complicated picklers can be constructed by combining these picklers using combinator functions.
 
 ## Pickler primitives
 *)
 
 let intPickler = BinaryPickler.pickleInt32
+
 let floatPickler = BinaryPickler.pickleFloat
+
 let asciiPickler = BinaryPickler.pickleAscii
 
 (**
 
-These are some examples of the primitive picklers defined in this library.  These picklers can be used to serialise (pickle) or
-deserialise (unpickle) values of the type associated with their pickler to and from their binary representations.
+These are just a few examples of the primitive picklers defined in this library.  These picklers can be used to serialise (pickle) or deserialise (unpickle) values of the type associated with their pickler to and from their binary representations.
 
 The same picklers can be used to transform data in both directions.
 
 ## Running picklers
 *)
 
-let bytes = BinaryPickler.pickle (BinaryPickler.pickleInt32) 64
+let bytes = BinaryPickler.pickle (BinaryPickler.pickleInt32) 64 // convert the int value 64 into a byte array
 
-let int = BinaryPickler.unpickle (BinaryPickler.pickleInt32) bytes
+let int = BinaryPickler.unpickle (BinaryPickler.pickleInt32) bytes // convert the byte array back into an int
 
 (**
 
@@ -55,26 +58,26 @@ tuple3 and tuple4 functions are also provided, allowing the construction of more
 
 ## Wrapping picklers
 
-Rather than constructing data from tuples, we may wish to pickle/unpickle custom data types.  
-It is possible to do this by providing a function which constructs and deconstructs this custom
-data-type.
+Rather than constructing data from tuples, we may wish to pickle/unpickle custom data types.  It is possible to do this by providing a function which constructs and deconstructs this custom data-type.
 
 *)
 
+/// Unit of pounds sterling
 [<Measure>] type GBP
+
+/// A product with an associated price
 type Product = {ProductName : string; ProductPrice : decimal<GBP>}
 
+/// A pickler/unpickler pair for products
 let productPickler =
     let nameDecPickler = BinaryPickler.tuple2 BinaryPickler.pickleUTF8 BinaryPickler.pickleDecimal
-    let toProd (name,price) = {ProductName = name; ProductPrice = price*1.0M<GBP>}
-    let fromProd prod = prod.ProductName, decimal prod.ProductPrice
+    let toProd (name,price) = {ProductName = name; ProductPrice = price*1.0M<GBP>} // tuple to product
+    let fromProd prod = prod.ProductName, decimal prod.ProductPrice // product to tuple
     BinaryPickler.wrap (toProd, fromProd) nameDecPickler
 
 (**
 
-Here, the custom record type contains a string and a decimal with a unit of measure so we define a tuple pickler
-which will pickle/unpickle the underlying data and provide functions that construct and deconstruct data from that
-form.
+Here, the custom record type contains a string and a decimal with a unit of measure so we define a tuple pickler which will pickle/unpickle the underlying data and provide functions that construct and deconstruct data from that form.
 
 Data can then easily be read into or written from our custom data type.
 

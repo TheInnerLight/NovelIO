@@ -133,7 +133,7 @@ module BinaryPickler =
     let repeatA pa n =
         wrap (Array.ofList, List.ofArray) (repeat pa n)
 
-    /// Pickles a byte
+    /// A pickler/unpickler pair for bools
     let pickleBool =
         {
         Pickle = fun (b, s) -> {Raw = (PickleConvertors.convFromBool b) @ s.Raw}
@@ -143,7 +143,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<bool>}
         }
 
-    /// Pickles a byte
+    /// A pickler/unpickler pair for bytes
     let pickleByte =
         {
         Pickle = fun (b, s) -> {Raw = b :: s.Raw}
@@ -153,7 +153,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<byte>}
         }
 
-    /// Pickles an int16
+    /// A pickler/unpickler pair for int16s
     let pickleInt16 =
         {
         Pickle = fun (i16, s) -> {Raw = (PickleConvertors.convFromInt16 i16) @ s.Raw}
@@ -163,7 +163,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<int16>}
         }
 
-    /// Pickles an int32
+    /// A pickler/unpickler pair for int32s
     let pickleInt32 =
         {
         Pickle = fun (i32, s) -> {Raw = (PickleConvertors.convFromInt32 i32) @ s.Raw}
@@ -173,7 +173,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<int32>}
         }
 
-    /// Pickles an int64
+    /// A pickler/unpickler pair for int64s
     let pickleInt64 =
         {
         Pickle = fun (i64, s) -> {Raw = (PickleConvertors.convFromInt64 i64) @ s.Raw}
@@ -183,7 +183,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<int64>}
         }
 
-    /// Pickles a float32
+    /// A pickler/unpickler pair for float32s
     let pickleFloat32 =
         {
         Pickle = fun (f32, s) -> {Raw = (PickleConvertors.convFromFloat32 f32) @ s.Raw}
@@ -193,7 +193,7 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<float32>}
         }
 
-    /// Pickles a float
+    /// A pickler/unpickler pair for floats
     let pickleFloat =
         {
         Pickle = fun (f64, s) -> {Raw = (PickleConvertors.convFromFloat64 f64) @ s.Raw}
@@ -206,13 +206,13 @@ module BinaryPickler =
     /// Accepts a tagging function that partitions the type to be pickled into two sets, then accepts a pickler for each set
     let alt tag ps = sequ tag pickleInt32 (fun i -> Map.find i ps)
 
-    /// Pickles a general list by prefixing with the length of the list
+    /// A pickler/unpickler pair for lists
     let list pa = sequ (List.length) pickleInt32 << repeat <| pa
 
-    /// Pickles a general array by prefixing with the length of the array
+    /// A pickler/unpickler pair for arrays
     let array pa = sequ (Array.length) pickleInt32 << repeatA <| pa
 
-    /// Pickles an option type
+    /// A pickler/unpickler pair for option types
     let pickleOption pa = 
         let tag = function
             |Some _ -> 1
@@ -220,23 +220,23 @@ module BinaryPickler =
         let map = Map.ofList [(0, lift None); (1, wrap (Some, Option.get) pa)]
         alt tag map
 
-    /// Pickles an ASCII string
+    /// A pickler/unpickler pair for ASCII strings
     let pickleAscii =
         wrap (System.Text.Encoding.ASCII.GetString, System.Text.Encoding.ASCII.GetBytes) (array pickleByte)
 
-    /// Pickles a UTF-7 string
+    /// A pickler/unpickler pair for UTF-7 strings
     let pickleUTF7 =
         wrap (System.Text.Encoding.UTF7.GetString, System.Text.Encoding.UTF7.GetBytes) (array pickleByte)
 
-    /// Pickles a UTF-8 string
+    /// A pickler/unpickler pair for UTF-8 strings
     let pickleUTF8 =
         wrap (System.Text.Encoding.UTF8.GetString, System.Text.Encoding.UTF8.GetBytes) (array pickleByte)
 
-    /// Pickles a UTF-32 string
+    /// A pickler/unpickler pair for UTF-32 strings
     let pickleUTF32 =
         wrap (System.Text.Encoding.UTF32.GetString, System.Text.Encoding.UTF32.GetBytes) (array pickleByte)
 
-    /// Pickles a decimal
+    /// A pickler/unpickler pair for decimals
     let pickleDecimal =
         let intAToDecimal (a : int[]) = System.Decimal a
         wrap (intAToDecimal, System.Decimal.GetBits) (repeatA pickleInt32 4)
