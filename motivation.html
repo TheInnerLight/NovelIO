@@ -35,7 +35,7 @@
           
 <h1><a name="Motivation" class="anchor" href="#Motivation">Motivation</a></h1>
 <h2><a name="Lazy-evaluation-and-exceptions" class="anchor" href="#Lazy-evaluation-and-exceptions">Lazy evaluation and exceptions</a></h2>
-<p>This example is more or less taken from Erik Maijer's Curse of the excluded middle (<a href="https://queue.acm.org/detail.cfm?ref=rss&amp;id=2611829)">https://queue.acm.org/detail.cfm?ref=rss&id=2611829)</a></p>
+<p>This example is more or less taken from Erik Meijer's Curse of the excluded middle (<a href="https://queue.acm.org/detail.cfm?ref=rss&amp;id=2611829)">https://queue.acm.org/detail.cfm?ref=rss&id=2611829)</a></p>
 <p>Consider the following code where we try to combine lazy evaluation with File IO:</p>
 <pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="i">floatLines</span> <span class="o">=</span> 
     <span class="k">try</span>
@@ -153,14 +153,14 @@
 <div class="tip" id="fs41">property System.ConsoleKeyInfo.KeyChar: char</div>
 <div class="tip" id="fs42">module String<br /><br />from Microsoft.FSharp.Core</div>
 <div class="tip" id="fs43">val concat : sep:string -&gt; strings:seq&lt;string&gt; -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.String.concat</div>
-<div class="tip" id="fs44">val keysIO : IO&lt;System.ConsoleKeyInfo list&gt;<br /><br />Full name: Motivation.keysIO</div>
+<div class="tip" id="fs44">val keysIO : IO&lt;seq&lt;System.ConsoleKeyInfo&gt;&gt;<br /><br />Full name: Motivation.keysIO</div>
 <div class="tip" id="fs45">module Console<br /><br />from NovelFS.NovelIO</div>
 <div class="tip" id="fs46">val readKey : IO&lt;System.ConsoleKeyInfo&gt;<br /><br />Full name: NovelFS.NovelIO.Console.readKey</div>
 <div class="tip" id="fs47">module Loops<br /><br />from NovelFS.NovelIO.IO</div>
-<div class="tip" id="fs48">val unfoldWhileM : p:(&#39;a -&gt; bool) -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;&#39;a list&gt;<br /><br />Full name: NovelFS.NovelIO.IO.Loops.unfoldWhileM</div>
-<div class="tip" id="fs49">val sequence1 : System.ConsoleKeyInfo list</div>
-<div class="tip" id="fs50">val sequence2 : System.ConsoleKeyInfo list</div>
-<div class="tip" id="fs51">val sequence : System.ConsoleKeyInfo list</div>
+<div class="tip" id="fs48">val unfoldWhileM : p:(&#39;a -&gt; bool) -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;seq&lt;&#39;a&gt;&gt;<br /><br />Full name: NovelFS.NovelIO.IO.Loops.unfoldWhileM</div>
+<div class="tip" id="fs49">val sequence1 : seq&lt;System.ConsoleKeyInfo&gt;</div>
+<div class="tip" id="fs50">val sequence2 : seq&lt;System.ConsoleKeyInfo&gt;</div>
+<div class="tip" id="fs51">val sequence : seq&lt;System.ConsoleKeyInfo&gt;</div>
 
         </div>
         <div class="span3">

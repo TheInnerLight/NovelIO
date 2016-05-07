@@ -120,7 +120,7 @@
             skipWhileM p xs
           </code>
           <div class="tip" id="59">
-            <strong>Signature:</strong> p:(IO&lt;&#39;?7349&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7349&gt;&gt; -&gt; IO&lt;&#39;?7349 list&gt;<br />
+            <strong>Signature:</strong> p:(IO&lt;&#39;?7349&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7349&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7349&gt;&gt;<br />
                           <strong>Type parameters:</strong> '?7349          </div>
         </td>
         <td class="xmldoc">
@@ -140,7 +140,7 @@
             takeWhileM p xs
           </code>
           <div class="tip" id="60">
-            <strong>Signature:</strong> p:(IO&lt;&#39;?7347&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7347&gt;&gt; -&gt; IO&lt;&#39;?7347 list&gt;<br />
+            <strong>Signature:</strong> p:(IO&lt;&#39;?7347&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7347&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7347&gt;&gt;<br />
                           <strong>Type parameters:</strong> '?7347          </div>
         </td>
         <td class="xmldoc">
@@ -160,7 +160,7 @@
             unfoldWhileM p f
           </code>
           <div class="tip" id="61">
-            <strong>Signature:</strong> p:(&#39;a -&gt; bool) -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;&#39;a list&gt;<br />
+            <strong>Signature:</strong> p:(&#39;a -&gt; bool) -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;seq&lt;&#39;a&gt;&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
@@ -181,7 +181,7 @@ values that satisfied the predicate.  Discards the final one (which failed the p
             whileM pAct f
           </code>
           <div class="tip" id="62">
-            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;&#39;a list&gt;<br />
+            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;seq&lt;&#39;a&gt;&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
@@ -201,7 +201,7 @@ values that satisfied the predicate.  Discards the final one (which failed the p
             whileSome act binder
           </code>
           <div class="tip" id="63">
-            <strong>Signature:</strong> act:IO&lt;&#39;?7353 option&gt; -&gt; binder:(&#39;?7353 -&gt; IO&lt;&#39;?7354&gt;) -&gt; IO&lt;&#39;?7354 list&gt;<br />
+            <strong>Signature:</strong> act:IO&lt;&#39;?7353 option&gt; -&gt; binder:(&#39;?7353 -&gt; IO&lt;&#39;?7354&gt;) -&gt; IO&lt;seq&lt;&#39;?7354&gt;&gt;<br />
                           <strong>Type parameters:</strong> '?7353, '?7354          </div>
         </td>
         <td class="xmldoc">
