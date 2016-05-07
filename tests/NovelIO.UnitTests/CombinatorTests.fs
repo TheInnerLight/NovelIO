@@ -23,7 +23,7 @@ open FsCheck.Xunit
 
 type ``Binary Pickler Combinator Tests`` =
     [<Property>]
-    static member ``Unpickle tuple of ints from two ints`` (i1 : int, i2: int) =
+    static member ``Unpickle tuple of ints from two ints should match the tuple of the two ints`` (i1 : int, i2: int) =
         let bytes =
             Array.concat 
                 [(System.BitConverter.GetBytes i1);
@@ -34,7 +34,7 @@ type ``Binary Pickler Combinator Tests`` =
         result = (i1, i2)
 
     [<Property>]
-    static member ``Unpickle tuple of ints from three ints`` (i1 : int, i2: int, i3 : int) =
+    static member ``Unpickle tuple of ints from three ints should match the tuple of the three ints`` (i1 : int, i2: int, i3 : int) =
         let bytes =
             Array.concat 
                 [(System.BitConverter.GetBytes i1);
@@ -44,3 +44,37 @@ type ``Binary Pickler Combinator Tests`` =
             BinaryPickler.tuple3 (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32)
         let result = BinaryPickler.unpickle bytePickler bytes 
         result = (i1, i2, i3)
+
+    [<Property>]
+    static member ``Unpickle tuple of ints from four ints should match the tuple of the four ints`` (i1 : int, i2: int, i3 : int, i4: int) =
+        let bytes =
+            Array.concat 
+                [(System.BitConverter.GetBytes i1);
+                (System.BitConverter.GetBytes i2);
+                (System.BitConverter.GetBytes i3);
+                (System.BitConverter.GetBytes i4)]
+        let bytePickler = 
+            BinaryPickler.tuple4 (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32)
+        let result = BinaryPickler.unpickle bytePickler bytes 
+        result = (i1, i2, i3, i4)
+
+    [<Property>]
+    static member ``Unpickle list of ints from bytes should match the values of the int list`` (lst : int list) =
+        let byteData =
+            lst
+            |> Array.ofList
+            |> Array.collect (System.BitConverter.GetBytes)
+        let bytes = Array.concat [System.BitConverter.GetBytes (List.length lst); byteData]
+        let lstPickler = BinaryPickler.list (BinaryPickler.pickleInt32)
+        let result = BinaryPickler.unpickle lstPickler bytes 
+        result = lst
+
+    [<Property>]
+    static member ``Unpickle array of ints from bytes should match the values of the int array`` (arr : int[]) =
+        let byteData =
+            arr
+            |> Array.collect (System.BitConverter.GetBytes)
+        let bytes = Array.concat [System.BitConverter.GetBytes (Array.length arr); byteData]
+        let arrPickler = BinaryPickler.array (BinaryPickler.pickleInt32)
+        let result = BinaryPickler.unpickle arrPickler bytes 
+        result = arr
