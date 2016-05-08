@@ -118,4 +118,56 @@ io {
 
 (**
 In both cases, we have successfully made our decision explicit.
+
+## Random numbers
+
+Sequences of random numbers are another area where side-effects can be particularly devastating while being produced by code that looks innocuous.
+
+Consider this code:
+
+*)
+
+let rnd = System.Random()
+
+let randomSeq = Seq.init 20 (fun _ -> rnd.Next())
+let sortedSeq = Seq.sort randomSeq
+
+printfn "Sorted: %A" sortedSeq
+printfn "Random: %A" randomSeq
+
+(**
+
+Indeed, the numbers shown in the 'Sorted' and 'Random' lists could be totally different.  Each time we enumerate **randomSeq**, the side effect of getting the next random number is produced again!
+
+Here is the same program written using NovelIO.  Notice that we have to explicitly ask for a second sequence.
+
+*)
+
+io {
+    let randomSeqIO = IO.replicateM (Random.nextIO) 20
+    let! randomSeq = randomSeqIO
+    let! randomSeq2 = randomSeqIO
+    let sortedSeq = Seq.sort randomSeq2
+    do! IO.putStrLn <| sprintf "Sorted: %A" sortedSeq
+    do! IO.putStrLn <| sprintf "Random: %A" randomSeq
+    } |> IO.run
+
+(**
+
+If we do not ask for the second sequence, we get what was the original desired behaviour of the program:
+
+*)
+
+io {
+    let randomSeqIO = IO.replicateM (Random.nextIO) 20
+    let! randomSeq = randomSeqIO
+    let sortedSeq = Seq.sort randomSeq
+    do! IO.putStrLn <| sprintf "Sorted: %A" sortedSeq
+    do! IO.putStrLn <| sprintf "Random: %A" randomSeq
+    } |> IO.run
+
+(**
+
+Hopefully this demonstrates how being explicit about when side-effects occur can massively improve the ability of developers to understand and reason about their code.
+
 *)
