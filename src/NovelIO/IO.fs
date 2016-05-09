@@ -173,11 +173,32 @@ module IO =
             |> List.ofSeq
             |> Seq.ofList)
 
+    /// Map each element of a list to a monadic action of options, evaluate these actions from left to right and collect the results which are 'Some' as a sequence.
+    let chooseM mFunc sequ =
+        fromEffectful (fun _ ->
+            sequ
+            |> Seq.choose (run << mFunc)
+            |> List.ofSeq
+            |> Seq.ofList)
+
+    /// Filters a sequence based upon a monadic predicate, collecting the results as a sequence
+    let filterM pred sequ =
+        fromEffectful (fun _ ->
+            sequ
+            |> Seq.filter (run << pred)
+            |> List.ofSeq
+            |> Seq.ofList)
+
     /// As mapM but ignores the result.
     let iterM mFunc sequ =
         fromEffectful (fun _ ->
             sequ
             |> Seq.iter (ignore << run << mFunc))
+
+    /// Analogous to fold, except that the results are encapsulated within IO
+    let foldM accFunc acc sequ =
+        fromEffectful (fun _ ->
+            Seq.fold (fun acc it -> run <| accFunc acc it) acc sequ)
 
     /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
     let sequence seq =
