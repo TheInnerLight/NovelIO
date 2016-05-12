@@ -93,8 +93,8 @@
             ( &lt;!&gt; ) f x
           </code>
           <div class="tip" id="33">
-            <strong>Signature:</strong> f:(&#39;?7302 -&gt; &#39;?7303) -&gt; x:IO&lt;&#39;?7302&gt; -&gt; IO&lt;&#39;?7303&gt;<br />
-                          <strong>Type parameters:</strong> '?7302, '?7303          </div>
+            <strong>Signature:</strong> f:(&#39;?7308 -&gt; &#39;?7309) -&gt; x:IO&lt;&#39;?7308&gt; -&gt; IO&lt;&#39;?7309&gt;<br />
+                          <strong>Type parameters:</strong> '?7308, '?7309          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L127-127" class="github-link">
@@ -135,8 +135,8 @@
             ( &lt;=&lt; ) f g x
           </code>
           <div class="tip" id="35">
-            <strong>Signature:</strong> f:(&#39;?7295 -&gt; IO&lt;&#39;?7296&gt;) -&gt; g:(&#39;?7297 -&gt; IO&lt;&#39;?7295&gt;) -&gt; x:&#39;?7297 -&gt; IO&lt;&#39;?7296&gt;<br />
-                          <strong>Type parameters:</strong> '?7295, '?7296, '?7297          </div>
+            <strong>Signature:</strong> f:(&#39;?7301 -&gt; IO&lt;&#39;?7302&gt;) -&gt; g:(&#39;?7303 -&gt; IO&lt;&#39;?7301&gt;) -&gt; x:&#39;?7303 -&gt; IO&lt;&#39;?7302&gt;<br />
+                          <strong>Type parameters:</strong> '?7301, '?7302, '?7303          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L122-122" class="github-link">
@@ -156,8 +156,8 @@
             ( &gt;=&gt; ) f g x
           </code>
           <div class="tip" id="36">
-            <strong>Signature:</strong> f:(&#39;?7291 -&gt; IO&lt;&#39;?7292&gt;) -&gt; g:(&#39;?7292 -&gt; IO&lt;&#39;?7293&gt;) -&gt; x:&#39;?7291 -&gt; IO&lt;&#39;?7293&gt;<br />
-                          <strong>Type parameters:</strong> '?7291, '?7292, '?7293          </div>
+            <strong>Signature:</strong> f:(&#39;?7297 -&gt; IO&lt;&#39;?7298&gt;) -&gt; g:(&#39;?7298 -&gt; IO&lt;&#39;?7299&gt;) -&gt; x:&#39;?7297 -&gt; IO&lt;&#39;?7299&gt;<br />
+                          <strong>Type parameters:</strong> '?7297, '?7298, '?7299          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L120-120" class="github-link">
@@ -177,8 +177,8 @@
             ( &gt;&gt;= ) x f
           </code>
           <div class="tip" id="37">
-            <strong>Signature:</strong> x:IO&lt;&#39;?7288&gt; -&gt; f:(&#39;?7288 -&gt; IO&lt;&#39;?7289&gt;) -&gt; IO&lt;&#39;?7289&gt;<br />
-                          <strong>Type parameters:</strong> '?7288, '?7289          </div>
+            <strong>Signature:</strong> x:IO&lt;&#39;?7294&gt; -&gt; f:(&#39;?7294 -&gt; IO&lt;&#39;?7295&gt;) -&gt; IO&lt;&#39;?7295&gt;<br />
+                          <strong>Type parameters:</strong> '?7294, '?7295          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L118-118" class="github-link">
@@ -220,8 +220,8 @@ map but the mapping function is contained within IO.</p>
             bind x f
           </code>
           <div class="tip" id="39">
-            <strong>Signature:</strong> x:IO&lt;&#39;?7270&gt; -&gt; f:(&#39;?7270 -&gt; IO&lt;&#39;?7271&gt;) -&gt; IO&lt;&#39;?7271&gt;<br />
-                          <strong>Type parameters:</strong> '?7270, '?7271          </div>
+            <strong>Signature:</strong> x:IO&lt;&#39;?7276&gt; -&gt; f:(&#39;?7276 -&gt; IO&lt;&#39;?7277&gt;) -&gt; IO&lt;&#39;?7277&gt;<br />
+                          <strong>Type parameters:</strong> '?7276, '?7277          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L90-90" class="github-link">
@@ -237,11 +237,71 @@ map but the mapping function is contained within IO.</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '40', 40)" onmouseover="showTip(event, '40', 40)">
-            forkIO io
+            chooseM mFunc sequ
           </code>
           <div class="tip" id="40">
-            <strong>Signature:</strong> io:IO&lt;&#39;?7321&gt; -&gt; IO&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7321          </div>
+            <strong>Signature:</strong> mFunc:(&#39;?7332 -&gt; IO&lt;&#39;?7333 option&gt;) -&gt; sequ:seq&lt;&#39;?7332&gt; -&gt; IO&lt;seq&lt;&#39;?7333&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7332, '?7333          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L177-177" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Map each element of a list to a monadic action of options, evaluate these actions from left to right and collect the results which are 'Some' as a sequence.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '41', 41)" onmouseover="showTip(event, '41', 41)">
+            filterM pred sequ
+          </code>
+          <div class="tip" id="41">
+            <strong>Signature:</strong> pred:(&#39;?7335 -&gt; IO&lt;bool&gt;) -&gt; sequ:seq&lt;&#39;?7335&gt; -&gt; IO&lt;seq&lt;&#39;?7335&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7335          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L185-185" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Filters a sequence based upon a monadic predicate, collecting the results as a sequence</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '42', 42)" onmouseover="showTip(event, '42', 42)">
+            foldM accFunc acc sequ
+          </code>
+          <div class="tip" id="42">
+            <strong>Signature:</strong> accFunc:(&#39;?7340 -&gt; &#39;?7341 -&gt; IO&lt;&#39;?7340&gt;) -&gt; acc:&#39;?7340 -&gt; sequ:seq&lt;&#39;?7341&gt; -&gt; IO&lt;&#39;?7340&gt;<br />
+                          <strong>Type parameters:</strong> '?7340, '?7341          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L199-199" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Analogous to fold, except that the results are encapsulated within IO</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '43', 43)" onmouseover="showTip(event, '43', 43)">
+            forkIO io
+          </code>
+          <div class="tip" id="43">
+            <strong>Signature:</strong> io:IO&lt;&#39;?7327&gt; -&gt; IO&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7327          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L165-165" class="github-link">
@@ -256,10 +316,10 @@ map but the mapping function is contained within IO.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '41', 41)" onmouseover="showTip(event, '41', 41)">
+          <code onmouseout="hideTip(event, '44', 44)" onmouseover="showTip(event, '44', 44)">
             fromEffectful f
           </code>
-          <div class="tip" id="41">
+          <div class="tip" id="44">
             <strong>Signature:</strong> f:(unit -&gt; &#39;a) -&gt; IO&lt;&#39;a&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
@@ -276,10 +336,10 @@ map but the mapping function is contained within IO.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '42', 42)" onmouseover="showTip(event, '42', 42)">
+          <code onmouseout="hideTip(event, '45', 45)" onmouseover="showTip(event, '45', 45)">
             hGetLine handle
           </code>
-          <div class="tip" id="42">
+          <div class="tip" id="45">
             <strong>Signature:</strong> handle:Handle -&gt; IO&lt;string&gt;<br />
                       </div>
         </td>
@@ -296,10 +356,10 @@ map but the mapping function is contained within IO.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '43', 43)" onmouseover="showTip(event, '43', 43)">
+          <code onmouseout="hideTip(event, '46', 46)" onmouseover="showTip(event, '46', 46)">
             hIsReady handle
           </code>
-          <div class="tip" id="43">
+          <div class="tip" id="46">
             <strong>Signature:</strong> handle:Handle -&gt; IO&lt;bool&gt;<br />
                       </div>
         </td>
@@ -316,10 +376,10 @@ map but the mapping function is contained within IO.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '44', 44)" onmouseover="showTip(event, '44', 44)">
+          <code onmouseout="hideTip(event, '47', 47)" onmouseover="showTip(event, '47', 47)">
             hPutStrLn handle str
           </code>
-          <div class="tip" id="44">
+          <div class="tip" id="47">
             <strong>Signature:</strong> handle:Handle -&gt; str:string -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
@@ -336,15 +396,15 @@ map but the mapping function is contained within IO.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '45', 45)" onmouseover="showTip(event, '45', 45)">
+          <code onmouseout="hideTip(event, '48', 48)" onmouseover="showTip(event, '48', 48)">
             iterM mFunc sequ
           </code>
-          <div class="tip" id="45">
-            <strong>Signature:</strong> mFunc:(&#39;?7326 -&gt; IO&lt;&#39;?7327&gt;) -&gt; sequ:seq&lt;&#39;?7326&gt; -&gt; IO&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7326, '?7327          </div>
+          <div class="tip" id="48">
+            <strong>Signature:</strong> mFunc:(&#39;?7337 -&gt; IO&lt;&#39;?7338&gt;) -&gt; sequ:seq&lt;&#39;?7337&gt; -&gt; IO&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7337, '?7338          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L177-177" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L193-193" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -356,12 +416,12 @@ map but the mapping function is contained within IO.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '46', 46)" onmouseover="showTip(event, '46', 46)">
+          <code onmouseout="hideTip(event, '49', 49)" onmouseover="showTip(event, '49', 49)">
             join x
           </code>
-          <div class="tip" id="46">
-            <strong>Signature:</strong> x:IO&lt;IO&lt;&#39;?7311&gt;&gt; -&gt; IO&lt;&#39;?7311&gt;<br />
-                          <strong>Type parameters:</strong> '?7311          </div>
+          <div class="tip" id="49">
+            <strong>Signature:</strong> x:IO&lt;IO&lt;&#39;?7317&gt;&gt; -&gt; IO&lt;&#39;?7317&gt;<br />
+                          <strong>Type parameters:</strong> '?7317          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L136-136" class="github-link">
@@ -376,12 +436,12 @@ map but the mapping function is contained within IO.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '47', 47)" onmouseover="showTip(event, '47', 47)">
+          <code onmouseout="hideTip(event, '50', 50)" onmouseover="showTip(event, '50', 50)">
             map f x
           </code>
-          <div class="tip" id="47">
-            <strong>Signature:</strong> f:(&#39;?7299 -&gt; &#39;?7300) -&gt; x:IO&lt;&#39;?7299&gt; -&gt; IO&lt;&#39;?7300&gt;<br />
-                          <strong>Type parameters:</strong> '?7299, '?7300          </div>
+          <div class="tip" id="50">
+            <strong>Signature:</strong> f:(&#39;?7305 -&gt; &#39;?7306) -&gt; x:IO&lt;&#39;?7305&gt; -&gt; IO&lt;&#39;?7306&gt;<br />
+                          <strong>Type parameters:</strong> '?7305, '?7306          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L125-125" class="github-link">
@@ -397,12 +457,12 @@ the first value, producing a new IO action which produces the second value</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '48', 48)" onmouseover="showTip(event, '48', 48)">
+          <code onmouseout="hideTip(event, '51', 51)" onmouseover="showTip(event, '51', 51)">
             mapM mFunc sequ
           </code>
-          <div class="tip" id="48">
-            <strong>Signature:</strong> mFunc:(&#39;?7323 -&gt; IO&lt;&#39;?7324&gt;) -&gt; sequ:seq&lt;&#39;?7323&gt; -&gt; IO&lt;seq&lt;&#39;?7324&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7323, '?7324          </div>
+          <div class="tip" id="51">
+            <strong>Signature:</strong> mFunc:(&#39;?7329 -&gt; IO&lt;&#39;?7330&gt;) -&gt; sequ:seq&lt;&#39;?7329&gt; -&gt; IO&lt;seq&lt;&#39;?7330&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7329, '?7330          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L169-169" class="github-link">
@@ -417,10 +477,10 @@ the first value, producing a new IO action which produces the second value</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '49', 49)" onmouseover="showTip(event, '49', 49)">
+          <code onmouseout="hideTip(event, '52', 52)" onmouseover="showTip(event, '52', 52)">
             putStrLn str
           </code>
-          <div class="tip" id="49">
+          <div class="tip" id="52">
             <strong>Signature:</strong> str:string -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
@@ -437,15 +497,15 @@ the first value, producing a new IO action which produces the second value</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '50', 50)" onmouseover="showTip(event, '50', 50)">
+          <code onmouseout="hideTip(event, '53', 53)" onmouseover="showTip(event, '53', 53)">
             repeatM mFunc n
           </code>
-          <div class="tip" id="50">
-            <strong>Signature:</strong> mFunc:IO&lt;&#39;?7333&gt; -&gt; n:int -&gt; IO&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7333          </div>
+          <div class="tip" id="53">
+            <strong>Signature:</strong> mFunc:IO&lt;&#39;?7347&gt; -&gt; n:int -&gt; IO&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7347          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L191-191" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L212-212" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -457,15 +517,15 @@ the first value, producing a new IO action which produces the second value</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '51', 51)" onmouseover="showTip(event, '51', 51)">
+          <code onmouseout="hideTip(event, '54', 54)" onmouseover="showTip(event, '54', 54)">
             replicateM mFunc n
           </code>
-          <div class="tip" id="51">
-            <strong>Signature:</strong> mFunc:IO&lt;&#39;?7331&gt; -&gt; n:int -&gt; IO&lt;seq&lt;&#39;?7331&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7331          </div>
+          <div class="tip" id="54">
+            <strong>Signature:</strong> mFunc:IO&lt;&#39;?7345&gt; -&gt; n:int -&gt; IO&lt;seq&lt;&#39;?7345&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7345          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L187-187" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L208-208" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -477,10 +537,10 @@ the first value, producing a new IO action which produces the second value</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '52', 52)" onmouseover="showTip(event, '52', 52)">
+          <code onmouseout="hideTip(event, '55', 55)" onmouseover="showTip(event, '55', 55)">
             return&#39; x
           </code>
-          <div class="tip" id="52">
+          <div class="tip" id="55">
             <strong>Signature:</strong> x:&#39;a -&gt; IO&lt;&#39;a&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
@@ -497,12 +557,12 @@ the first value, producing a new IO action which produces the second value</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '53', 53)" onmouseover="showTip(event, '53', 53)">
+          <code onmouseout="hideTip(event, '56', 56)" onmouseover="showTip(event, '56', 56)">
             run io
           </code>
-          <div class="tip" id="53">
-            <strong>Signature:</strong> io:IO&lt;&#39;?7317&gt; -&gt; &#39;?7317<br />
-                          <strong>Type parameters:</strong> '?7317          </div>
+          <div class="tip" id="56">
+            <strong>Signature:</strong> io:IO&lt;&#39;?7323&gt; -&gt; &#39;?7323<br />
+                          <strong>Type parameters:</strong> '?7323          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L152-152" class="github-link">
@@ -517,12 +577,12 @@ the first value, producing a new IO action which produces the second value</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '54', 54)" onmouseover="showTip(event, '54', 54)">
+          <code onmouseout="hideTip(event, '57', 57)" onmouseover="showTip(event, '57', 57)">
             runGuarded io
           </code>
-          <div class="tip" id="54">
-            <strong>Signature:</strong> io:IO&lt;&#39;?7319&gt; -&gt; IOResult&lt;&#39;?7319&gt;<br />
-                          <strong>Type parameters:</strong> '?7319          </div>
+          <div class="tip" id="57">
+            <strong>Signature:</strong> io:IO&lt;&#39;?7325&gt; -&gt; IOResult&lt;&#39;?7325&gt;<br />
+                          <strong>Type parameters:</strong> '?7325          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L160-160" class="github-link">
@@ -537,15 +597,15 @@ the first value, producing a new IO action which produces the second value</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '55', 55)" onmouseover="showTip(event, '55', 55)">
+          <code onmouseout="hideTip(event, '58', 58)" onmouseover="showTip(event, '58', 58)">
             sequence seq
           </code>
-          <div class="tip" id="55">
-            <strong>Signature:</strong> seq:seq&lt;IO&lt;&#39;?7329&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7329&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7329          </div>
+          <div class="tip" id="58">
+            <strong>Signature:</strong> seq:seq&lt;IO&lt;&#39;?7343&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7343&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7343          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L183-183" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L204-204" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

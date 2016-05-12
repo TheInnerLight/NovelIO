@@ -72,6 +72,9 @@
 } <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs12', 39)" onmouseover="showTip(event, 'fs12', 39)" class="t">IO</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 40)" onmouseover="showTip(event, 'fs13', 40)" class="f">run</span>
 </code></pre>
 <p>Here we simply read three lines from the console and print the result back to the console as a list.</p>
+<p>Needless to say, highly complex actions can be built up in this way.  For example, running a webserver could be represented as a single <code>IO</code> action.</p>
+<h2><a name="Parallel-IO" class="anchor" href="#Parallel-IO">Parallel IO</a></h2>
+<p>IO actions can also be performed in parallel using the <code>IO.parallel</code> combinators.  This gives us very explicit, fine-grained, control over what actions should take place in parallel.</p>
 
 <div class="tip" id="fs1">namespace NovelFS</div>
 <div class="tip" id="fs2">namespace NovelFS.NovelIO</div>

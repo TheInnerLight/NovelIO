@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PathDiscriminators - NovelIO</title>
+    <title>Random - NovelIO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Phil Curzon"/>
@@ -35,40 +35,101 @@
 
 
 
-<h1>PathDiscriminators</h1>
+<h1>Random</h1>
 <p>
   <span>Namespace: NovelFS.NovelIO</span><br />
 </p>
 <div class="xmldoc">
-<p>Provides patterns for matching against valid and invalid file names</p>
+<p>Purely functional random number functions</p>
 
 </div>
 
 <!-- Render nested types and modules, if there are any -->
 
-  <h3>Active patterns</h3>
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Active pattern</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '68', 68)" onmouseover="showTip(event, '68', 68)">
-            ( |ValidFilename|InvalidFilename| ) path
+          <code onmouseout="hideTip(event, '69', 69)" onmouseover="showTip(event, '69', 69)">
+            nextBytesIO length
           </code>
-          <div class="tip" id="68">
-            <strong>Signature:</strong> path:string -&gt; Choice&lt;Filename,unit&gt;<br />
+          <div class="tip" id="69">
+            <strong>Signature:</strong> length:int -&gt; IO&lt;byte []&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Definitions.fs#L86-86" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Random.fs#L43-43" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
-              <p>CompiledName: <code>|ValidFilename|InvalidFilename|</code></p>
+          <p>An IO action that returns the next byte array of the supplied length from the global random number generator</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '70', 70)" onmouseover="showTip(event, '70', 70)">
+            nextFloatIO 
+          </code>
+          <div class="tip" id="70">
+            <strong>Signature:</strong> IO&lt;float&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Random.fs#L40-40" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>An IO action that returns the next float from the global random number generator</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '71', 71)" onmouseover="showTip(event, '71', 71)">
+            nextIO 
+          </code>
+          <div class="tip" id="71">
+            <strong>Signature:</strong> IO&lt;int&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Random.fs#L34-34" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>An IO action that returns the next int from the global random number generator</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '72', 72)" onmouseover="showTip(event, '72', 72)">
+            nextRangeIO (min, max)
+          </code>
+          <div class="tip" id="72">
+            <strong>Signature:</strong> (min:int * max:int) -&gt; IO&lt;int&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Random.fs#L37-37" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>An IO action that returns the next int in the specified range from the global random number generator</p>
+
+
         </td>
       </tr>
     </tbody>
