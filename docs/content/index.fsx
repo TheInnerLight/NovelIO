@@ -71,4 +71,10 @@ io {
 (**
 Here we simply read three lines from the console and print the result back to the console as a list.
 
+Needless to say, highly complex actions can be built up in this way.  For example, running a webserver could be represented as a single `IO` action.
+
+## Parallel IO
+
+IO actions can also be performed in parallel using the `IO.parallel` combinators.  This gives us very explicit, fine-grained, control over what actions should take place in parallel.
+
 *)
