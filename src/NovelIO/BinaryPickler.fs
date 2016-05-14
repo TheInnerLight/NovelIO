@@ -16,11 +16,13 @@
 
 namespace NovelFS.NovelIO.BinaryPickler
 
+open NovelFS.NovelIO
+
 /// The attempted binary pickling exceeded the length of the supplied array
 exception PicklingExceededArrayLengthException of int * int
 
-type private BinaryUnpicklerState = {Raw : byte array; Position : int}
-type private BinaryPicklerState = {Raw : byte list}
+type private BinaryUnpicklerState = {Raw : byte array; Position : int; Endianness : Endianness}
+type private BinaryPicklerState = {Raw : byte list; Endianness : Endianness}
 
 /// A pickler/unpickler pair for type 'a
 type BinaryPU<'a> = private {Pickle : 'a * BinaryPicklerState -> BinaryPicklerState; Unpickle : BinaryUnpicklerState -> 'a * BinaryUnpicklerState}
@@ -35,18 +37,35 @@ module private PickleConvertors =
             | :? System.ArgumentOutOfRangeException as aoex -> raise <| PicklingExceededArrayLengthException(pos, Array.length array)
             | :? System.ArgumentException as aex -> raise <| PicklingExceededArrayLengthException(pos, Array.length array)
 
+    let private flipForEndianness endianness arr =
+        match System.BitConverter.IsLittleEndian, endianness with
+        |true, BigEndian |false, LittleEndian -> Array.rev arr
+        |_ -> arr
+
     /// Convert a chunk of a byte array into an bool with exception checking
-    let convBool pos array = checkConversionException (fun arr -> System.BitConverter.ToBoolean(arr, pos)) pos array
+    let convToBool pos array =
+        let unchecked pos arr = System.BitConverter.ToBoolean(arr, pos)
+        checkConversionException (unchecked pos) pos array
     /// Convert a chunk of a byte array into an int16 with exception checking
-    let convInt16 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt16(arr, pos)) pos array
+    let convToInt16 pos endianness array = 
+        let unchecked pos arr = System.BitConverter.ToInt16(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
     /// Convert a chunk of a byte array into an int32 with exception checking
-    let convInt32 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt32(arr, pos)) pos array
+    let convToInt32 pos endianness array = 
+        let unchecked pos arr = System.BitConverter.ToInt32(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
     /// Convert a chunk of a byte array into an int64 with exception checking
-    let convInt64 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt64(arr, pos)) pos array
+    let convToInt64 pos endianness array = 
+        let unchecked pos arr = System.BitConverter.ToInt64(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
     /// Convert a chunk of a byte array into an float32 with exception checking
-    let convFloat32 pos array = checkConversionException (fun arr -> System.BitConverter.ToSingle(arr, pos)) pos array
+    let convToFloat32 pos endianness array = 
+        let unchecked pos arr = System.BitConverter.ToSingle(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
     /// Convert a chunk of a byte array into an float64 with exception checking
-    let convFloat64 pos array = checkConversionException (fun arr -> System.BitConverter.ToDouble(arr, pos)) pos array
+    let convToFloat64 pos endianness array = 
+        let unchecked pos arr = System.BitConverter.ToDouble(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
     
     /// Flips an array to produce a list in the opposite order
     let arrayFlipToList a =  Array.fold(fun lst it -> it :: lst) [] a
@@ -55,20 +74,20 @@ module private PickleConvertors =
     let convFromBool (b : bool) = 
         System.BitConverter.GetBytes(b) |> arrayFlipToList
     /// Converts an int16 to a byte list in reverse order
-    let convFromInt16 (i16 : int16) = 
-        System.BitConverter.GetBytes(i16) |> arrayFlipToList
+    let convFromInt16 endianness (i16 : int16) = 
+        arrayFlipToList << flipForEndianness endianness <| System.BitConverter.GetBytes i16
     /// Converts an int32 to a byte list in reverse order
-    let convFromInt32 (i32 : int32) = 
-        System.BitConverter.GetBytes(i32) |> arrayFlipToList
+    let convFromInt32 endianness (i32 : int32) = 
+        arrayFlipToList << flipForEndianness endianness <| System.BitConverter.GetBytes i32
     /// Converts an int64 to a byte list in reverse order
-    let convFromInt64 (i64 : int64) = 
-        System.BitConverter.GetBytes(i64) |> arrayFlipToList
+    let convFromInt64 endianness (i64 : int64) = 
+        arrayFlipToList << flipForEndianness endianness <| System.BitConverter.GetBytes i64
     /// Converts an float32 to a byte list in reverse order
-    let convFromFloat32 (f32 : float32) = 
-        System.BitConverter.GetBytes(f32) |> arrayFlipToList
+    let convFromFloat32 endianness (f32 : float32) = 
+        arrayFlipToList << flipForEndianness endianness <| System.BitConverter.GetBytes f32
     /// Converts an float64 to a byte list in reverse order  
-    let convFromFloat64 (f64 : float) = 
-        System.BitConverter.GetBytes(f64) |> arrayFlipToList   
+    let convFromFloat64 endianness (f64 : float) = 
+        arrayFlipToList << flipForEndianness endianness <| System.BitConverter.GetBytes f64  
 
 /// Provides functions for pickling binary data
 module BinaryPickler =
@@ -137,17 +156,17 @@ module BinaryPickler =
     /// A pickler/unpickler pair for bools
     let pickleBool =
         {
-        Pickle = fun (b, s) -> {Raw = (PickleConvertors.convFromBool b) @ s.Raw}
+        Pickle = fun (b, s) -> {s with Raw = (PickleConvertors.convFromBool b) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
-            let result = PickleConvertors.convBool pos (st.Raw)
+            let result = PickleConvertors.convToBool pos (st.Raw)
             result, {st with Position = pos + sizeof<bool>}
         }
 
     /// A pickler/unpickler pair for bytes
     let pickleByte =
         {
-        Pickle = fun (b, s) -> {Raw = b :: s.Raw}
+        Pickle = fun (b, s) -> {s with Raw = b :: s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
             let result = Array.item (pos) st.Raw
@@ -157,50 +176,50 @@ module BinaryPickler =
     /// A pickler/unpickler pair for int16s
     let pickleInt16 =
         {
-        Pickle = fun (i16, s) -> {Raw = (PickleConvertors.convFromInt16 i16) @ s.Raw}
+        Pickle = fun (i16, s) -> {s with Raw = (PickleConvertors.convFromInt16 (s.Endianness) i16) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
-            let result = PickleConvertors.convInt16 pos (st.Raw)
+            let result = PickleConvertors.convToInt16 pos (st.Endianness) (st.Raw)
             result, {st with Position = pos + sizeof<int16>}
         }
 
     /// A pickler/unpickler pair for int32s
     let pickleInt32 =
         {
-        Pickle = fun (i32, s) -> {Raw = (PickleConvertors.convFromInt32 i32) @ s.Raw}
+        Pickle = fun (i32, s) -> {s with Raw = (PickleConvertors.convFromInt32 (s.Endianness) i32) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
-            let result = PickleConvertors.convInt32 pos (st.Raw)
+            let result = PickleConvertors.convToInt32 pos (st.Endianness) (st.Raw)
             result, {st with Position = pos + sizeof<int32>}
         }
 
     /// A pickler/unpickler pair for int64s
     let pickleInt64 =
         {
-        Pickle = fun (i64, s) -> {Raw = (PickleConvertors.convFromInt64 i64) @ s.Raw}
+        Pickle = fun (i64, s) -> {s with Raw = (PickleConvertors.convFromInt64 (s.Endianness) i64) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
-            let result = PickleConvertors.convInt64 pos (st.Raw)
+            let result = PickleConvertors.convToInt64 pos (st.Endianness) (st.Raw)
             result, {st with Position = pos + sizeof<int64>}
         }
 
     /// A pickler/unpickler pair for float32s
     let pickleFloat32 =
         {
-        Pickle = fun (f32, s) -> {Raw = (PickleConvertors.convFromFloat32 f32) @ s.Raw}
+        Pickle = fun (f32, s) -> {s with Raw = (PickleConvertors.convFromFloat32 (s.Endianness) f32) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
-            let result = PickleConvertors.convFloat32 pos (st.Raw)
+            let result = PickleConvertors.convToFloat32 pos (st.Endianness) (st.Raw)
             result, {st with Position = pos + sizeof<float32>}
         }
 
     /// A pickler/unpickler pair for floats
     let pickleFloat =
         {
-        Pickle = fun (f64, s) -> {Raw = (PickleConvertors.convFromFloat64 f64) @ s.Raw}
+        Pickle = fun (f64, s) -> {s with Raw = (PickleConvertors.convFromFloat64 (s.Endianness) f64) @ s.Raw}
         Unpickle = fun st ->
             let pos = st.Position
-            let result = PickleConvertors.convFloat64 pos (st.Raw)
+            let result = PickleConvertors.convToFloat64 pos (st.Endianness) (st.Raw)
             result, {st with Position = pos + sizeof<float>}
         }
 
@@ -244,10 +263,10 @@ module BinaryPickler =
 
     /// Uses the supplied pickler to unpickle the supplied byte array into some type 'a 
     let unpickle pickler array =
-        fst <| runUnpickle {Raw = array; Position = 0} pickler
+        fst <| runUnpickle {Raw = array; Position = 0; Endianness = SystemEndian} pickler
 
     /// Uses the supplied pickler to pickle the supplied value into a byte array
     let pickle pickler value =
-        (runPickle (value, {Raw = []}) pickler).Raw 
+        (runPickle (value, {Raw = []; Endianness = SystemEndian}) pickler).Raw 
         |> Seq.rev
         |> Array.ofSeq

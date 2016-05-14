@@ -103,6 +103,15 @@ type TCPServer = private {TCPListener : Sockets.TcpListener}
 /// A connected TCP Socket
 type TCPConnectedSocket = private {TCPConnectedSocket : System.Net.Sockets.Socket}
 
+/// Defines possible endianness options
+type Endianness =
+    /// Big Endian
+    |BigEndian
+    /// Little Endian
+    |LittleEndian
+    /// The Endianness of the current platform
+    |SystemEndian
+
 module internal IOResult =
     let withExceptionCheck f a =
         try 

@@ -92,6 +92,12 @@ module IO =
         |Return a -> f a
         |Delay (g) -> Delay (fun _ -> bind (g ()) f)
 
+    let private using (x : #System.IDisposable) f : IO<'b> =
+        try
+            f x
+        finally
+            x.Dispose()
+
     /// Computation Expression builder for IO actions
     type IOBuilder() =
         /// Return a value as an IO action
