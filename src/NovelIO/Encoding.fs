@@ -16,17 +16,22 @@
 
 namespace NovelFS.NovelIO
 
+/// A set of text encoding related types and function
 module Encoding =
-    type UTF8Encoding = {EmitIdentifier : bool}
-    type UnicodeEncoding = {Endianness : Endianness; ByteOrderMark : bool}
-    type UTF32Encoding = {Endianness : Endianness; ByteOrderMark : bool}
+    /// UTF8 encoding options
+    type UTF8EncodingOptions = {EmitIdentifier : bool}
+    /// Unicode encoding options
+    type UnicodeEncodingOptions = {Endianness : Endianness; ByteOrderMark : bool}
+    /// UTF32 encoding options
+    type UTF32EncodingOptions = {Endianness : Endianness; ByteOrderMark : bool}
 
+    /// Represents a set of possible text encodings with options if applicable
     type Encoding = 
         |Ascii
         |UTF7
-        |UTF8 of UTF8Encoding
-        |Unicode of UnicodeEncoding
-        |UTF32 of UTF32Encoding
+        |UTF8 of UTF8EncodingOptions
+        |Unicode of UnicodeEncodingOptions
+        |UTF32 of UTF32EncodingOptions
 
     /// Creates a .NET encoding for the supplied encoding, using the supplied endianness if it's not specified in the encoding
     let createDotNetEncoding enc =
