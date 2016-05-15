@@ -249,6 +249,31 @@ module BinaryPickler =
             result, {st with Position = pos + sizeof<int64>}
         }
 
+    /// A pickler/unpickler pair for float32s of the supplied endianness
+    let private pickleFloat32E endianness =
+        {
+        Pickle = fun (f32, s) -> {s with Raw = (PickleConvertors.convFromFloat32 endianness f32) @ s.Raw}
+        Unpickle = fun st ->
+            let pos = st.Position
+            let result = PickleConvertors.convToFloat32 pos endianness (st.Raw)
+            result, {st with Position = pos + sizeof<float32>}
+        }
+
+    /// A pickler/unpickler pair for floats of the supplied endianness
+    let private pickleFloatE endianness =
+        {
+        Pickle = fun (f64, s) -> {s with Raw = (PickleConvertors.convFromFloat64 endianness f64) @ s.Raw}
+        Unpickle = fun st ->
+            let pos = st.Position
+            let result = PickleConvertors.convToFloat64 pos endianness (st.Raw)
+            result, {st with Position = pos + sizeof<float>}
+        }
+
+    /// A pickler/unpickler pair for decimals of the supplied endianness
+    let private pickleDecimalE endianness =
+        let intAToDecimal (a : int[]) = System.Decimal a
+        wrap (intAToDecimal, System.Decimal.GetBits) (repeatA (pickleInt32E endianness) 4)
+
     /// A pickler/unpickler pair for int16s in the Endianness of the current platform
     let pickleInt16 = pickleInt16E (ByteOrder.systemEndianness)
 
@@ -276,29 +301,35 @@ module BinaryPickler =
     /// A pickler/unpickler pair for int64s in Big Endian byte order
     let pickleInt64BE = pickleInt64E BigEndian
 
+    /// A pickler/unpickler pair for float32s in the Endianness of the current platform
+    let pickleFloat32 = pickleFloat32E (ByteOrder.systemEndianness)
 
-    /// A pickler/unpickler pair for float32s
-    let pickleFloat32 =
-        {
-        Pickle = fun (f32, s) -> {s with Raw = (PickleConvertors.convFromFloat32 (s.Endianness) f32) @ s.Raw}
-        Unpickle = fun st ->
-            let pos = st.Position
-            let result = PickleConvertors.convToFloat32 pos (st.Endianness) (st.Raw)
-            result, {st with Position = pos + sizeof<float32>}
-        }
+    /// A pickler/unpickler pair for float32s in Little Endian byte order
+    let pickleFloat32LE = pickleFloat32E LittleEndian
 
-    /// A pickler/unpickler pair for floats
-    let pickleFloat =
-        {
-        Pickle = fun (f64, s) -> {s with Raw = (PickleConvertors.convFromFloat64 (s.Endianness) f64) @ s.Raw}
-        Unpickle = fun st ->
-            let pos = st.Position
-            let result = PickleConvertors.convToFloat64 pos (st.Endianness) (st.Raw)
-            result, {st with Position = pos + sizeof<float>}
-        }
+    /// A pickler/unpickler pair for float32s in Big Endian byte order
+    let pickleFloat32BE = pickleFloat32E BigEndian
+
+    /// A pickler/unpickler pair for floats in the Endianness of the current platform
+    let pickleFloat = pickleFloatE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair for floats in Little Endian byte order
+    let pickleFloatLE = pickleFloatE LittleEndian
+
+    /// A pickler/unpickler pair for floats in Big Endian byte order
+    let pickleFloatBE = pickleFloatE BigEndian
+
+    /// A pickler/unpickler pair for decimals in the Endianness of the current platform
+    let pickleDecimal = pickleDecimalE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair for decimals in Little Endian byte order
+    let pickleDecimalLE = pickleDecimalE LittleEndian
+
+    /// A pickler/unpickler pair for decimals in Big Endian byte order
+    let pickleDecimalBE = pickleDecimalE BigEndian
 
     /// Accepts a tagging function that partitions the type to be pickled into two sets, then accepts a pickler for each set
-    let alt tag ps = sequ tag pickleInt (fun i -> Map.find i ps)
+    let alt tag ps = sequ tag pickleInt (flip Map.find <| ps)
 
     /// A pickler/unpickler pair for lists
     let list pa = sequ (List.length) pickleInt << repeat <| pa
@@ -340,7 +371,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair for UTF-8 strings with byte order mark
     let pickleUTF8BOM =
-        pickleEncoding (Encoding.UTF8 {EmitIdentifier = false})
+        pickleEncoding (Encoding.UTF8 {EmitIdentifier = true})
 
     /// A pickler/unpickler pair for unicode strings in little endian byte order
     let pickleUnicodeLE =
@@ -357,11 +388,6 @@ module BinaryPickler =
     /// A pickler/unpickler pair for UTF-32 strings in big endian byte order
     let pickleUtf32BE =
         pickleEncoding (Encoding.UTF32 {Endianness = BigEndian; ByteOrderMark = false})
-
-    /// A pickler/unpickler pair for decimals
-    let pickleDecimal =
-        let intAToDecimal (a : int[]) = System.Decimal a
-        wrap (intAToDecimal, System.Decimal.GetBits) (repeatA pickleInt 4)
 
     /// Uses the supplied pickler to unpickle the supplied byte array into some type 'a 
     let unpickle pickler array =
