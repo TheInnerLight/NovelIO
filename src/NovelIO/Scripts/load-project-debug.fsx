@@ -1,8 +1,9 @@
 // Warning: generated file; your changes could be lost when a new file is generated.
 #I __SOURCE_DIRECTORY__
 #load "load-references-debug.fsx"
-#load "../BinaryPickler.fs"
-      "../Definitions.fs"
+#load "../Definitions.fs"
+      "../Encoding.fs"
+      "../BinaryPickler.fs"
       "../IO.fs"
       "../File.fs"
       "../TCP.fs"

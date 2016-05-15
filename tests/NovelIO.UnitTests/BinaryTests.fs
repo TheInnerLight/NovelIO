@@ -37,9 +37,9 @@ type ``Binary Pickler Tests`` =
         result = i16
 
     [<Property>]
-    static member ``Unpickle int32 from array of bytes`` (i32 : int32) =
+    static member ``Unpickle int from array of bytes`` (i32 : int32) =
         let bytes = System.BitConverter.GetBytes i32
-        let int32Pickler = BinaryPickler.pickleInt32
+        let int32Pickler = BinaryPickler.pickleInt
         let result = BinaryPickler.unpickle int32Pickler bytes
         result = i32
 
@@ -114,6 +114,19 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
+    static member ``Unpickle Unicode string from array of bytes`` (nStr : NonEmptyString) =
+        let str = nStr.Get 
+        let preamble = System.Text.Encoding.Unicode.GetPreamble()
+        let bytesWOPrefix = System.Text.Encoding.Unicode.GetBytes str
+        let bytes = 
+            Array.concat 
+                [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
+                 bytesWOPrefix]
+        let stringPickler = BinaryPickler.pickleUnicodeLE
+        let result = BinaryPickler.unpickle stringPickler bytes
+        result = str
+
+    [<Property>]
     static member ``Unpickle UTF32 string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.UTF32.GetBytes str
@@ -121,7 +134,7 @@ type ``Binary Pickler Tests`` =
             Array.concat 
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
-        let stringPickler = BinaryPickler.pickleUTF32
+        let stringPickler = BinaryPickler.pickleUtf32LE
         let result = BinaryPickler.unpickle stringPickler bytes
         result = str
 
@@ -140,8 +153,8 @@ type ``Binary Pickler Tests`` =
         result = i16
 
     [<Property>]
-    static member ``Pickle int32 from one int32`` (i32 : int32) =
-        let int32Pickler = BinaryPickler.pickleInt32
+    static member ``Pickle int from one int`` (i32 : int32) =
+        let int32Pickler = BinaryPickler.pickleInt
         let bytes = BinaryPickler.pickle int32Pickler i32
         let result = BinaryPickler.unpickle int32Pickler bytes
         result = i32
@@ -203,9 +216,17 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
+    static member ``Pickle Unocide from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUnicodeLE
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
     static member ``Pickle UTF32 from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
-        let strPickler = BinaryPickler.pickleUTF32
+        let strPickler = BinaryPickler.pickleUtf32LE
         let bytes = BinaryPickler.pickle strPickler str
         let result = BinaryPickler.unpickle strPickler bytes
         result = str

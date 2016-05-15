@@ -27,7 +27,7 @@ module Random =
         let cryptoResult = Array.zeroCreate<byte> 4
         use rngCrypto = new System.Security.Cryptography.RNGCryptoServiceProvider()
         rngCrypto.GetBytes cryptoResult
-        let seed = BinaryPickler.unpickle BinaryPickler.pickleInt32 cryptoResult
+        let seed = BinaryPickler.unpickle BinaryPickler.pickleInt cryptoResult
         Random(seed))
 
     /// An IO action that returns the next int from the global random number generator
