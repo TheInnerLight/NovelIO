@@ -99,17 +99,8 @@ module private PickleConvertors =
     let convFromFloat64 endianness (f64 : float) = 
         arrayFlipToList << flipForEndianness endianness <| System.BitConverter.GetBytes f64
 
-    
-
+    /// Encoding conversion functions
     module Encodings =
-        let private ascii = System.Text.Encoding.ASCII
-        let private utf7 = System.Text.Encoding.UTF7
-        let private utf8 = System.Text.Encoding.UTF8
-        let private utf32LittleEndian = System.Text.Encoding.UTF32
-        let private utf32BigEndian = System.Text.UTF32Encoding(false, true, true)
-        let private unicodeLittleEndian = System.Text.Encoding.Unicode
-        let private unicodeBigEndian = System.Text.Encoding.BigEndianUnicode
-
         /// Convert a chunk of a byte array into a string with exception checking using the supplied .NET encoding
         let private convToStringWithDotNetEncoding pos byteCount (encoding : System.Text.Encoding) array =
             let len = Array.length <| encoding.GetPreamble()
@@ -121,19 +112,13 @@ module private PickleConvertors =
             let bytes = Array.concat [encoding.GetPreamble(); encoding.GetBytes str]
             arrayFlipToList bytes
 
+        /// Convert a chunk of a byte array into a string with exception checking using the supplied encoding
         let convToEncoding pos byteCount encoding array =
             convToStringWithDotNetEncoding pos byteCount (Encoding.createDotNetEncoding encoding) array
 
+        /// Convert a string into a byte list in reverse order using the supplied encoding
         let convFromEncoding encoding str = 
             convFromStringWithDotNetEncoding (Encoding.createDotNetEncoding encoding) str
-
-        /// Convert a chunk of a byte array into a UTF8 string with exception checking
-        let convToUtf8 pos byteCount array =
-            convToStringWithDotNetEncoding pos byteCount utf8 array
-
-        /// Convert a UTF8 string into a byte list in reverse order
-        let convFromUtf8 str =
-            convFromStringWithDotNetEncoding utf8 str
 
 /// Provides functions for pickling binary data
 module BinaryPickler =
