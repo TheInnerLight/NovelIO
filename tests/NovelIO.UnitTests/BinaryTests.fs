@@ -37,9 +37,9 @@ type ``Binary Pickler Tests`` =
         result = i16
 
     [<Property>]
-    static member ``Unpickle int32 from array of bytes`` (i32 : int32) =
+    static member ``Unpickle int from array of bytes`` (i32 : int32) =
         let bytes = System.BitConverter.GetBytes i32
-        let int32Pickler = BinaryPickler.pickleInt32
+        let int32Pickler = BinaryPickler.pickleInt
         let result = BinaryPickler.unpickle int32Pickler bytes
         result = i32
 
@@ -90,7 +90,7 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
-    static member ``Unpickle UTF7 string from array of bytes`` (nStr : NonEmptyString) =
+    static member ``Unpickle UTF-7 string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.UTF7.GetBytes str
         let bytes = 
@@ -102,7 +102,7 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
-    static member ``Unpickle UTF8 string from array of bytes`` (nStr : NonEmptyString) =
+    static member ``Unpickle UTF-8 string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.UTF8.GetBytes str
         let bytes = 
@@ -114,14 +114,40 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
-    static member ``Unpickle UTF32 string from array of bytes`` (nStr : NonEmptyString) =
+    static member ``Unpickle Little Endian UTF-16 string from array of bytes`` (nStr : NonEmptyString) =
+        let str = nStr.Get 
+        let preamble = System.Text.Encoding.Unicode.GetPreamble()
+        let bytesWOPrefix = System.Text.Encoding.Unicode.GetBytes str
+        let bytes = 
+            Array.concat 
+                [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
+                 bytesWOPrefix]
+        let stringPickler = BinaryPickler.pickleUTF16LE
+        let result = BinaryPickler.unpickle stringPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Unpickle Big Endian UTF-16 string from array of bytes`` (nStr : NonEmptyString) =
+        let str = nStr.Get 
+        let preamble = System.Text.Encoding.BigEndianUnicode.GetPreamble()
+        let bytesWOPrefix = System.Text.Encoding.BigEndianUnicode.GetBytes str
+        let bytes = 
+            Array.concat 
+                [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
+                 bytesWOPrefix]
+        let stringPickler = BinaryPickler.pickleUTF16BE
+        let result = BinaryPickler.unpickle stringPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Unpickle Little Endian UTF-32 string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.UTF32.GetBytes str
         let bytes = 
             Array.concat 
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
-        let stringPickler = BinaryPickler.pickleUTF32
+        let stringPickler = BinaryPickler.pickleUtf32LE
         let result = BinaryPickler.unpickle stringPickler bytes
         result = str
 
@@ -140,8 +166,8 @@ type ``Binary Pickler Tests`` =
         result = i16
 
     [<Property>]
-    static member ``Pickle int32 from one int32`` (i32 : int32) =
-        let int32Pickler = BinaryPickler.pickleInt32
+    static member ``Pickle int from one int`` (i32 : int32) =
+        let int32Pickler = BinaryPickler.pickleInt
         let bytes = BinaryPickler.pickle int32Pickler i32
         let result = BinaryPickler.unpickle int32Pickler bytes
         result = i32
@@ -187,7 +213,7 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
-    static member ``Pickle UTF7 from string`` (nStr : NonEmptyString) =
+    static member ``Pickle UTF-7 from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
         let strPickler = BinaryPickler.pickleUTF7
         let bytes = BinaryPickler.pickle strPickler str
@@ -195,7 +221,7 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
-    static member ``Pickle UTF8 from string`` (nStr : NonEmptyString) =
+    static member ``Pickle UTF-8 from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
         let strPickler = BinaryPickler.pickleUTF8
         let bytes = BinaryPickler.pickle strPickler str
@@ -203,7 +229,55 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
-    static member ``Pickle UTF32 from string`` (nStr : NonEmptyString) =
+    static member ``Pickle UTF-8 with byte order mark`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF8BOM
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle Little Endian UTF-16 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF16LE
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle Big Endian UTF-16 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF16BE
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle UTF-16 with Endianness detection from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF16
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle Little Endian UTF-32 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUtf32LE
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle Big Endian UTF-32 from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUtf32BE
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle UTF-32 with Endianness detection from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
         let strPickler = BinaryPickler.pickleUTF32
         let bytes = BinaryPickler.pickle strPickler str

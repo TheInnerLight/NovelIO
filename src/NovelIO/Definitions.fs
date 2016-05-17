@@ -109,8 +109,20 @@ type Endianness =
     |BigEndian
     /// Little Endian
     |LittleEndian
-    /// The Endianness of the current platform
-    |SystemEndian
+
+/// Functions for handling byte order
+module ByteOrder =
+    /// Gets the endianness of the current platform
+    let systemEndianness =
+        match System.BitConverter.IsLittleEndian with
+        |true -> LittleEndian
+        |false -> BigEndian
+
+    /// Returns true if the supplied endianness is big endian
+    let isBigEndian endianness =
+        match endianness with
+        |BigEndian -> true
+        |_ -> false
 
 module internal IOResult =
     let withExceptionCheck f a =

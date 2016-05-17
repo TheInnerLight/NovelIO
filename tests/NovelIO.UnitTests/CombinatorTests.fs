@@ -29,7 +29,7 @@ type ``Binary Pickler Combinator Tests`` =
                 [(System.BitConverter.GetBytes i1);
                 (System.BitConverter.GetBytes i2)]
         let bytePickler = 
-            BinaryPickler.tuple2 (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32)
+            BinaryPickler.tuple2 (BinaryPickler.pickleInt) (BinaryPickler.pickleInt)
         let result = BinaryPickler.unpickle bytePickler bytes 
         result = (i1, i2)
 
@@ -41,7 +41,7 @@ type ``Binary Pickler Combinator Tests`` =
                 (System.BitConverter.GetBytes i2);
                 (System.BitConverter.GetBytes i3)]
         let bytePickler = 
-            BinaryPickler.tuple3 (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32)
+            BinaryPickler.tuple3 (BinaryPickler.pickleInt) (BinaryPickler.pickleInt) (BinaryPickler.pickleInt)
         let result = BinaryPickler.unpickle bytePickler bytes 
         result = (i1, i2, i3)
 
@@ -54,7 +54,7 @@ type ``Binary Pickler Combinator Tests`` =
                 (System.BitConverter.GetBytes i3);
                 (System.BitConverter.GetBytes i4)]
         let bytePickler = 
-            BinaryPickler.tuple4 (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32) (BinaryPickler.pickleInt32)
+            BinaryPickler.tuple4 (BinaryPickler.pickleInt) (BinaryPickler.pickleInt) (BinaryPickler.pickleInt) (BinaryPickler.pickleInt)
         let result = BinaryPickler.unpickle bytePickler bytes 
         result = (i1, i2, i3, i4)
 
@@ -65,7 +65,7 @@ type ``Binary Pickler Combinator Tests`` =
             |> Array.ofList
             |> Array.collect (System.BitConverter.GetBytes)
         let bytes = Array.concat [System.BitConverter.GetBytes (List.length lst); byteData]
-        let lstPickler = BinaryPickler.list (BinaryPickler.pickleInt32)
+        let lstPickler = BinaryPickler.list (BinaryPickler.pickleInt)
         let result = BinaryPickler.unpickle lstPickler bytes 
         result = lst
 
@@ -75,7 +75,7 @@ type ``Binary Pickler Combinator Tests`` =
             arr
             |> Array.collect (System.BitConverter.GetBytes)
         let bytes = Array.concat [System.BitConverter.GetBytes (Array.length arr); byteData]
-        let arrPickler = BinaryPickler.array (BinaryPickler.pickleInt32)
+        let arrPickler = BinaryPickler.array (BinaryPickler.pickleInt)
         let result = BinaryPickler.unpickle arrPickler bytes 
         result = arr
 
@@ -85,6 +85,6 @@ type ``Binary Pickler Combinator Tests`` =
             match opt with
             |Some i -> Array.concat [System.BitConverter.GetBytes 1; System.BitConverter.GetBytes i]
             |None -> System.BitConverter.GetBytes 0
-        let arrPickler = BinaryPickler.pickleOption (BinaryPickler.pickleInt32)
+        let arrPickler = BinaryPickler.pickleOption (BinaryPickler.pickleInt)
         let result = BinaryPickler.unpickle arrPickler bytes 
         result = opt
