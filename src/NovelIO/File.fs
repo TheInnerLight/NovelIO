@@ -104,9 +104,17 @@ module File =
     let readAllLines filename = 
         IO.fromEffectful (fun _ -> List.ofArray << File.ReadAllLines <| getPathString filename)
 
+    /// Reads all the lines from a file in the supplied encoding.
+    let readAllLinesIn encoding filename = 
+        IO.fromEffectful (fun _ -> List.ofArray <| File.ReadAllLines (getPathString filename, Encoding.createDotNetEncoding encoding))
+
     /// Reads the lines from a file where each line can be read lazily.
     let readLines filename = 
         IO.fromEffectful (fun _ -> Seq.map (IO.return') (File.ReadLines <| getPathString filename))
+
+    /// Reads lines from a file in the supplied encoding where each line can be read lazily.
+    let readLinesIn encoding filename =
+        IO.fromEffectful (fun _ -> Seq.map (IO.return') (File.ReadLines (getPathString filename, Encoding.createDotNetEncoding encoding)))
 
     /// Sets the date / time at which the specified file was created
     let setCreationTime datetime filename = 
