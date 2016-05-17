@@ -54,3 +54,7 @@ module Encoding =
     let preambleLength encoding =
         Array.length <| (createDotNetEncoding encoding).GetPreamble()
 
+    /// Gets the preamble in the supplied encoding
+    let preamble encoding =
+        (createDotNetEncoding encoding).GetPreamble()
+
