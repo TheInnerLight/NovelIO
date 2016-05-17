@@ -21,16 +21,21 @@ module Encoding =
     /// UTF8 encoding options
     type UTF8EncodingOptions = {EmitIdentifier : bool}
     /// Unicode encoding options
-    type UnicodeEncodingOptions = {Endianness : Endianness; ByteOrderMark : bool}
+    type UTF16EncodingOptions = {Endianness : Endianness; ByteOrderMark : bool}
     /// UTF32 encoding options
     type UTF32EncodingOptions = {Endianness : Endianness; ByteOrderMark : bool}
 
     /// Represents a set of possible text encodings with options if applicable
     type Encoding = 
+        /// Ascii encoding
         |Ascii
+        /// UTF-7 encoding
         |UTF7
+        /// UTF-8 encoding with specified encoding options
         |UTF8 of UTF8EncodingOptions
-        |Unicode of UnicodeEncodingOptions
+        /// UTF-16 encoding with specified encoding options
+        |UTF16 of UTF16EncodingOptions
+        /// UTF-32 encoding with specified encoding options
         |UTF32 of UTF32EncodingOptions
 
     /// Creates a .NET encoding for the supplied encoding, using the supplied endianness if it's not specified in the encoding
@@ -40,7 +45,7 @@ module Encoding =
         |UTF7 -> System.Text.Encoding.UTF7
         |UTF8 {EmitIdentifier = ident} -> 
             System.Text.UTF8Encoding(ident) :> System.Text.Encoding
-        |Unicode {Endianness = endianness; ByteOrderMark = mark} -> 
+        |UTF16 {Endianness = endianness; ByteOrderMark = mark} -> 
             System.Text.UnicodeEncoding(ByteOrder.isBigEndian  endianness, mark) :> System.Text.Encoding
         |UTF32 {Endianness = endianness; ByteOrderMark = mark} -> 
             System.Text.UTF32Encoding(ByteOrder.isBigEndian  endianness, mark) :> System.Text.Encoding

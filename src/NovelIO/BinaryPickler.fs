@@ -355,12 +355,12 @@ module BinaryPickler =
         pickleEncoding (Encoding.UTF8 {EmitIdentifier = false})
 
     /// A pickler/unpickler pair for unicode strings in little endian byte order.  No byte order mark is encoded.
-    let pickleUnicodeLE =
-        pickleEncoding (Encoding.Unicode {Endianness = LittleEndian; ByteOrderMark = false})
+    let pickleUTF16LE =
+        pickleEncoding (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = false})
 
     /// A pickler/unpickler pair for unicode strings in big endian byte order.  No byte order mark is encoded.
-    let pickleUnicodeBE =
-        pickleEncoding (Encoding.Unicode {Endianness = BigEndian; ByteOrderMark = false})
+    let pickleUTF16BE =
+        pickleEncoding (Encoding.UTF16 {Endianness = BigEndian; ByteOrderMark = false})
 
     /// A pickler/unpickler pair for UTF-32 strings in little endian byte order.  No byte order mark is encoded.
     let pickleUtf32LE =
@@ -384,7 +384,7 @@ module BinaryPickler =
         
     /// A pickler/unpickler pair for unicode strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
     /// mark to indicate this is prepended.
-    let pickleUnicode = pickleUTFXWithEndiannessDetect (Encoding.Unicode {Endianness = LittleEndian; ByteOrderMark = true}) pickleUnicodeLE pickleUnicodeBE
+    let pickleUTF16 = pickleUTFXWithEndiannessDetect (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = true}) pickleUTF16LE pickleUTF16BE
 
     /// A pickler/unpickler pair for UTF-32 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
     /// mark to indicate this is prepended.
