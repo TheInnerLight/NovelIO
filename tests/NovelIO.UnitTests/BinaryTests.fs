@@ -229,6 +229,14 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
+    static member ``Pickle UTF8 with byte order mark`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let strPickler = BinaryPickler.pickleUTF8BOM
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
     static member ``Pickle Little Endian Unicode from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
         let strPickler = BinaryPickler.pickleUnicodeLE
