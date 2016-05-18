@@ -143,13 +143,16 @@ module IO =
 
     // ----- GENERAL ----- //
             
-    /// Reads a line from the file or channel
+    /// An action that reads a line from the file or channel
     let hGetLine handle = fromEffectful (fun _ -> SideEffectingIO.hGetLine handle)
-    /// Determines if the handle has data available
+
+    /// An action that determines if the handle has data available
     let hIsReady handle = fromEffectful (fun _ -> SideEffectingIO.isHandleReadyToRead handle)
-    /// Writes a line to the final or channel
+
+    /// An action that writes a line to the final or channel
     let hPutStrLn handle str = fromEffectful (fun _ -> SideEffectingIO.hPutStrLn str handle)
-    /// Writes a line to console
+
+    /// An action that writes a line to console
     let putStrLn (str : string) = fromEffectful (fun _ -> System.Console.WriteLine str)
 
     // ------- RUN ------- //
