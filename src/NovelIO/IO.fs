@@ -312,9 +312,9 @@ module IO =
 
 /// Console functions
 module Console =
-    /// read a key from the console
+    /// An action that reads a key from the console
     let readKey = IO.fromEffectful (fun () -> System.Console.ReadKey())
-    /// read a line from the console
+    /// Ac action that reads a line from the console
     let readLine = IO.fromEffectful (fun () -> System.Console.ReadLine())
 
 /// Threading functions
