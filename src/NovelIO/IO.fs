@@ -287,6 +287,29 @@ module IO =
                 |> List.ofSeq
                 |> Seq.ofList)
 
+    // ------ Parallel ------ //
+
+    /// Parallel IO combinators
+    module Parallel =
+        /// Executes the given IO actions in parallel
+        let par (ios : IO<_> list)  =
+            fromEffectful (fun _ ->
+                ios 
+                |> Seq.map (fun io -> async {return run io})
+                |> Async.Parallel
+                |> Async.RunSynchronously
+                |> List.ofArray)
+
+        /// Executes the given IO actions in parallel and ignores the result
+        let par_ (ios : IO<_> list)  =
+            fromEffectful (fun _ ->
+                ios 
+                |> Seq.map (fun io -> async {return run io})
+                |> Async.Parallel
+                |> Async.RunSynchronously
+                |> List.ofArray
+                |> ignore)
+
 /// Console functions
 module Console =
     /// read a key from the console
@@ -294,16 +317,25 @@ module Console =
     /// read a line from the console
     let readLine = IO.fromEffectful (fun () -> System.Console.ReadLine())
 
+/// Threading functions
+module Thread =
+    /// An action that causes the current thread to sleep for a supplied number of milliseconds
+    let sleep (ms : int) = IO.fromEffectful (fun _ -> System.Threading.Thread.Sleep(ms))
+
+    /// An action that causes the current thread to yield execution to another thread
+    let yld = IO.fromEffectful (fun _ -> ignore <| System.Threading.Thread.Yield())
+
 /// Provides purely functional Date/Time functions
 module DateTime =
-    /// Get the current local time
+    /// An aciton that gets the current local time
     let localNow = IO.fromEffectful (fun () -> System.DateTime.Now)
-    /// Get the current UTC time
+    /// An aciton that gets the current UTC time
     let utcNow = IO.fromEffectful (fun () -> System.DateTime.UtcNow)
 
 /// Module to provide the definition of the io computation expression
 [<AutoOpen>]
 module IOBuilders =
+    /// IO computation expression builder
     let io = IO.IOBuilder()
             
 
