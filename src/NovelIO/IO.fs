@@ -294,6 +294,12 @@ module IO =
 
     /// Parallel IO combinators
     module Parallel =
+
+        /// A helper type for ending computations when success occurs
+        type private SuccessException<'a> (value : 'a) =
+            inherit System.Exception()
+            member __.Value = value
+
         /// Executes the given IO actions in parallel
         let par (ios : IO<_> list)  =
             fromEffectful (fun _ ->
@@ -306,13 +312,8 @@ module IO =
         /// Executes the given IO actions in parallel and ignores the result
         let par_ (ios : IO<_> list)  =
             map (ignore) (par ios)
-
-        /// A helper type for ending computations when success occurs
-        type private SuccessException<'a> (value : 'a) =
-            inherit System.Exception()
-            member __.Value = value
   
-        /// Executes the list of computations in parallel, returning the result of the first thread that completes with (Some x), if any. 
+        /// Executes the list of computations in parallel, returning the result of the first thread that completes with Some x, if any. 
         let parFirst (ios : IO<'a option> list) =
             let raiseExn (e : #exn) = Async.FromContinuations(fun (_,econt,_) -> econt e)
             let wrap task =
