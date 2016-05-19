@@ -305,13 +305,33 @@ module IO =
 
         /// Executes the given IO actions in parallel and ignores the result
         let par_ (ios : IO<_> list)  =
+            map (ignore) (par ios)
+
+        /// A helper type for ending computations when success occurs
+        type private SuccessException<'a> (value : 'a) =
+            inherit System.Exception()
+            member __.Value = value
+  
+        /// Executes the list of computations in parallel, returning the result of the first thread that completes with (Some x), if any. 
+        let parFirst (ios : IO<'a option> list) =
+            let raiseExn (e : #exn) = Async.FromContinuations(fun (_,econt,_) -> econt e)
+            let wrap task =
+                async {
+                    let! res = task
+                    match res with
+                    | None -> return None
+                    | Some r -> return! raiseExn <| SuccessException r
+                }
             fromEffectful (fun _ ->
-                ios 
-                |> Seq.map (fun io -> async {return run io})
-                |> Async.Parallel
-                |> Async.RunSynchronously
-                |> List.ofArray
-                |> ignore)
+                try
+                    ios
+                    |> Seq.map (fun io -> wrap <| async {return run io})
+                    |> Async.Parallel
+                    |> Async.Ignore
+                    |> Async.RunSynchronously
+                    None
+                with 
+                | :? SuccessException<'b> as ex -> Some <| ex.Value)
 
 /// Console functions
 module Console =
