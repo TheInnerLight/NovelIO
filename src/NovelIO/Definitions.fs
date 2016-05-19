@@ -94,6 +94,12 @@ module General =
     let const' x _ = x
     let flip f a b = f b a
 
+/// Type abbreviation for System.IO.FileMode
+type FileMode = System.IO.FileMode
+
+/// Type abbreviation for System.IO.FileAccess
+type FileAccess = System.IO.FileAccess
+
 /// A Handle that may support text being read from it and written to it
 type Handle = private {TextReader : TextReader option; TextWriter : TextWriter option}
 

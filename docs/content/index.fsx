@@ -77,4 +77,17 @@ Needless to say, highly complex actions can be built up in this way.  For exampl
 
 IO actions can also be performed in parallel using the `IO.parallel` combinators.  This gives us very explicit, fine-grained, control over what actions should take place in parallel.
 
+In order to execute items in parallel, simply build a list of the IO actions you wish to perform and use the `par` combinator.  For example:
+*)
+
+io {
+    let fName = File.assumeValidFilename "file.txt"
+    let! handle = File.openFileHandle FileMode.Open FileAccess.Read fName
+    return IO.Parallel.par [Console.readLine; IO.hGetLine handle]
+} |> IO.run
+
+(**
+
+This describes a program that gets a line from the console and a line from a specified file in parallel and returns them in a list of strings.
+
 *)
