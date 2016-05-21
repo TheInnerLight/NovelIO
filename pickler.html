@@ -49,11 +49,11 @@
 <p>The beauty of pickler combinators is that the same PU can be used to transform data in both directions.</p>
 <h2><a name="Endianness" class="anchor" href="#Endianness">Endianness</a></h2>
 <p>The default PUs for each datatype, such as <code>intPU</code> will pickle in the endianness of the current platform.  It's also possible to specify endianness for each primitive.</p>
-<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 15)" onmouseover="showTip(event, 'fs11', 15)" class="i">intPULtE</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 16)" onmouseover="showTip(event, 'fs5', 16)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs12', 17)" onmouseover="showTip(event, 'fs12', 17)" class="i">intPULtE</span> <span class="c">// little endian int PU</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 15)" onmouseover="showTip(event, 'fs11', 15)" class="i">intPULtE</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 16)" onmouseover="showTip(event, 'fs5', 16)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs12', 17)" onmouseover="showTip(event, 'fs12', 17)" class="i">int16LittleEPU</span> <span class="c">// little endian int PU</span>
 
-<span class="k">let</span> <span onmouseout="hideTip(event, 'fs13', 18)" onmouseover="showTip(event, 'fs13', 18)" class="i">utf32PUBgE</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 19)" onmouseover="showTip(event, 'fs5', 19)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs14', 20)" onmouseover="showTip(event, 'fs14', 20)" class="i">utf32PUBgE</span> <span class="c">// big endian utf-32 PU</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs13', 18)" onmouseover="showTip(event, 'fs13', 18)" class="i">utf32PUBgE</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 19)" onmouseover="showTip(event, 'fs5', 19)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs14', 20)" onmouseover="showTip(event, 'fs14', 20)" class="i">utf32BigEPU</span> <span class="c">// big endian utf-32 PU</span>
 </code></pre>
-<p>Little endian PUs are suffixed with LtE and big endian PUs are suffixed with BgE.</p>
+<p>Little endian PUs are suffixed with <code>LittleEPU</code> and big endian PUs are suffixed with <code>BigEPU</code>.</p>
 <h2><a name="Running-PUs" class="anchor" href="#Running-PUs">Running PUs</a></h2>
 <pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 21)" onmouseover="showTip(event, 'fs15', 21)" class="i">bytes</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 22)" onmouseover="showTip(event, 'fs5', 22)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs16', 23)" onmouseover="showTip(event, 'fs16', 23)" class="f">pickle</span> (<span onmouseout="hideTip(event, 'fs5', 24)" onmouseover="showTip(event, 'fs5', 24)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 25)" onmouseover="showTip(event, 'fs6', 25)" class="i">intPU</span>) <span class="n">64</span> <span class="c">// convert the int value 64 into a byte array</span>
 
@@ -123,10 +123,10 @@
 <div class="tip" id="fs8">val float32PU : BinaryPU&lt;float32&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.float32PU</div>
 <div class="tip" id="fs9">val asciiPU : BinaryPU&lt;string&gt;<br /><br />Full name: Pickler.asciiPU</div>
 <div class="tip" id="fs10">val asciiPU : BinaryPU&lt;string&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.asciiPU</div>
-<div class="tip" id="fs11">val intPULtE : BinaryPU&lt;int32&gt;<br /><br />Full name: Pickler.intPULtE</div>
-<div class="tip" id="fs12">val intPULtE : BinaryPU&lt;int32&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.intPULtE</div>
+<div class="tip" id="fs11">val intPULtE : BinaryPU&lt;int16&gt;<br /><br />Full name: Pickler.intPULtE</div>
+<div class="tip" id="fs12">val int16LittleEPU : BinaryPU&lt;int16&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.int16LittleEPU</div>
 <div class="tip" id="fs13">val utf32PUBgE : BinaryPU&lt;string&gt;<br /><br />Full name: Pickler.utf32PUBgE</div>
-<div class="tip" id="fs14">val utf32PUBgE : BinaryPU&lt;string&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.utf32PUBgE</div>
+<div class="tip" id="fs14">val utf32BigEPU : BinaryPU&lt;string&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.utf32BigEPU</div>
 <div class="tip" id="fs15">val bytes : byte []<br /><br />Full name: Pickler.bytes</div>
 <div class="tip" id="fs16">val pickle : pu:BinaryPU&lt;&#39;a&gt; -&gt; value:&#39;a -&gt; byte []<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.pickle</div>
 <div class="tip" id="fs17">val intR : int32<br /><br />Full name: Pickler.intR</div>
