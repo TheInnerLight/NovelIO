@@ -93,6 +93,10 @@ module File =
         IO.fromEffectful (fun _ -> File.Move(getPathString sourceFile, getPathString destFile))
 
     /// Opens a handle to the specified file using the supplied file mode
+    let openBinaryHandle mode access (fName : Filename) =
+        IO.fromEffectful (fun _ -> SideEffectingIO.openBinaryFileHandle fName mode access)
+
+    /// Opens a handle to the specified file using the supplied file mode
     let openFileHandle mode access (fName : Filename) =
         IO.fromEffectful (fun _ -> SideEffectingIO.openFileHandle fName mode access)
 

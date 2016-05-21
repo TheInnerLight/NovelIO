@@ -125,6 +125,9 @@ type FileAccess =
 /// A Handle that may support text being read from it and written to it
 type Handle = private {TextReader : TextReader option; TextWriter : TextWriter option}
 
+/// A Binary Handle that may support binary data being read from it or written to it
+type BinaryHandle = private {BinaryReader : BinaryReader option; BinaryWriter : BinaryWriter option}
+
 /// A TCP Server
 type TCPServer = private {TCPListener : Sockets.TcpListener}
 

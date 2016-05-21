@@ -74,6 +74,17 @@ module internal SideEffectingIO =
             |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
             |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crTxtWrtr fStream
         {TextReader = reader; TextWriter = writer}
+    /// Create a binary file handle for a supplied file name, file mode and file access
+    let openBinaryFileHandle (fName : Filename) mode access =
+        let crBinRdr (fStream : FileStream) = new BinaryReader(fStream)
+        let crBinWrtr (fStream : FileStream) = new BinaryWriter(fStream)
+        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
+        let (reader, writer) =
+            match access with
+            |NovelFS.NovelIO.FileAccess.Read -> Some <| crBinRdr fStream, None
+            |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crBinRdr fStream, Some <| crBinWrtr fStream
+            |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crBinWrtr fStream
+        {BinaryReader = reader; BinaryWriter = writer}
     /// Start a TCP server on a supplied ip address and port
     let startTCPServer ip port =
         let listener = Sockets.TcpListener(ip, port)
