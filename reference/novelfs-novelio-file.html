@@ -338,10 +338,10 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '25', 25)" onmouseover="showTip(event, '25', 25)">
-            openFileHandle mode access fName
+            openBinaryHandle mode access fName
           </code>
           <div class="tip" id="25">
-            <strong>Signature:</strong> mode:FileMode -&gt; access:FileAccess -&gt; fName:Filename -&gt; IO&lt;Handle&gt;<br />
+            <strong>Signature:</strong> mode:FileMode -&gt; access:FileAccess -&gt; fName:Filename -&gt; IO&lt;BinaryHandle&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -358,14 +358,34 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '26', 26)" onmouseover="showTip(event, '26', 26)">
-            readAllBytes filename
+            openFileHandle mode access fName
           </code>
           <div class="tip" id="26">
-            <strong>Signature:</strong> filename:Filename -&gt; IO&lt;byte []&gt;<br />
+            <strong>Signature:</strong> mode:FileMode -&gt; access:FileAccess -&gt; fName:Filename -&gt; IO&lt;Handle&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L100-100" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Opens a handle to the specified file using the supplied file mode</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '27', 27)" onmouseover="showTip(event, '27', 27)">
+            readAllBytes filename
+          </code>
+          <div class="tip" id="27">
+            <strong>Signature:</strong> filename:Filename -&gt; IO&lt;byte []&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L104-104" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -377,15 +397,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '27', 27)" onmouseover="showTip(event, '27', 27)">
+          <code onmouseout="hideTip(event, '28', 28)" onmouseover="showTip(event, '28', 28)">
             readAllLines filename
           </code>
-          <div class="tip" id="27">
+          <div class="tip" id="28">
             <strong>Signature:</strong> filename:Filename -&gt; IO&lt;string list&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L104-104" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L108-108" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -397,15 +417,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '28', 28)" onmouseover="showTip(event, '28', 28)">
+          <code onmouseout="hideTip(event, '29', 29)" onmouseover="showTip(event, '29', 29)">
             readAllLinesIn encoding filename
           </code>
-          <div class="tip" id="28">
+          <div class="tip" id="29">
             <strong>Signature:</strong> encoding:Encoding -&gt; filename:Filename -&gt; IO&lt;string list&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L108-108" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L112-112" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -417,15 +437,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '29', 29)" onmouseover="showTip(event, '29', 29)">
+          <code onmouseout="hideTip(event, '30', 30)" onmouseover="showTip(event, '30', 30)">
             readLines filename
           </code>
-          <div class="tip" id="29">
+          <div class="tip" id="30">
             <strong>Signature:</strong> filename:Filename -&gt; IO&lt;seq&lt;IO&lt;string&gt;&gt;&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L112-112" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L116-116" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -437,15 +457,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '30', 30)" onmouseover="showTip(event, '30', 30)">
+          <code onmouseout="hideTip(event, '31', 31)" onmouseover="showTip(event, '31', 31)">
             readLinesIn encoding filename
           </code>
-          <div class="tip" id="30">
+          <div class="tip" id="31">
             <strong>Signature:</strong> encoding:Encoding -&gt; filename:Filename -&gt; IO&lt;seq&lt;IO&lt;string&gt;&gt;&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L116-116" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L120-120" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -457,15 +477,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '31', 31)" onmouseover="showTip(event, '31', 31)">
+          <code onmouseout="hideTip(event, '32', 32)" onmouseover="showTip(event, '32', 32)">
             setCreationTime datetime filename
           </code>
-          <div class="tip" id="31">
+          <div class="tip" id="32">
             <strong>Signature:</strong> datetime:DateTime -&gt; filename:Filename -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L120-120" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L124-124" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -477,15 +497,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '32', 32)" onmouseover="showTip(event, '32', 32)">
+          <code onmouseout="hideTip(event, '33', 33)" onmouseover="showTip(event, '33', 33)">
             setCreationTimeUTC datetime filename
           </code>
-          <div class="tip" id="32">
+          <div class="tip" id="33">
             <strong>Signature:</strong> datetime:DateTime -&gt; filename:Filename -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L124-124" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L128-128" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -497,15 +517,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '33', 33)" onmouseover="showTip(event, '33', 33)">
+          <code onmouseout="hideTip(event, '34', 34)" onmouseover="showTip(event, '34', 34)">
             setLastAccessTime datetime filename
           </code>
-          <div class="tip" id="33">
+          <div class="tip" id="34">
             <strong>Signature:</strong> datetime:DateTime -&gt; filename:Filename -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L128-128" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L132-132" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -517,15 +537,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '34', 34)" onmouseover="showTip(event, '34', 34)">
+          <code onmouseout="hideTip(event, '35', 35)" onmouseover="showTip(event, '35', 35)">
             setLastAccessTimeUTC datetime filename
           </code>
-          <div class="tip" id="34">
+          <div class="tip" id="35">
             <strong>Signature:</strong> datetime:DateTime -&gt; filename:Filename -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L132-132" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L136-136" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -537,15 +557,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '35', 35)" onmouseover="showTip(event, '35', 35)">
+          <code onmouseout="hideTip(event, '36', 36)" onmouseover="showTip(event, '36', 36)">
             setLastWriteTime datetime filename
           </code>
-          <div class="tip" id="35">
+          <div class="tip" id="36">
             <strong>Signature:</strong> datetime:DateTime -&gt; filename:Filename -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L136-136" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L140-140" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -557,15 +577,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '36', 36)" onmouseover="showTip(event, '36', 36)">
+          <code onmouseout="hideTip(event, '37', 37)" onmouseover="showTip(event, '37', 37)">
             setLastWriteTimeUTC datetime filename
           </code>
-          <div class="tip" id="36">
+          <div class="tip" id="37">
             <strong>Signature:</strong> datetime:DateTime -&gt; filename:Filename -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L140-140" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L144-144" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -577,15 +597,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '37', 37)" onmouseover="showTip(event, '37', 37)">
+          <code onmouseout="hideTip(event, '38', 38)" onmouseover="showTip(event, '38', 38)">
             size filename
           </code>
-          <div class="tip" id="37">
+          <div class="tip" id="38">
             <strong>Signature:</strong> filename:Filename -&gt; IO&lt;int64&lt;MeasureProduct&lt;Bytes,MeasureOne&gt;&gt;&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L144-144" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L148-148" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -597,15 +617,15 @@ Throws an ArgumentException if the supplied string is, in fact, not valid.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '38', 38)" onmouseover="showTip(event, '38', 38)">
+          <code onmouseout="hideTip(event, '39', 39)" onmouseover="showTip(event, '39', 39)">
             writeLines lines filename
           </code>
-          <div class="tip" id="38">
+          <div class="tip" id="39">
             <strong>Signature:</strong> lines:seq&lt;string&gt; -&gt; filename:Filename -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L148-148" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/File.fs#L152-152" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
