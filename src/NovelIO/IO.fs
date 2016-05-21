@@ -143,13 +143,16 @@ module IO =
 
     // ----- GENERAL ----- //
             
-    /// Reads a line from the file or channel
+    /// An action that reads a line from the file or channel
     let hGetLine handle = fromEffectful (fun _ -> SideEffectingIO.hGetLine handle)
-    /// Determines if the handle has data available
+
+    /// An action that determines if the handle has data available
     let hIsReady handle = fromEffectful (fun _ -> SideEffectingIO.isHandleReadyToRead handle)
-    /// Writes a line to the final or channel
+
+    /// An action that writes a line to the final or channel
     let hPutStrLn handle str = fromEffectful (fun _ -> SideEffectingIO.hPutStrLn str handle)
-    /// Writes a line to console
+
+    /// An action that writes a line to console
     let putStrLn (str : string) = fromEffectful (fun _ -> System.Console.WriteLine str)
 
     // ------- RUN ------- //
@@ -287,23 +290,76 @@ module IO =
                 |> List.ofSeq
                 |> Seq.ofList)
 
+    // ------ Parallel ------ //
+
+    /// Parallel IO combinators
+    module Parallel =
+
+        /// A helper type for ending computations when success occurs
+        type private SuccessException<'a> (value : 'a) =
+            inherit System.Exception()
+            member __.Value = value
+
+        /// Executes the given IO actions in parallel
+        let par (ios : IO<_> list)  =
+            fromEffectful (fun _ ->
+                ios 
+                |> Seq.map (fun io -> async {return run io})
+                |> Async.Parallel
+                |> Async.RunSynchronously
+                |> List.ofArray)
+
+        /// Executes the given IO actions in parallel and ignores the result
+        let par_ (ios : IO<_> list)  =
+            map (ignore) (par ios)
+  
+        /// Executes the list of computations in parallel, returning the result of the first thread that completes with Some x, if any. 
+        let parFirst (ios : IO<'a option> list) =
+            let raiseExn (e : #exn) = Async.FromContinuations(fun (_,econt,_) -> econt e)
+            let wrap task =
+                async {
+                    let! res = task
+                    match res with
+                    | None -> return None
+                    | Some r -> return! raiseExn <| SuccessException r
+                }
+            fromEffectful (fun _ ->
+                try
+                    ios
+                    |> Seq.map (fun io -> wrap <| async {return run io})
+                    |> Async.Parallel
+                    |> Async.Ignore
+                    |> Async.RunSynchronously
+                    None
+                with 
+                | :? SuccessException<'b> as ex -> Some <| ex.Value)
+
 /// Console functions
 module Console =
-    /// read a key from the console
+    /// An action that reads a key from the console
     let readKey = IO.fromEffectful (fun () -> System.Console.ReadKey())
-    /// read a line from the console
+    /// Ac action that reads a line from the console
     let readLine = IO.fromEffectful (fun () -> System.Console.ReadLine())
+
+/// Threading functions
+module Thread =
+    /// An action that causes the current thread to sleep for a supplied number of milliseconds
+    let sleep (ms : int) = IO.fromEffectful (fun _ -> System.Threading.Thread.Sleep(ms))
+
+    /// An action that causes the current thread to yield execution to another thread
+    let yld = IO.fromEffectful (fun _ -> ignore <| System.Threading.Thread.Yield())
 
 /// Provides purely functional Date/Time functions
 module DateTime =
-    /// Get the current local time
+    /// An aciton that gets the current local time
     let localNow = IO.fromEffectful (fun () -> System.DateTime.Now)
-    /// Get the current UTC time
+    /// An aciton that gets the current UTC time
     let utcNow = IO.fromEffectful (fun () -> System.DateTime.UtcNow)
 
 /// Module to provide the definition of the io computation expression
 [<AutoOpen>]
 module IOBuilders =
+    /// IO computation expression builder
     let io = IO.IOBuilder()
             
 
