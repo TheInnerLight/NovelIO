@@ -3,6 +3,7 @@
 // it to define helpers that you do not want to show in the documentation.
 #I "../../bin"
 #r "NovelIO/NovelIO.dll"
+open NovelFS.NovelIO
 open NovelFS.NovelIO.BinaryPickler
 
 (**
@@ -18,11 +19,11 @@ Pickler primitives are used to handle simple data types and more complicated pic
 ## Pickler primitives
 *)
 
-let intPickler = BinaryPickler.pickleInt32
+let intPickler = BinaryPickler.intPU
 
-let floatPickler = BinaryPickler.pickleFloat
+let floatPickler = BinaryPickler.float32PU
 
-let asciiPickler = BinaryPickler.pickleAscii
+let asciiPickler = BinaryPickler.asciiPU
 
 (**
 
@@ -33,9 +34,9 @@ The same picklers can be used to transform data in both directions.
 ## Running picklers
 *)
 
-let bytes = BinaryPickler.pickle (BinaryPickler.pickleInt32) 64 // convert the int value 64 into a byte array
+let bytes = BinaryPickler.pickle (BinaryPickler.intPU) 64 // convert the int value 64 into a byte array
 
-let int = BinaryPickler.unpickle (BinaryPickler.pickleInt32) bytes // convert the byte array back into an int
+let int = BinaryPickler.unpickle (BinaryPickler.intPU) bytes // convert the byte array back into an int
 
 (**
 
@@ -48,7 +49,7 @@ A variety of tuple combinators are provided to allow the pickling/unpickling of 
 as follows:
 *)
 
-let intUtf8Pickler = BinaryPickler.tuple2 BinaryPickler.pickleInt32 BinaryPickler.pickleUTF8
+let intUtf8Pickler = BinaryPickler.tuple2 BinaryPickler.intPU BinaryPickler.utf8PU
 
 (**
 
@@ -70,7 +71,7 @@ type Product = {ProductName : string; ProductPrice : decimal<GBP>}
 
 /// A pickler/unpickler pair for products
 let productPickler =
-    let nameDecPickler = BinaryPickler.tuple2 BinaryPickler.pickleUTF8 BinaryPickler.pickleDecimal
+    let nameDecPickler = BinaryPickler.tuple2 BinaryPickler.utf8PU BinaryPickler.decimalPU
     let toProd (name,price) = {ProductName = name; ProductPrice = price*1.0M<GBP>} // tuple to product
     let fromProd prod = prod.ProductName, decimal prod.ProductPrice // product to tuple
     BinaryPickler.wrap (toProd, fromProd) nameDecPickler
@@ -87,9 +88,9 @@ The list and array combinators take a pickler of type 'a and produce a pickler t
 
 *)
 
-let intArrayPickler = BinaryPickler.array BinaryPickler.pickleInt32
+let intArrayPickler = BinaryPickler.array BinaryPickler.intPU
 
-let floatListPickler = BinaryPickler.list BinaryPickler.pickleFloat
+let floatListPickler = BinaryPickler.list BinaryPickler.intPU
 
 (**
 
@@ -100,4 +101,33 @@ It is, of course, possible to combine several of these combinators to produce co
 let complexPickler = 
     BinaryPickler.list 
         (BinaryPickler.tuple3 
-            BinaryPickler.pickleAscii BinaryPickler.pickleFloat BinaryPickler.pickleInt32)
+            BinaryPickler.asciiPU BinaryPickler.floatPU BinaryPickler.intPU)
+
+(**
+
+## Incremental Pickling
+
+In many cases, especially when dealing with large binary files, it could be desirable to not have to convert back and forth between extremely large byte arrays, indeed this approach might not be viable due to available memory.
+
+In this case, we can use incremental pickling to read/write as part of the pickling process.  Unlike the simple conversion process shown above, this action is effectful so is encapsulated within `IO`.
+
+This process is quite simple, instead of using the `pickle` and `unpickle` functions, we use the `pickleIncr` and `unpickleIncr` functions.  These simply take the additional argument of a `BinaryHandle` upon which they will act.
+
+Example of incremental unpickling:
+
+*)
+
+io {
+    let! handle = File.openBinaryHandle FileMode.Open FileAccess.Read (File.assumeValidFilename "test.txt")
+    return! BinaryPickler.unpickleIncr complexPickler handle
+}
+
+(**
+Example of incremental pickling:
+*)
+
+io {
+    let! handle = File.openBinaryHandle FileMode.Create FileAccess.Write (File.assumeValidFilename "test.txt")
+    let data = [("A", 7.5, 16); ("B", 7.5, 1701)]
+    return! BinaryPickler.pickleIncr complexPickler handle data
+}

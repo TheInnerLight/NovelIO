@@ -21,11 +21,18 @@ open NovelFS.NovelIO.BinaryPickler
 open FsCheck
 open FsCheck.Xunit
 
-type ``IO Unit Tests``() =
+type ``Prelude Unit Tests``() =
     [<Property>]
-    static member ``return' of some test data returns the test data when run`` (testData : obj) =
-        IO.run <| IO.return' testData = testData
+    static member ``const' returns the first argument and throws away the second`` (testData : obj * obj) =
+        let o1, o2 = testData
+        const' o1 o2 = o1
 
     [<Property>]
-    static member ``fromEffectful of function which produces test data returns the test data when run`` (testData : obj) =
-        IO.run <| IO.fromEffectful (fun _ -> testData) = testData
+    static member ``flip when used on (/) divides the arguments in the opposite order`` (testData : NonZeroInt * NonZeroInt) =
+        let i1, i2 = testData
+        flip (/) i1.Get i2.Get = i2.Get / i1.Get
+
+    [<Property>]
+    static member ``ByteOrder.systemEndianness returns the endianness of the current system`` () =
+        ByteOrder.isBigEndian (ByteOrder.systemEndianness) <> System.BitConverter.IsLittleEndian
+
