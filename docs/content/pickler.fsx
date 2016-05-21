@@ -18,11 +18,11 @@ Pickler primitives are used to handle simple data types and more complicated pic
 ## Pickler primitives
 *)
 
-let intPickler = BinaryPickler.pickleInt32
+let intPickler = BinaryPickler.intPU
 
-let floatPickler = BinaryPickler.pickleFloat
+let floatPickler = BinaryPickler.float32PU
 
-let asciiPickler = BinaryPickler.pickleAscii
+let asciiPickler = BinaryPickler.asciiPU
 
 (**
 
@@ -33,9 +33,9 @@ The same picklers can be used to transform data in both directions.
 ## Running picklers
 *)
 
-let bytes = BinaryPickler.pickle (BinaryPickler.pickleInt32) 64 // convert the int value 64 into a byte array
+let bytes = BinaryPickler.pickle (BinaryPickler.intPU) 64 // convert the int value 64 into a byte array
 
-let int = BinaryPickler.unpickle (BinaryPickler.pickleInt32) bytes // convert the byte array back into an int
+let int = BinaryPickler.unpickle (BinaryPickler.intPU) bytes // convert the byte array back into an int
 
 (**
 
@@ -48,7 +48,7 @@ A variety of tuple combinators are provided to allow the pickling/unpickling of 
 as follows:
 *)
 
-let intUtf8Pickler = BinaryPickler.tuple2 BinaryPickler.pickleInt32 BinaryPickler.pickleUTF8
+let intUtf8Pickler = BinaryPickler.tuple2 BinaryPickler.intPU BinaryPickler.utf8PU
 
 (**
 
@@ -70,7 +70,7 @@ type Product = {ProductName : string; ProductPrice : decimal<GBP>}
 
 /// A pickler/unpickler pair for products
 let productPickler =
-    let nameDecPickler = BinaryPickler.tuple2 BinaryPickler.pickleUTF8 BinaryPickler.pickleDecimal
+    let nameDecPickler = BinaryPickler.tuple2 BinaryPickler.utf8PU BinaryPickler.decimalPU
     let toProd (name,price) = {ProductName = name; ProductPrice = price*1.0M<GBP>} // tuple to product
     let fromProd prod = prod.ProductName, decimal prod.ProductPrice // product to tuple
     BinaryPickler.wrap (toProd, fromProd) nameDecPickler
@@ -87,9 +87,9 @@ The list and array combinators take a pickler of type 'a and produce a pickler t
 
 *)
 
-let intArrayPickler = BinaryPickler.array BinaryPickler.pickleInt32
+let intArrayPickler = BinaryPickler.array BinaryPickler.intPU
 
-let floatListPickler = BinaryPickler.list BinaryPickler.pickleFloat
+let floatListPickler = BinaryPickler.list BinaryPickler.intPU
 
 (**
 
@@ -100,4 +100,4 @@ It is, of course, possible to combine several of these combinators to produce co
 let complexPickler = 
     BinaryPickler.list 
         (BinaryPickler.tuple3 
-            BinaryPickler.pickleAscii BinaryPickler.pickleFloat BinaryPickler.pickleInt32)
+            BinaryPickler.asciiPU BinaryPickler.floatPU BinaryPickler.intPU)
