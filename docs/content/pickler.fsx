@@ -53,7 +53,7 @@ Little endian PUs are suffixed with LtE and big endian PUs are suffixed with BgE
 
 let bytes = BinaryPickler.pickle (BinaryPickler.intPU) 64 // convert the int value 64 into a byte array
 
-let int = BinaryPickler.unpickle (BinaryPickler.intPU) bytes // convert the byte array back into an int
+let intR = BinaryPickler.unpickle (BinaryPickler.intPU) bytes // convert the byte array back into an int
 
 (**
 
