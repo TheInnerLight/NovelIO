@@ -93,7 +93,7 @@ module File =
         IO.fromEffectful (fun _ -> File.Move(getPathString sourceFile, getPathString destFile))
 
     /// Opens a handle to the specified file using the supplied file mode
-    let openFileHandle (mode : FileMode) (access : FileAccess) (fName : Filename) =
+    let openFileHandle mode access (fName : Filename) =
         IO.fromEffectful (fun _ -> SideEffectingIO.openFileHandle fName mode access)
 
     /// Reads all the bytes from a specified file as an array

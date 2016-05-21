@@ -67,12 +67,12 @@ module internal SideEffectingIO =
     let openFileHandle (fName : Filename) mode access =
         let crTxtRdr (fStream : FileStream) = new StreamReader(fStream) :> TextReader
         let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream) :> TextWriter
-        let fStream = new FileStream(fName.PathString, mode, access)
+        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
         let (reader, writer) =
             match access with
-            |FileAccess.Read -> Some <| crTxtRdr fStream, None
-            |FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
-            |FileAccess.Write -> None, Some <| crTxtWrtr fStream
+            |NovelFS.NovelIO.FileAccess.Read -> Some <| crTxtRdr fStream, None
+            |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
+            |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crTxtWrtr fStream
         {TextReader = reader; TextWriter = writer}
     /// Start a TCP server on a supplied ip address and port
     let startTCPServer ip port =
@@ -168,7 +168,7 @@ module IO =
     /// Runs the IO actions and evaluates the result, handling success or failure using IOResult
     let runGuarded io =
         // run recursively and handle exceptions in IO
-        IOResult.withExceptionCheck (run) io
+        InternalIOHelper.withExceptionCheck (run) io
 
     /// Sparks off a new thread to run the IO action passed as the first argument
     let forkIO io = 
