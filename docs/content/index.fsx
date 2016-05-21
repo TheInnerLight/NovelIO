@@ -49,7 +49,7 @@ printfn "%s" (IO.run exmpl2)
 
 (**
 
-If you run these examples, you will note the different behaviour.
+If we run these examples, we can note the different behaviour.
 
 In the first example `exmpl` represents the result of the user input from the console, we perform that side effect only once and print the same value to the console twice.
 
@@ -57,7 +57,7 @@ In the second example `exmpl` represents the action of reading user input from t
 
 `IO.run` is the only non-referentially transparent function exposed to the user in this library and is equivalent to `unsafePerformIO` in Haskell.  Since F# is fundamentally still an impure language, it is up to the developer how often they wish to make use of it.
 
-It is possible (albeit certainly not recommended!) to call `IO.run` on every small block of IO code.  It is also possible to call `IO.run` only once, in the main function, for your entire program: you could then visualise running your program as the only effectful part of otherwise pure, referentially transparent code.
+It is possible (albeit certainly not recommended!) to call `IO.run` on every small block of IO code.  It is also possible to call `IO.run` only once, in the main function, for an entire program: it is then possible to visualise the running of a program as the only effectful part of otherwise pure, referentially transparent code.
 
 ## Sequencing IO Actions
 
@@ -81,7 +81,7 @@ Needless to say, highly complex actions can be built up in this way.  For exampl
 
 IO actions can also be performed in parallel using the `IO.parallel` combinators.  This gives us very explicit, fine-grained, control over what actions should take place in parallel.
 
-In order to execute items in parallel, simply build a list of the IO actions you wish to perform and use the `par` combinator.  For example:
+In order to execute items in parallel, we can simply build a list of the IO actions we wish to perform and use the `par` combinator.  For example:
 *)
 
 io {
@@ -93,5 +93,19 @@ io {
 (**
 
 This describes a program that gets a line from the console and a line from a specified file in parallel and returns them in a list of strings.
+
+## Bringing impure functions into IO
+
+It's very likely that the set of functions included in this library will not cover every possible IO action we might ever wish to perform.  In this case, we can use the `IO.fromEffectful` to take a non-referentially transparent function and bring it within IO.
+
+If we decide to create an action that exits the program, this could be accomplished as follows:
+
+*)
+
+let exit = IO.fromEffectful (fun _ -> System.Environment.Exit 0)
+
+(**
+
+This should allow us to construct arbitrary programs entirely within IO.
 
 *)
