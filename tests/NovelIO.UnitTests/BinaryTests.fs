@@ -296,6 +296,10 @@ type ``Binary Pickler Tests`` =
         let result = BinaryPickler.unpickle strPickler bytes
         result = str
 
+// ********************************************************
+// ************** INCREMENTAL PICKLING TESTS **************
+// ********************************************************
+
 type ``Incremental Binary Pickler Tests`` =
     [<Property>]
     static member ``Unpickle byte from array of one byte`` (byte : byte) =
@@ -660,6 +664,17 @@ type ``Incremental Binary Pickler Tests`` =
             do! BinaryPickler.pickleIncr (BinaryPickler.utf32PUBgE) bHandle str
             do! IO.bhSetAbsPosition bHandle 0L
             return! BinaryPickler.unpickleIncr (BinaryPickler.utf32PUBgE) bHandle
+        } |> IO.run = str
+
+    [<Property>]
+    static member ``Pickle UTF-32 with Endianness detection from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get
+        let buff = MemoryBuffer.createExpandable()
+        io {
+            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.utf32PU) bHandle str
+            do! IO.bhSetAbsPosition bHandle 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.utf32PU) bHandle
         } |> IO.run = str
 
 
