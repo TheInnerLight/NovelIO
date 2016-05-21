@@ -14,16 +14,18 @@ Pickler combinators are a concept described by Andrew J. Kennedy (http://researc
 
 Their purpose is to present a serialisation/deserialiation mechanism that grants the developer explicit control over their serialisation format while avoiding the requirement to write lots of tedious, error prone code.
 
-Pickler/unpickler pair (hereafter called PU for brevity) primitives are used to handle simple data types and more complicated PUs can be constructed by combining these PUs using combinator functions.
+Pickler combinators operate by allowing the construction of pickler/unpickler pairs (hereafter called PUs from brevity) which excapsulate the serialisation process.
+
+PU primitives are provided to handle simple data types and more complicated PUs can be constructed by combining these PUs using combinator functions.
 
 ## PU primitives
 *)
 
-let intPickler = BinaryPickler.intPU
+let intPU = BinaryPickler.intPU
 
-let floatPickler = BinaryPickler.float32PU
+let floatPU = BinaryPickler.float32PU
 
-let asciiPickler = BinaryPickler.asciiPU
+let asciiPU = BinaryPickler.asciiPU
 
 (**
 
