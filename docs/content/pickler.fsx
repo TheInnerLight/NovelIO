@@ -16,9 +16,10 @@ Their purpose is to present a serialisation/deserialiation mechanism that grants
 
 Pickler combinators operate by allowing the construction of pickler/unpickler pairs (hereafter called PUs from brevity) which excapsulate the serialisation process.
 
+## PU primitives
+
 PU primitives are provided to handle simple data types and more complicated PUs can be constructed by combining these PUs using combinator functions.
 
-## PU primitives
 *)
 
 let intPU = BinaryPickler.intPU
@@ -32,6 +33,20 @@ let asciiPU = BinaryPickler.asciiPU
 These are just a few examples of the primitive PUs defined in this library.  These PUs can be used to serialise (pickle) or deserialise (unpickle) values of the type associated with their PU to and from their binary representations.
 
 The beauty of pickler combinators is that the same PU can be used to transform data in both directions.
+
+## Endianness
+
+The default PUs for each datatype, such as `intPU` will pickle in the endianness of the current platform.  It's also possible to specify endianness for each primitive.
+
+*)
+
+let intPULtE = BinaryPickler.intPULtE // little endian int PU
+
+let utf32PUBgE = BinaryPickler.utf32PUBgE // big endian utf-32 PU
+
+(**
+
+Little endian PUs are suffixed with LtE and big endian PUs are suffixed with BgE.
 
 ## Running PUs
 *)
