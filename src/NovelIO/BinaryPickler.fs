@@ -23,6 +23,16 @@ exception PicklingExceededArrayLengthException of int * int
 
 type private BinaryUnpicklerState = {Raw : byte array; Position : int; Endianness : Endianness}
 type private BinaryPicklerState = {Raw : byte list; Endianness : Endianness}
+type private IncrBinaryUnpicklerState = {Reader : System.IO.BinaryReader}
+type private IncrBinaryPicklerState = {Writer : System.IO.BinaryWriter}
+
+type private BUnpickleState =
+    |UnpickleComplete of BinaryUnpicklerState
+    |UnpickleIncremental of IncrBinaryUnpicklerState
+
+type private BPickleState =
+    |PickleComplete of BinaryPicklerState
+    |PickleIncremental of IncrBinaryPicklerState
 
 /// A pickler/unpickler pair for type 'a
 type BinaryPU<'a> = private {Pickle : 'a * BinaryPicklerState -> BinaryPicklerState; Unpickle : BinaryUnpicklerState -> 'a * BinaryUnpicklerState}
@@ -129,6 +139,24 @@ module BinaryPickler =
     let private runPickle (a, st) x =
         match x with
         |{Unpickle = _; Pickle = g} -> g (a, st)
+
+    let private pickleHelper f b st =
+        match st with
+        |PickleComplete ps -> PickleComplete {ps with Raw = (PickleConvertors.arrayFlipToList << f <| b) @ ps.Raw}
+        |PickleIncremental ips -> 
+            ips.Writer.Write (f b)
+            st
+
+    let private unpickleHelper (f : int -> byte array -> 'a) st =
+        match st with
+        |UnpickleComplete ps -> 
+            let pos = ps.Position
+            let result = f pos (ps.Raw)
+            result, UnpickleComplete {ps with Position = pos + sizeof<'a>}
+        |UnpickleIncremental ips ->
+            let result = f 0 (ips.Reader.ReadBytes sizeof<'a>)
+            result, st
+            
 
     /// Given a value of x, returns a pickler of x
     let lift x = {Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
