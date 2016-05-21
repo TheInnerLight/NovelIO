@@ -15,7 +15,7 @@ Much like in Haskell, we introduce the `IO<'a>` type which represents some actio
 
 * An IO action that prints the string "Hello World" to the screen has type `IO<unit>`.
 * An IO action that gets a line of text from the Console has type `IO<string>`.
-* An IO action that opens a TCP connection to google.com on port 80 has type `IO<TCPConnectedSocket>`.
+* An IO action that opens a TCP connection has type `IO<TCPConnectedSocket>`.
 
 The IO action can equally represent a sequence of actions:
 
@@ -54,6 +54,10 @@ If you run these examples, you will note the different behaviour.
 In the first example `exmpl` represents the result of the user input from the console, we perform that side effect only once and print the same value to the console twice.
 
 In the second example `exmpl` represents the action of reading user input from the console and running it gives us the result.  Hence, in this case, the user is prompted for input twice and potentially different results are printed.
+
+`IO.run` is the only non-referentially transparent function exposed to the user in this library and is equivalent to `unsafePerformIO` in Haskell.  Since F# is fundamentally still an impure language, it is up to the developer how often they wish to make use of it.
+
+It is possible (albeit certainly not recommended!) to call `IO.run` on every small block of IO code.  It is also possible to call `IO.run` only once, in the main function, for your entire program: you could then visualise running your program as the only effectful part of otherwise pure, referentially transparent code.
 
 ## Sequencing IO Actions
 

@@ -9,6 +9,45 @@ open NovelFS.NovelIO
 Motivation
 ======================
 
+## Referential Transparency
+
+In functional programming, referential transparency is a very useful property, an expression which is referentially transparent can be replaced by its value without affecting the behaviour of the program.
+
+Consider:
+
+*)
+
+let x = 2*2
+
+(**
+
+The value `x`, `4` and `2*2` are all completely interchangeable, any of these descriptions anywhere in our program are all equally valid and do not change its behaviour.
+
+Now consider:
+
+*)
+
+let rnd = System.Random()
+let y = rnd.Next()
+
+(**
+
+The value `y` does not have this property.  We cannot freely interchange `y` and `rnd.Next()` without changing the behaviour of the program, this is because `rnd.Next` is not referentially transparent.
+
+Referential transparency, however, is a very useful property, all functions in mathematics are referentially transparent and this helps us to reason about the behaviours of equations.  In computer science, this is no different, referential transparency makes it easier to prove correctness and to avoid bugs (especially in concurrent and parallel code).
+
+If we express this logic again using `IO`, we can restore referential transparency:
+
+*)
+
+let yPure = Random.nextIO
+
+(**
+
+Once again, we can freely replace `yPure` and `Random.nextIO` wherever they appear in our program.  They both have precisely the same meaning, namely: an action which, when run, gets the next number from the global random number generator.
+
+As mentioned in the introduction, `IO.run` is the only non-referentially transparent function exposed by this library and, as such, should be used sparingly!
+
 ## Lazy evaluation and exceptions
 
 This example is more or less taken from Erik Meijer's Curse of the excluded middle (https://queue.acm.org/detail.cfm?ref=rss&id=2611829)
@@ -126,8 +165,6 @@ Sequences of random numbers are another area where side-effects can be particula
 Consider this code:
 
 *)
-
-let rnd = System.Random()
 
 let randomSeq = Seq.init 20 (fun _ -> rnd.Next())
 let sortedSeq = Seq.sort randomSeq
