@@ -14,9 +14,9 @@ Pickler combinators are a concept described by Andrew J. Kennedy (http://researc
 
 Their purpose is to present a serialisation/deserialiation mechanism that grants the developer explicit control over their serialisation format while avoiding the requirement to write lots of tedious, error prone code.
 
-Pickler primitives are used to handle simple data types and more complicated picklers can be constructed by combining these picklers using combinator functions.
+Pickler/unpickler pair (hereafter called PU for brevity) primitives are used to handle simple data types and more complicated PUs can be constructed by combining these PUs using combinator functions.
 
-## Pickler primitives
+## PU primitives
 *)
 
 let intPickler = BinaryPickler.intPU
@@ -27,11 +27,11 @@ let asciiPickler = BinaryPickler.asciiPU
 
 (**
 
-These are just a few examples of the primitive picklers defined in this library.  These picklers can be used to serialise (pickle) or deserialise (unpickle) values of the type associated with their pickler to and from their binary representations.
+These are just a few examples of the primitive PUs defined in this library.  These PUs can be used to serialise (pickle) or deserialise (unpickle) values of the type associated with their PU to and from their binary representations.
 
-The same picklers can be used to transform data in both directions.
+The beauty of pickler combinators is that the same PU can be used to transform data in both directions.
 
-## Running picklers
+## Running PUs
 *)
 
 let bytes = BinaryPickler.pickle (BinaryPickler.intPU) 64 // convert the int value 64 into a byte array
@@ -40,24 +40,22 @@ let int = BinaryPickler.unpickle (BinaryPickler.intPU) bytes // convert the byte
 
 (**
 
-Here we use the pickle function to transform the int 64 into its binary representation and then transform it back using
-the unpickle function.
+Here we use the pickle function to transform the int 64 into its binary representation and then transform it back using the unpickle function.
 
 ## Tuple combinators
 
-A variety of tuple combinators are provided to allow the pickling/unpickling of tuples.  These can be constructed, for example, 
-as follows:
+A variety of tuple combinators are provided to allow the pickling/unpickling of tuples.  These can be constructed, for example, as follows:
 *)
 
-let intUtf8Pickler = BinaryPickler.tuple2 BinaryPickler.intPU BinaryPickler.utf8PU
+let intUtf8PU = BinaryPickler.tuple2 BinaryPickler.intPU BinaryPickler.utf8PU
 
 (**
 
-The tuple2 function is simply supplied with two picklers and it constructs a combined pickler.
+The `tuple2` function is simply supplied with two PUs and it constructs a combined pickler.
 
-tuple3 and tuple4 functions are also provided, allowing the construction of more complex picklers.
+`tuple3` and `tuple4` functions are also provided, allowing the construction of more complex PUs.
 
-## Wrapping picklers
+## Wrapping PUs
 
 Rather than constructing data from tuples, we may wish to pickle/unpickle custom data types.  It is possible to do this by providing a function which constructs and deconstructs this custom data-type.
 
@@ -69,32 +67,32 @@ Rather than constructing data from tuples, we may wish to pickle/unpickle custom
 /// A product with an associated price
 type Product = {ProductName : string; ProductPrice : decimal<GBP>}
 
-/// A pickler/unpickler pair for products
-let productPickler =
-    let nameDecPickler = BinaryPickler.tuple2 BinaryPickler.utf8PU BinaryPickler.decimalPU
+/// A pickler/unpickler pair (PU) for products
+let productPU =
+    let nameDecPU = BinaryPickler.tuple2 BinaryPickler.utf8PU BinaryPickler.decimalPU
     let toProd (name,price) = {ProductName = name; ProductPrice = price*1.0M<GBP>} // tuple to product
     let fromProd prod = prod.ProductName, decimal prod.ProductPrice // product to tuple
-    BinaryPickler.wrap (toProd, fromProd) nameDecPickler
+    BinaryPickler.wrap (toProd, fromProd) nameDecPU
 
 (**
 
-Here, the custom record type contains a string and a decimal with a unit of measure so we define a tuple pickler which will pickle/unpickle the underlying data and provide functions that construct and deconstruct data from that form.
+Here, the custom record type contains a string and a decimal with a unit of measure so we define a tuple PU which will pickle/unpickle the underlying data and provide functions that construct and deconstruct data from that form.
 
 Data can then easily be read into or written from our custom data type.
 
 ## List and Array combinators
 
-The list and array combinators take a pickler of type 'a and produce a pickler that pickles the corresponding collection type.
+The list and array combinators take a PU of type 'a and produce a pickler that pickles the corresponding collection type.
 
 *)
 
-let intArrayPickler = BinaryPickler.array BinaryPickler.intPU
+let intArrayPU = BinaryPickler.array BinaryPickler.intPU
 
-let floatListPickler = BinaryPickler.list BinaryPickler.intPU
+let floatListPU = BinaryPickler.list BinaryPickler.intPU
 
 (**
 
-It is, of course, possible to combine several of these combinators to produce complicated list picklers, e.g.:
+It is, of course, possible to combine several of these combinators to produce complicated list PUs, e.g.:
 
 *)
 
