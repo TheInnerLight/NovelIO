@@ -3,6 +3,7 @@
 // it to define helpers that you do not want to show in the documentation.
 #I "../../bin"
 #r "NovelIO/NovelIO.dll"
+open NovelFS.NovelIO
 open NovelFS.NovelIO.BinaryPickler
 
 (**
@@ -101,3 +102,32 @@ let complexPickler =
     BinaryPickler.list 
         (BinaryPickler.tuple3 
             BinaryPickler.asciiPU BinaryPickler.floatPU BinaryPickler.intPU)
+
+(**
+
+## Incremental Pickling
+
+In many cases, especially when dealing with large binary files, it could be desirable to not have to convert back and forth between extremely large byte arrays, indeed this approach might not be viable due to available memory.
+
+In this case, we can use incremental pickling to read/write as part of the pickling process.  Unlike the simple conversion process shown above, this action is effectful so is encapsulated within `IO`.
+
+This process is quite simple, instead of using the `pickle` and `unpickle` functions, we use the `pickleIncr` and `unpickleIncr` functions.  These simply take the additional argument of a `BinaryHandle` upon which they will act.
+
+Example of incremental unpickling:
+
+*)
+
+io {
+    let! handle = File.openBinaryHandle FileMode.Open FileAccess.Read (File.assumeValidFilename "test.txt")
+    return! BinaryPickler.unpickleIncr complexPickler handle
+}
+
+(**
+Example of incremental pickling:
+*)
+
+io {
+    let! handle = File.openBinaryHandle FileMode.Create FileAccess.Write (File.assumeValidFilename "test.txt")
+    let data = [("A", 7.5, 16); ("B", 7.5, 1701)]
+    return! BinaryPickler.pickleIncr complexPickler handle data
+}
