@@ -47,6 +47,22 @@ module internal SideEffectingIO =
     /// Close a socket
     let closeSocket sock =
         sock.TCPConnectedSocket.Disconnect false
+    /// Close a binary handle
+    let bhClose handle =
+        match handle.BinaryReader with
+        |Some binRdr -> binRdr.Close()
+        |None -> ()
+        match handle.BinaryReader with
+        |Some binWtr -> binWtr.Close()
+        |None -> ()
+    /// Close a handle
+    let hClose handle =
+        match handle.TextReader with
+        |Some txtRdr -> txtRdr.Close()
+        |None -> ()
+        match handle.TextWriter with
+        |Some txtWtr -> txtWtr.Close()
+        |None -> ()
     /// Gets a line from a handle
     let hGetLine handle =
         match handle.TextReader with
@@ -85,6 +101,16 @@ module internal SideEffectingIO =
             |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crBinRdr fStream, Some <| crBinWrtr fStream
             |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crBinWrtr fStream
         {BinaryReader = reader; BinaryWriter = writer}
+
+    /// Sets the absolute position of the binary handle
+    let bhSetAbsPosition pos bHandle =
+        match bHandle.BinaryReader with
+        |Some br -> br.BaseStream.Position <- pos
+        |_ -> ()
+        match bHandle.BinaryWriter with
+        |Some bw -> bw.BaseStream.Position <- pos
+        |_ -> ()
+
     /// Start a TCP server on a supplied ip address and port
     let startTCPServer ip port =
         let listener = Sockets.TcpListener(ip, port)
@@ -153,7 +179,16 @@ module IO =
     let join x = x >>= id
 
     // ----- GENERAL ----- //
-            
+          
+    /// An action that closes a binary handle  
+    let bhClose handle = fromEffectful (fun _ -> SideEffectingIO.bhClose handle)
+
+    /// An action that sets the position of the binary handle to the supplied absolute position
+    let bhSetAbsPosition bHandle pos = fromEffectful (fun _ -> SideEffectingIO.bhSetAbsPosition pos bHandle)
+
+    /// An action that closes a handle
+    let hClose handle = fromEffectful (fun _ -> SideEffectingIO.hClose handle)
+
     /// An action that reads a line from the file or channel
     let hGetLine handle = fromEffectful (fun _ -> SideEffectingIO.hGetLine handle)
 

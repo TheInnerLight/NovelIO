@@ -398,14 +398,34 @@ module BinaryPickler =
     /// mark to indicate this is prepended.
     let pickleUTF32 = pickleUTFXWithEndiannessDetect (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = true}) pickleUtf32LE pickleUtf32BE
 
-    /// Uses the supplied pickler to unpickle the supplied byte array into some type 'a 
-    let unpickle pickler array =
-        fst <| runUnpickle (UnpickleComplete {Raw = array; Position = 0; Endianness = ByteOrder.systemEndianness}) pickler
+    /// Uses the supplied pickler/unpickler pair to unpickle the supplied byte array into some type 'a 
+    let unpickle pu array =
+        fst <| runUnpickle (UnpickleComplete {Raw = array; Position = 0; Endianness = ByteOrder.systemEndianness}) pu
 
-    /// Uses the supplied pickler to pickle the supplied value into a byte array
-    let pickle pickler value =
+    /// Uses the supplied pickler/unpickler pair to pickle the supplied value into a byte array
+    let pickle pu value =
         let st = PickleComplete {Raw = []; Endianness = ByteOrder.systemEndianness}
-        match (runPickle (value, st) pickler) with 
+        match (runPickle (value, st) pu) with 
         |PickleComplete ps -> ps.Raw |> Seq.rev |> Array.ofSeq
         |_ -> invalidOp "A non-complete binary pickler state was returned from an initially complete pickler"
+
+    /// Uses the supplied pickler/unpickler pair to unpickle from the supplied binary handle incrementally
+    let unpickleIncr pu binaryHandle =
+        match binaryHandle.BinaryReader with
+        |Some binReader -> 
+            let incrUnpickler = UnpickleIncremental {Reader = binReader}
+            IO.fromEffectful (fun _ -> fst <| runUnpickle (incrUnpickler) pu)
+        |None -> raise HandleDoesNotSupportReadingException
+
+    /// Uses the supplied pickler/unpickler pair to pickle the supplied data to the supplied binary handle incrementally
+    let pickleIncr pu binaryHandle value =
+        match binaryHandle.BinaryWriter with
+        |Some binWriter -> 
+            let incrPickler = PickleIncremental {Writer = binWriter}
+            IO.fromEffectful (fun _ -> 
+                match (runPickle (value, incrPickler) pu) with 
+                |PickleIncremental ps -> binWriter.Flush()
+                |_ -> invalidOp "A non-incremental binary pickler state was returned from an initially incremental pickler")
+        |None -> raise HandleDoesNotSupportReadingException
+        
 
