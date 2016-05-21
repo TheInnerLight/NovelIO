@@ -217,124 +217,124 @@ module BinaryPickler =
         wrap (Array.ofList, List.ofArray) (repeat pa n)
 
     /// A pickler/unpickler pair for bools
-    let pickleBool =
+    let boolPU =
         {
         Pickle = fun (b, s) -> pickleHelper (PickleConvertors.convFromBool) b s
         Unpickle = fun st -> unpickleHelper (PickleConvertors.convToBool) st
         }
 
     /// A pickler/unpickler pair for bytes
-    let pickleByte =
+    let bytePU =
         {
         Pickle = fun (b, s) -> pickleHelper (Array.singleton) b s
         Unpickle = fun st -> unpickleHelper (Array.item) st
         }
 
     /// A pickler/unpickler pair for int16s of the supplied endianness
-    let private pickleInt16E endianness =
+    let private int16PUE endianness =
         {
         Pickle = fun (i16, s) -> pickleHelper (PickleConvertors.convFromInt16 endianness) i16 s
         Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt16 endianness) st
         }
 
     /// A pickler/unpickler pair for int32s of the supplied endianness
-    let private pickleInt32E endianness =
+    let private int32PUE endianness =
         {
         Pickle = fun (i32, s) -> pickleHelper (PickleConvertors.convFromInt32 endianness) i32 s
         Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt32 endianness) st
         }
 
     /// A pickler/unpickler pair for int64s of the supplied endianness
-    let private pickleInt64E endianness =
+    let private int64PUE endianness =
         {
         Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromInt64 endianness) i64 s
         Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt64 endianness) st
         }
 
     /// A pickler/unpickler pair for float32s of the supplied endianness
-    let private pickleFloat32E endianness =
+    let private float32PUE endianness =
         {
         Pickle = fun (f32, s) -> pickleHelper (PickleConvertors.convFromFloat32 endianness) f32 s
         Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat32 endianness) st
         }
 
     /// A pickler/unpickler pair for floats of the supplied endianness
-    let private pickleFloatE endianness =
+    let private floatPUE endianness =
         {
         Pickle = fun (f64, s) -> pickleHelper (PickleConvertors.convFromFloat64 endianness) f64 s
         Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat64 endianness) st
         }
 
     /// A pickler/unpickler pair for decimals of the supplied endianness
-    let private pickleDecimalE endianness =
+    let private decimalPUE endianness =
         let intAToDecimal (a : int[]) = System.Decimal a
-        wrap (intAToDecimal, System.Decimal.GetBits) (repeatA (pickleInt32E endianness) 4)
+        wrap (intAToDecimal, System.Decimal.GetBits) (repeatA (int32PUE endianness) 4)
 
     /// A pickler/unpickler pair for int16s in the Endianness of the current platform
-    let pickleInt16 = pickleInt16E (ByteOrder.systemEndianness)
+    let int16PU = int16PUE (ByteOrder.systemEndianness)
 
     /// A pickler/unpickler pair for int16s in Little Endian byte order
-    let pickleInt16LE = pickleInt16E LittleEndian
+    let int16PULtE = int16PUE LittleEndian
 
     /// A pickler/unpickler pair for int16s in Big Endian byte order
-    let pickleInt16BE = pickleInt16E BigEndian
+    let int16PUBgE = int16PUE BigEndian
 
     /// A pickler/unpickler pair for ints in the Endianness of the current platform
-    let pickleInt = pickleInt32E (ByteOrder.systemEndianness)
+    let intPU = int32PUE (ByteOrder.systemEndianness)
 
     /// A pickler/unpickler pair for ints in Little Endian byte order
-    let pickleIntLE = pickleInt32E LittleEndian
+    let intPULtE = int32PUE LittleEndian
 
     /// A pickler/unpickler pair for ints in Big Endian byte order
-    let pickleIntBE = pickleInt32E BigEndian
+    let intPUBgE = int32PUE BigEndian
 
     /// A pickler/unpickler pair for int64s in the Endianness of the current platform
-    let pickleInt64 = pickleInt64E (ByteOrder.systemEndianness)
+    let int64PU = int64PUE (ByteOrder.systemEndianness)
 
     /// A pickler/unpickler pair for int64s in Little Endian byte order
-    let pickleInt64LE = pickleInt64E LittleEndian
+    let int64PULtE = int64PUE LittleEndian
 
     /// A pickler/unpickler pair for int64s in Big Endian byte order
-    let pickleInt64BE = pickleInt64E BigEndian
+    let int64PUBgE = int64PUE BigEndian
 
     /// A pickler/unpickler pair for float32s in the Endianness of the current platform
-    let pickleFloat32 = pickleFloat32E (ByteOrder.systemEndianness)
+    let float32PU = float32PUE (ByteOrder.systemEndianness)
 
     /// A pickler/unpickler pair for float32s in Little Endian byte order
-    let pickleFloat32LE = pickleFloat32E LittleEndian
+    let float32PULtE = float32PUE LittleEndian
 
     /// A pickler/unpickler pair for float32s in Big Endian byte order
-    let pickleFloat32BE = pickleFloat32E BigEndian
+    let float32PUBgE = float32PUE BigEndian
 
     /// A pickler/unpickler pair for floats in the Endianness of the current platform
-    let pickleFloat = pickleFloatE (ByteOrder.systemEndianness)
+    let floatPU = floatPUE (ByteOrder.systemEndianness)
 
     /// A pickler/unpickler pair for floats in Little Endian byte order
-    let pickleFloatLE = pickleFloatE LittleEndian
+    let floatPULtE = floatPUE LittleEndian
 
     /// A pickler/unpickler pair for floats in Big Endian byte order
-    let pickleFloatBE = pickleFloatE BigEndian
+    let floatPUBgE = floatPUE BigEndian
 
     /// A pickler/unpickler pair for decimals in the Endianness of the current platform
-    let pickleDecimal = pickleDecimalE (ByteOrder.systemEndianness)
+    let decimalPU = decimalPUE (ByteOrder.systemEndianness)
 
     /// A pickler/unpickler pair for decimals in Little Endian byte order
-    let pickleDecimalLE = pickleDecimalE LittleEndian
+    let decimalPULtE = decimalPUE LittleEndian
 
     /// A pickler/unpickler pair for decimals in Big Endian byte order
-    let pickleDecimalBE = pickleDecimalE BigEndian
+    let decimalPUBgE = decimalPUE BigEndian
 
     /// Accepts a tagging function that partitions the type to be pickled into two sets, then accepts a pickler for each set
-    let alt tag ps = sequ tag pickleInt (flip Map.find <| ps)
+    let alt tag ps = sequ tag intPU (flip Map.find <| ps)
 
     /// A pickler/unpickler pair for lists
-    let list pa = sequ (List.length) pickleInt << repeat <| pa
+    let list pa = sequ (List.length) intPU << repeat <| pa
 
     /// A pickler/unpickler pair for arrays
-    let array pa = sequ (Array.length) pickleInt << repeatA <| pa
+    let array pa = sequ (Array.length) intPU << repeatA <| pa
 
     /// A pickler/unpickler pair for option types
-    let pickleOption pa = 
+    let optionPU pa = 
         let tag = function
             |Some _ -> 1
             |None -> 0
@@ -342,61 +342,61 @@ module BinaryPickler =
         alt tag map
 
     /// A pickler/unpickler pair for ASCII strings
-    let pickleAscii =
-        wrap (System.Text.Encoding.ASCII.GetString, System.Text.Encoding.ASCII.GetBytes) (array pickleByte)
+    let asciiPU =
+        wrap (System.Text.Encoding.ASCII.GetString, System.Text.Encoding.ASCII.GetBytes) (array bytePU)
 
     /// A pickler/unpickler pair for UTF-7 strings
-    let pickleUTF7 =
-        wrap (System.Text.Encoding.UTF7.GetString, System.Text.Encoding.UTF7.GetBytes) (array pickleByte)
+    let utf7PU =
+        wrap (System.Text.Encoding.UTF7.GetString, System.Text.Encoding.UTF7.GetBytes) (array bytePU)
 
     /// A pickler/unpickler pair for UTF-32 strings
-    let pickleEncoding encoding =
+    let encodingPU encoding =
         let pickleEncodingS byteCount = 
             {
             Pickle = fun (str, s) -> pickleHelper (PickleConvertors.Encodings.convFromEncoding encoding) str s
             Unpickle = fun st -> unpickleHelperSized byteCount (PickleConvertors.Encodings.convToEncoding encoding byteCount) st
             }
-        sequ (Encoding.byteLength encoding) pickleInt pickleEncodingS
+        sequ (Encoding.byteLength encoding) intPU pickleEncodingS
 
     /// A pickler/unpickler pair for UTF-8 strings
-    let pickleUTF8 =
-        pickleEncoding (Encoding.UTF8 {EmitIdentifier = false})
+    let utf8PU =
+        encodingPU (Encoding.UTF8 {EmitIdentifier = false})
 
     /// A pickler/unpickler pair for unicode strings in little endian byte order.  No byte order mark is encoded.
-    let pickleUTF16LE =
-        pickleEncoding (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = false})
+    let utf16PULtE =
+        encodingPU (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = false})
 
     /// A pickler/unpickler pair for unicode strings in big endian byte order.  No byte order mark is encoded.
-    let pickleUTF16BE =
-        pickleEncoding (Encoding.UTF16 {Endianness = BigEndian; ByteOrderMark = false})
+    let utf16PUBgE =
+        encodingPU (Encoding.UTF16 {Endianness = BigEndian; ByteOrderMark = false})
 
     /// A pickler/unpickler pair for UTF-32 strings in little endian byte order.  No byte order mark is encoded.
-    let pickleUtf32LE =
-        pickleEncoding (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = false})
+    let utf32PULtE =
+        encodingPU (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = false})
 
     /// A pickler/unpickler pair for UTF-32 strings in big endian byte order.  No byte order mark is encoded.
-    let pickleUtf32BE =
-        pickleEncoding (Encoding.UTF32 {Endianness = BigEndian; ByteOrderMark = false})
+    let utf32PUBgE =
+        encodingPU (Encoding.UTF32 {Endianness = BigEndian; ByteOrderMark = false})
 
     /// A pickler/unpickler pair for unicode strings which grabs a byte order mark to indicate endianness when unpickling.
     let private pickleUTFXWithEndiannessDetect defaultEnc matchingEndianPickler nonMatchingEndianPickler =
         let preamble = Encoding.preamble defaultEnc
-        sequ (fun _ -> preamble) (repeatA pickleByte (Array.length preamble)) (fun bytes ->
+        sequ (fun _ -> preamble) (repeatA bytePU (Array.length preamble)) (fun bytes ->
             match Array.forall2 (=) bytes (preamble) with
             |true -> matchingEndianPickler
             |false -> nonMatchingEndianPickler)
 
     /// A pickler/unpickler pair for UTF-8 strings with byte order mark.  This pickler is not sensitive to endianness but the byte order mark does serve as an identifier that the
     /// subsequent data is in UTF-8.
-    let pickleUTF8BOM = pickleUTFXWithEndiannessDetect (Encoding.UTF8 {EmitIdentifier = true}) pickleUTF8 pickleUTF8
+    let utf8PUBom = pickleUTFXWithEndiannessDetect (Encoding.UTF8 {EmitIdentifier = true}) utf8PU utf8PU
         
     /// A pickler/unpickler pair for unicode strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
     /// mark to indicate this is prepended.
-    let pickleUTF16 = pickleUTFXWithEndiannessDetect (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = true}) pickleUTF16LE pickleUTF16BE
+    let utf16PU = pickleUTFXWithEndiannessDetect (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = true}) utf16PULtE utf16PUBgE
 
     /// A pickler/unpickler pair for UTF-32 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
     /// mark to indicate this is prepended.
-    let pickleUTF32 = pickleUTFXWithEndiannessDetect (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = true}) pickleUtf32LE pickleUtf32BE
+    let utf32PU = pickleUTFXWithEndiannessDetect (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = true}) utf32PULtE utf32PUBgE
 
     /// Uses the supplied pickler/unpickler pair to unpickle the supplied byte array into some type 'a 
     let unpickle pu array =
