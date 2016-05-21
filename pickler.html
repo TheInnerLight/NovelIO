@@ -36,13 +36,14 @@
 <h1><a name="Pickler-Combinators" class="anchor" href="#Pickler-Combinators">Pickler Combinators</a></h1>
 <p>Pickler combinators are a concept described by Andrew J. Kennedy (<a href="http://research.microsoft.com/pubs/64036/picklercombinators.pdf).">http://research.microsoft.com/pubs/64036/picklercombinators.pdf).</a></p>
 <p>Their purpose is to present a serialisation/deserialiation mechanism that grants the developer explicit control over their serialisation format while avoiding the requirement to write lots of tedious, error prone code.</p>
-<p>Pickler/unpickler pair (hereafter called PU for brevity) primitives are used to handle simple data types and more complicated PUs can be constructed by combining these PUs using combinator functions.</p>
+<p>Pickler combinators operate by allowing the construction of pickler/unpickler pairs (hereafter called PUs from brevity) which excapsulate the serialisation process.</p>
+<p>PU primitives are provided to handle simple data types and more complicated PUs can be constructed by combining these PUs using combinator functions.</p>
 <h2><a name="PU-primitives" class="anchor" href="#PU-primitives">PU primitives</a></h2>
-<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs4', 6)" onmouseover="showTip(event, 'fs4', 6)" class="i">intPickler</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 7)" onmouseover="showTip(event, 'fs5', 7)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 8)" onmouseover="showTip(event, 'fs6', 8)" class="i">intPU</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs4', 6)" onmouseover="showTip(event, 'fs4', 6)" class="i">intPU</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 7)" onmouseover="showTip(event, 'fs5', 7)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 8)" onmouseover="showTip(event, 'fs6', 8)" class="i">intPU</span>
 
-<span class="k">let</span> <span onmouseout="hideTip(event, 'fs7', 9)" onmouseover="showTip(event, 'fs7', 9)" class="i">floatPickler</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 10)" onmouseover="showTip(event, 'fs5', 10)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs8', 11)" onmouseover="showTip(event, 'fs8', 11)" class="i">float32PU</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs7', 9)" onmouseover="showTip(event, 'fs7', 9)" class="i">floatPU</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 10)" onmouseover="showTip(event, 'fs5', 10)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs8', 11)" onmouseover="showTip(event, 'fs8', 11)" class="i">float32PU</span>
 
-<span class="k">let</span> <span onmouseout="hideTip(event, 'fs9', 12)" onmouseover="showTip(event, 'fs9', 12)" class="i">asciiPickler</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 13)" onmouseover="showTip(event, 'fs5', 13)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 14)" onmouseover="showTip(event, 'fs10', 14)" class="i">asciiPU</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs9', 12)" onmouseover="showTip(event, 'fs9', 12)" class="i">asciiPU</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 13)" onmouseover="showTip(event, 'fs5', 13)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 14)" onmouseover="showTip(event, 'fs10', 14)" class="i">asciiPU</span>
 </code></pre>
 <p>These are just a few examples of the primitive PUs defined in this library.  These PUs can be used to serialise (pickle) or deserialise (unpickle) values of the type associated with their PU to and from their binary representations.</p>
 <p>The beauty of pickler combinators is that the same PU can be used to transform data in both directions.</p>
@@ -108,12 +109,12 @@
 <div class="tip" id="fs1">namespace NovelFS</div>
 <div class="tip" id="fs2">namespace NovelFS.NovelIO</div>
 <div class="tip" id="fs3">namespace NovelFS.NovelIO.BinaryPickler</div>
-<div class="tip" id="fs4">val intPickler : BinaryPU&lt;int32&gt;<br /><br />Full name: Pickler.intPickler</div>
+<div class="tip" id="fs4">val intPU : BinaryPU&lt;int32&gt;<br /><br />Full name: Pickler.intPU</div>
 <div class="tip" id="fs5">Multiple items<br />module BinaryPickler<br /><br />from NovelFS.NovelIO.BinaryPickler<br /><br />--------------------<br />namespace NovelFS.NovelIO.BinaryPickler</div>
 <div class="tip" id="fs6">val intPU : BinaryPU&lt;int32&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.intPU</div>
-<div class="tip" id="fs7">val floatPickler : BinaryPU&lt;float32&gt;<br /><br />Full name: Pickler.floatPickler</div>
+<div class="tip" id="fs7">val floatPU : BinaryPU&lt;float32&gt;<br /><br />Full name: Pickler.floatPU</div>
 <div class="tip" id="fs8">val float32PU : BinaryPU&lt;float32&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.float32PU</div>
-<div class="tip" id="fs9">val asciiPickler : BinaryPU&lt;string&gt;<br /><br />Full name: Pickler.asciiPickler</div>
+<div class="tip" id="fs9">val asciiPU : BinaryPU&lt;string&gt;<br /><br />Full name: Pickler.asciiPU</div>
 <div class="tip" id="fs10">val asciiPU : BinaryPU&lt;string&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.asciiPU</div>
 <div class="tip" id="fs11">val bytes : byte []<br /><br />Full name: Pickler.bytes</div>
 <div class="tip" id="fs12">val pickle : pu:BinaryPU&lt;&#39;a&gt; -&gt; value:&#39;a -&gt; byte []<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.pickle</div>
