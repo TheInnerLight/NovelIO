@@ -72,7 +72,7 @@
 <span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 19)" onmouseover="showTip(event, 'fs12', 19)" class="f">readIntFromFile</span> <span onmouseout="hideTip(event, 'fs13', 20)" onmouseover="showTip(event, 'fs13', 20)" class="i">file</span> <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="i">io</span> {
         <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="i">bytes</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs16', 23)" onmouseover="showTip(event, 'fs16', 23)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 24)" onmouseover="showTip(event, 'fs17', 24)" class="f">readAllBytes</span> <span onmouseout="hideTip(event, 'fs13', 25)" onmouseover="showTip(event, 'fs13', 25)" class="i">file</span>
-        <span class="k">return</span> <span onmouseout="hideTip(event, 'fs18', 26)" onmouseover="showTip(event, 'fs18', 26)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs19', 27)" onmouseover="showTip(event, 'fs19', 27)" class="f">unpickle</span> (<span onmouseout="hideTip(event, 'fs18', 28)" onmouseover="showTip(event, 'fs18', 28)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 29)" onmouseover="showTip(event, 'fs20', 29)" class="i">pickleInt32</span>) <span onmouseout="hideTip(event, 'fs15', 30)" onmouseover="showTip(event, 'fs15', 30)" class="i">bytes</span>
+        <span class="k">return</span> <span onmouseout="hideTip(event, 'fs18', 26)" onmouseover="showTip(event, 'fs18', 26)" class="t">BinaryPickler</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs19', 27)" onmouseover="showTip(event, 'fs19', 27)" class="f">unpickle</span> (<span onmouseout="hideTip(event, 'fs18', 28)" onmouseover="showTip(event, 'fs18', 28)" class="i">BinaryPickler</span><span class="o">.</span><span class="i">pickleInt32</span>) <span onmouseout="hideTip(event, 'fs15', 29)" onmouseover="showTip(event, 'fs15', 29)" class="i">bytes</span>
     }
 </code></pre>
 <p>It is worth looking at the type signatures of these functions.</p>
@@ -92,7 +92,7 @@
 <div class="tip" id="fs9">val pown : x:&#39;T -&gt; n:int -&gt; &#39;T (requires member get_One and member ( * ) and member ( / ))<br /><br />Full name: Microsoft.FSharp.Core.Operators.pown</div>
 <div class="tip" id="fs10">val cube : x:int -&gt; int<br /><br />Full name: Oopintro.cube</div>
 <div class="tip" id="fs11">namespace NovelFS.NovelIO.BinaryPickler</div>
-<div class="tip" id="fs12">val readIntFromFile : file:Filename -&gt; IO&lt;int32&gt;<br /><br />Full name: Oopintro.readIntFromFile</div>
+<div class="tip" id="fs12">val readIntFromFile : file:Filename -&gt; IO&lt;&#39;a&gt;<br /><br />Full name: Oopintro.readIntFromFile</div>
 <div class="tip" id="fs13">val file : Filename</div>
 <div class="tip" id="fs14">val io : IO.IOBuilder<br /><br />Full name: NovelFS.NovelIO.IOBuilders.io</div>
 <div class="tip" id="fs15">val bytes : byte []</div>
@@ -100,7 +100,6 @@
 <div class="tip" id="fs17">val readAllBytes : filename:Filename -&gt; IO&lt;byte []&gt;<br /><br />Full name: NovelFS.NovelIO.File.readAllBytes</div>
 <div class="tip" id="fs18">Multiple items<br />module BinaryPickler<br /><br />from NovelFS.NovelIO.BinaryPickler<br /><br />--------------------<br />namespace NovelFS.NovelIO.BinaryPickler</div>
 <div class="tip" id="fs19">val unpickle : pickler:BinaryPU&lt;&#39;a&gt; -&gt; array:byte array -&gt; &#39;a<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.unpickle</div>
-<div class="tip" id="fs20">val pickleInt32 : BinaryPU&lt;int32&gt;<br /><br />Full name: NovelFS.NovelIO.BinaryPickler.BinaryPickler.pickleInt32</div>
 
         </div>
         <div class="span3">

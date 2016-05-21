@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Console - NovelIO</title>
+    <title>ByteOrder - NovelIO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Phil Curzon"/>
@@ -35,12 +35,12 @@
 
 
 
-<h1>Console</h1>
+<h1>ByteOrder</h1>
 <p>
   <span>Namespace: NovelFS.NovelIO</span><br />
 </p>
 <div class="xmldoc">
-<p>Console functions</p>
+<p>Functions for handling byte order</p>
 
 </div>
 
@@ -55,19 +55,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
-            readKey 
+          <code onmouseout="hideTip(event, '1', 1)" onmouseover="showTip(event, '1', 1)">
+            isBigEndian endianness
           </code>
-          <div class="tip" id="3">
-            <strong>Signature:</strong> IO&lt;ConsoleKeyInfo&gt;<br />
+          <div class="tip" id="1">
+            <strong>Signature:</strong> endianness:Endianness -&gt; bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L340-340" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Definitions.fs#L128-128" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>An action that reads a key from the console</p>
+          <p>Returns true if the supplied endianness is big endian</p>
 
 
         </td>
@@ -75,19 +75,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '4', 4)" onmouseover="showTip(event, '4', 4)">
-            readLine 
+          <code onmouseout="hideTip(event, '2', 2)" onmouseover="showTip(event, '2', 2)">
+            systemEndianness 
           </code>
-          <div class="tip" id="4">
-            <strong>Signature:</strong> IO&lt;string&gt;<br />
+          <div class="tip" id="2">
+            <strong>Signature:</strong> Endianness<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L342-342" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Definitions.fs#L122-122" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Ac action that reads a line from the console</p>
+          <p>Gets the endianness of the current platform</p>
 
 
         </td>
