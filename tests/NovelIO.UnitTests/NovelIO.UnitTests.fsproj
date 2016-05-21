@@ -56,8 +56,8 @@
     <Compile Include="BinaryTests.fs" />
     <Compile Include="CombinatorTests.fs" />
     <Compile Include="FileTests.fs" />
-    <Compile Include="TextTests.fs" />
     <Compile Include="IOTests.fs" />
+    <Compile Include="PreludeTests.fs" />
     <Content Include="creationtimetest.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

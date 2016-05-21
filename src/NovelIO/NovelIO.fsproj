@@ -50,12 +50,15 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="BinaryPickler.fs" />
-    <Compile Include="BinaryParser.fs" />
-    <Compile Include="Definitions.fs" />
+    <Compile Include="Prelude.fs" />
+    <Compile Include="Helper.fs" />
+    <Compile Include="Encoding.fs" />
     <Compile Include="IO.fs" />
+    <Compile Include="BinaryPickler.fs" />
     <Compile Include="File.fs" />
     <Compile Include="TCP.fs" />
+    <Compile Include="Random.fs" />
+    <Compile Include="MemoryBuffer.fs" />
     <None Include="Scripts\load-references.fsx" />
     <None Include="Scripts\load-project.fsx" />
     <None Include="Scripts\load-references-debug.fsx" />

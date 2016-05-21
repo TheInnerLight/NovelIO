@@ -1,5 +1,5 @@
 ﻿(*
-   Copyright 2015 Philip Curzon
+   Copyright 2015-2016 Philip Curzon
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,15 +14,28 @@
    limitations under the License.
 *)
 
-namespace NovelFS.NovelIO.BinaryParser
+namespace NovelFS.NovelIO.BinaryPickler
+
+open NovelFS.NovelIO
 
 /// The attempted binary pickling exceeded the length of the supplied array
 exception PicklingExceededArrayLengthException of int * int
 
-type BinaryUnpicklerState = {Raw : byte array; Position : int}
-type BinaryPicklerState = {Raw : byte list}
+type private BinaryUnpicklerState = {Raw : byte array; Position : int; Endianness : Endianness}
+type private BinaryPicklerState = {Raw : byte list; Endianness : Endianness}
+type private IncrBinaryUnpicklerState = {Reader : System.IO.BinaryReader}
+type private IncrBinaryPicklerState = {Writer : System.IO.BinaryWriter}
 
-type BinaryPU<'a> = {Pickle : 'a * BinaryPicklerState -> BinaryPicklerState; Unpickle : BinaryUnpicklerState -> 'a * BinaryUnpicklerState}
+type private BUnpickleState =
+    |UnpickleComplete of BinaryUnpicklerState
+    |UnpickleIncremental of IncrBinaryUnpicklerState
+
+type private BPickleState =
+    |PickleComplete of BinaryPicklerState
+    |PickleIncremental of IncrBinaryPicklerState
+
+/// A pickler/unpickler pair for type 'a
+type BinaryPU<'a> = private {Pickle : 'a * BPickleState -> BPickleState; Unpickle : BUnpickleState -> 'a * BUnpickleState}
 
 /// Conversions functions
 module private PickleConvertors =
@@ -34,40 +47,87 @@ module private PickleConvertors =
             | :? System.ArgumentOutOfRangeException as aoex -> raise <| PicklingExceededArrayLengthException(pos, Array.length array)
             | :? System.ArgumentException as aex -> raise <| PicklingExceededArrayLengthException(pos, Array.length array)
 
+    let private flipForEndianness endianness arr =
+        match System.BitConverter.IsLittleEndian, endianness with
+        |true, BigEndian |false, LittleEndian -> Array.rev arr
+        |_ -> arr
+
     /// Convert a chunk of a byte array into an bool with exception checking
-    let convBool pos array = checkConversionException (fun arr -> System.BitConverter.ToBoolean(arr, pos)) pos array
+    let convToBool pos array =
+        let unchecked pos arr = System.BitConverter.ToBoolean(arr, pos)
+        checkConversionException (unchecked pos) pos array
+
     /// Convert a chunk of a byte array into an int16 with exception checking
-    let convInt16 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt16(arr, pos)) pos array
+    let convToInt16 endianness pos array = 
+        let unchecked pos arr = System.BitConverter.ToInt16(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+
     /// Convert a chunk of a byte array into an int32 with exception checking
-    let convInt32 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt32(arr, pos)) pos array
+    let convToInt32 endianness pos array = 
+        let unchecked pos arr = System.BitConverter.ToInt32(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+
     /// Convert a chunk of a byte array into an int64 with exception checking
-    let convInt64 pos array = checkConversionException (fun arr -> System.BitConverter.ToInt64(arr, pos)) pos array
+    let convToInt64 endianness pos array = 
+        let unchecked pos arr = System.BitConverter.ToInt64(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+
     /// Convert a chunk of a byte array into an float32 with exception checking
-    let convFloat32 pos array = checkConversionException (fun arr -> System.BitConverter.ToSingle(arr, pos)) pos array
+    let convToFloat32 endianness pos array = 
+        let unchecked pos arr = System.BitConverter.ToSingle(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+
     /// Convert a chunk of a byte array into an float64 with exception checking
-    let convFloat64 pos array = checkConversionException (fun arr -> System.BitConverter.ToDouble(arr, pos)) pos array
-    
+    let convToFloat64 endianness pos array = 
+        let unchecked pos arr = System.BitConverter.ToDouble(arr, pos)
+        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+
     /// Flips an array to produce a list in the opposite order
     let arrayFlipToList a =  Array.fold(fun lst it -> it :: lst) [] a
 
     /// Converts a bool to a byte list in reverse order
     let convFromBool (b : bool) = 
-        System.BitConverter.GetBytes(b) |> arrayFlipToList
+        System.BitConverter.GetBytes b 
+
     /// Converts an int16 to a byte list in reverse order
-    let convFromInt16 (i16 : int16) = 
-        System.BitConverter.GetBytes(i16) |> arrayFlipToList
+    let convFromInt16 endianness (i16 : int16) = 
+        flipForEndianness endianness <| System.BitConverter.GetBytes i16
+
     /// Converts an int32 to a byte list in reverse order
-    let convFromInt32 (i32 : int32) = 
-        System.BitConverter.GetBytes(i32) |> arrayFlipToList
+    let convFromInt32 endianness (i32 : int32) = 
+        flipForEndianness endianness <| System.BitConverter.GetBytes i32
+
     /// Converts an int64 to a byte list in reverse order
-    let convFromInt64 (i64 : int64) = 
-        System.BitConverter.GetBytes(i64) |> arrayFlipToList
+    let convFromInt64 endianness (i64 : int64) = 
+        flipForEndianness endianness <| System.BitConverter.GetBytes i64
+
     /// Converts an float32 to a byte list in reverse order
-    let convFromFloat32 (f32 : float32) = 
-        System.BitConverter.GetBytes(f32) |> arrayFlipToList
+    let convFromFloat32 endianness (f32 : float32) = 
+        flipForEndianness endianness <| System.BitConverter.GetBytes f32
+
     /// Converts an float64 to a byte list in reverse order  
-    let convFromFloat64 (f64 : float) = 
-        System.BitConverter.GetBytes(f64) |> arrayFlipToList   
+    let convFromFloat64 endianness (f64 : float) = 
+        flipForEndianness endianness <| System.BitConverter.GetBytes f64
+
+    /// Encoding conversion functions
+    module Encodings =
+        /// Convert a chunk of a byte array into a string with exception checking using the supplied .NET encoding
+        let private convToStringWithDotNetEncoding pos byteCount (encoding : System.Text.Encoding) array =
+            let len = Array.length <| encoding.GetPreamble()
+            let unchecked pos arr = encoding.GetString (arr, pos + len, byteCount)
+            checkConversionException (unchecked pos) pos array
+
+        /// Convert a string into a byte list in reverse order using the supplied .NET encoding
+        let private convFromStringWithDotNetEncoding (encoding : System.Text.Encoding) (str : string) =
+            Array.concat [encoding.GetPreamble(); encoding.GetBytes str]
+
+        /// Convert a chunk of a byte array into a string with exception checking using the supplied encoding
+        let convToEncoding encoding byteCount pos array =
+            convToStringWithDotNetEncoding pos byteCount (Encoding.createDotNetEncoding encoding) array
+
+        /// Convert a string into a byte list in reverse order using the supplied encoding
+        let convFromEncoding encoding str = 
+            convFromStringWithDotNetEncoding (Encoding.createDotNetEncoding encoding) str
 
 /// Provides functions for pickling binary data
 module BinaryPickler =
@@ -78,6 +138,29 @@ module BinaryPickler =
     let private runPickle (a, st) x =
         match x with
         |{Unpickle = _; Pickle = g} -> g (a, st)
+
+    /// Helper function that chooses between complete or incremental pickling
+    let private pickleHelper f b st =
+        match st with
+        |PickleComplete ps -> PickleComplete {ps with Raw = (PickleConvertors.arrayFlipToList << f <| b) @ ps.Raw}
+        |PickleIncremental ips -> 
+            ips.Writer.Write (f b)
+            st
+    /// Helper function that chooses between complete or incremental unpickling and accepts an arbitrary data-size
+    let private unpickleHelperSized size f st =
+        match st with
+        |UnpickleComplete ps -> 
+            let pos = ps.Position
+            let result = f pos (ps.Raw)
+            result, UnpickleComplete {ps with Position = pos + size}
+        |UnpickleIncremental ips ->
+            let result = f 0 (ips.Reader.ReadBytes size)
+            result, st
+
+    /// Helper function that chooses between complete or incremental unpickling and gets the size from the size of the data type
+    let private unpickleHelper (f : int -> byte array -> 'a) st =
+        unpickleHelperSized (sizeof<'a>) f st
+            
 
     /// Given a value of x, returns a pickler of x
     let lift x = {Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
@@ -133,120 +216,216 @@ module BinaryPickler =
     let repeatA pa n =
         wrap (Array.ofList, List.ofArray) (repeat pa n)
 
-    /// Pickles a byte
-    let pickleBool =
+    /// A pickler/unpickler pair for bools
+    let boolPU =
         {
-        Pickle = fun (b, s) -> {Raw = (PickleConvertors.convFromBool b) @ s.Raw}
-        Unpickle = fun st ->
-            let pos = st.Position
-            let result = PickleConvertors.convBool pos (st.Raw)
-            result, {st with Position = pos + sizeof<bool>}
+        Pickle = fun (b, s) -> pickleHelper (PickleConvertors.convFromBool) b s
+        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToBool) st
         }
 
-    /// Pickles a byte
-    let pickleByte =
+    /// A pickler/unpickler pair for bytes
+    let bytePU =
         {
-        Pickle = fun (b, s) -> {Raw = b :: s.Raw}
-        Unpickle = fun st ->
-            let pos = st.Position
-            let result = Array.item (pos) st.Raw
-            result, {st with Position = pos + sizeof<byte>}
+        Pickle = fun (b, s) -> pickleHelper (Array.singleton) b s
+        Unpickle = fun st -> unpickleHelper (Array.item) st
         }
 
-    /// Pickles an int16
-    let pickleInt16 =
+    /// A pickler/unpickler pair for int16s of the supplied endianness
+    let private int16PUE endianness =
         {
-        Pickle = fun (i16, s) -> {Raw = (PickleConvertors.convFromInt16 i16) @ s.Raw}
-        Unpickle = fun st ->
-            let pos = st.Position
-            let result = PickleConvertors.convInt16 pos (st.Raw)
-            result, {st with Position = pos + sizeof<int16>}
+        Pickle = fun (i16, s) -> pickleHelper (PickleConvertors.convFromInt16 endianness) i16 s
+        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt16 endianness) st
         }
 
-    /// Pickles an int32
-    let pickleInt32 =
+    /// A pickler/unpickler pair for int32s of the supplied endianness
+    let private int32PUE endianness =
         {
-        Pickle = fun (i32, s) -> {Raw = (PickleConvertors.convFromInt32 i32) @ s.Raw}
-        Unpickle = fun st ->
-            let pos = st.Position
-            let result = PickleConvertors.convInt32 pos (st.Raw)
-            result, {st with Position = pos + sizeof<int32>}
+        Pickle = fun (i32, s) -> pickleHelper (PickleConvertors.convFromInt32 endianness) i32 s
+        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt32 endianness) st
         }
 
-    /// Pickles an int64
-    let pickleInt64 =
+    /// A pickler/unpickler pair for int64s of the supplied endianness
+    let private int64PUE endianness =
         {
-        Pickle = fun (i64, s) -> {Raw = (PickleConvertors.convFromInt64 i64) @ s.Raw}
-        Unpickle = fun st ->
-            let pos = st.Position
-            let result = PickleConvertors.convInt64 pos (st.Raw)
-            result, {st with Position = pos + sizeof<int64>}
+        Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromInt64 endianness) i64 s
+        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt64 endianness) st
         }
 
-    /// Pickles a float32
-    let pickleFloat32 =
+    /// A pickler/unpickler pair for float32s of the supplied endianness
+    let private float32PUE endianness =
         {
-        Pickle = fun (f32, s) -> {Raw = (PickleConvertors.convFromFloat32 f32) @ s.Raw}
-        Unpickle = fun st ->
-            let pos = st.Position
-            let result = PickleConvertors.convFloat32 pos (st.Raw)
-            result, {st with Position = pos + sizeof<float32>}
+        Pickle = fun (f32, s) -> pickleHelper (PickleConvertors.convFromFloat32 endianness) f32 s
+        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat32 endianness) st
         }
 
-    /// Pickles a float
-    let pickleFloat =
+    /// A pickler/unpickler pair for floats of the supplied endianness
+    let private floatPUE endianness =
         {
-        Pickle = fun (f64, s) -> {Raw = (PickleConvertors.convFromFloat64 f64) @ s.Raw}
-        Unpickle = fun st ->
-            let pos = st.Position
-            let result = PickleConvertors.convFloat64 pos (st.Raw)
-            result, {st with Position = pos + sizeof<float>}
+        Pickle = fun (f64, s) -> pickleHelper (PickleConvertors.convFromFloat64 endianness) f64 s
+        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat64 endianness) st
         }
+
+    /// A pickler/unpickler pair for decimals of the supplied endianness
+    let private decimalPUE endianness =
+        let intAToDecimal (a : int[]) = System.Decimal a
+        wrap (intAToDecimal, System.Decimal.GetBits) (repeatA (int32PUE endianness) 4)
+
+    /// A pickler/unpickler pair for int16s in the Endianness of the current platform
+    let int16PU = int16PUE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair for int16s in Little Endian byte order
+    let int16LittleEPU = int16PUE LittleEndian
+
+    /// A pickler/unpickler pair for int16s in Big Endian byte order
+    let int16BigEPU = int16PUE BigEndian
+
+    /// A pickler/unpickler pair for ints in the Endianness of the current platform
+    let intPU = int32PUE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair for ints in Little Endian byte order
+    let intLittleEPU = int32PUE LittleEndian
+
+    /// A pickler/unpickler pair for ints in Big Endian byte order
+    let intBigEPU = int32PUE BigEndian
+
+    /// A pickler/unpickler pair for int64s in the Endianness of the current platform
+    let int64PU = int64PUE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair for int64s in Little Endian byte order
+    let int64LittleEPU = int64PUE LittleEndian
+
+    /// A pickler/unpickler pair for int64s in Big Endian byte order
+    let int64BigEPU = int64PUE BigEndian
+
+    /// A pickler/unpickler pair for float32s in the Endianness of the current platform
+    let float32PU = float32PUE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair for float32s in Little Endian byte order
+    let float32LittleEPU = float32PUE LittleEndian
+
+    /// A pickler/unpickler pair for float32s in Big Endian byte order
+    let float32BigEPU = float32PUE BigEndian
+
+    /// A pickler/unpickler pair for floats in the Endianness of the current platform
+    let floatPU = floatPUE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair for floats in Little Endian byte order
+    let floatLittleEPU = floatPUE LittleEndian
+
+    /// A pickler/unpickler pair for floats in Big Endian byte order
+    let floatBigEPU = floatPUE BigEndian
+
+    /// A pickler/unpickler pair for decimals in the Endianness of the current platform
+    let decimalPU = decimalPUE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair for decimals in Little Endian byte order
+    let decimalLittleEPU = decimalPUE LittleEndian
+
+    /// A pickler/unpickler pair for decimals in Big Endian byte order
+    let decimalBigEPU = decimalPUE BigEndian
 
     /// Accepts a tagging function that partitions the type to be pickled into two sets, then accepts a pickler for each set
-    let alt tag ps = sequ tag pickleInt32 (fun i -> Map.find i ps)
+    let alt tag ps = sequ tag intPU (flip Map.find <| ps)
 
-    /// Pickles a general list by prefixing with the length of the list
-    let list pa = sequ (List.length) pickleInt32 << repeat <| pa
+    /// A pickler/unpickler pair for lists
+    let list pa = sequ (List.length) intPU << repeat <| pa
 
-    /// Pickles a general array by prefixing with the length of the array
-    let array pa = sequ (Array.length) pickleInt32 << repeatA <| pa
+    /// A pickler/unpickler pair for arrays
+    let array pa = sequ (Array.length) intPU << repeatA <| pa
 
-    /// Pickles an option type
-    let pickleOption pa = 
+    /// A pickler/unpickler pair for option types
+    let optionPU pa = 
         let tag = function
             |Some _ -> 1
             |None -> 0
         let map = Map.ofList [(0, lift None); (1, wrap (Some, Option.get) pa)]
         alt tag map
 
-    /// Pickles an ASCII string
-    let pickleAscii =
-        wrap (System.Text.Encoding.ASCII.GetString, System.Text.Encoding.ASCII.GetBytes) (array pickleByte)
+    /// A pickler/unpickler pair for ASCII strings
+    let asciiPU =
+        wrap (System.Text.Encoding.ASCII.GetString, System.Text.Encoding.ASCII.GetBytes) (array bytePU)
 
-    /// Pickles a UTF-7 string
-    let pickleUTF7 =
-        wrap (System.Text.Encoding.UTF7.GetString, System.Text.Encoding.UTF7.GetBytes) (array pickleByte)
+    /// A pickler/unpickler pair for UTF-7 strings
+    let utf7PU =
+        wrap (System.Text.Encoding.UTF7.GetString, System.Text.Encoding.UTF7.GetBytes) (array bytePU)
 
-    /// Pickles a UTF-8 string
-    let pickleUTF8 =
-        wrap (System.Text.Encoding.UTF8.GetString, System.Text.Encoding.UTF8.GetBytes) (array pickleByte)
+    /// A pickler/unpickler pair for UTF-32 strings
+    let encodingPU encoding =
+        let pickleEncodingS byteCount = 
+            {
+            Pickle = fun (str, s) -> pickleHelper (PickleConvertors.Encodings.convFromEncoding encoding) str s
+            Unpickle = fun st -> unpickleHelperSized byteCount (PickleConvertors.Encodings.convToEncoding encoding byteCount) st
+            }
+        sequ (Encoding.byteLength encoding) intPU pickleEncodingS
 
-    /// Pickles a UTF-32 string
-    let pickleUTF32 =
-        wrap (System.Text.Encoding.UTF32.GetString, System.Text.Encoding.UTF32.GetBytes) (array pickleByte)
+    /// A pickler/unpickler pair for UTF-8 strings
+    let utf8PU =
+        encodingPU (Encoding.UTF8 {EmitIdentifier = false})
 
-    /// Pickles a decimal
-    let pickleDecimal =
-        let intAToDecimal (a : int[]) = System.Decimal a
-        wrap (intAToDecimal, System.Decimal.GetBits) (repeatA pickleInt32 4)
+    /// A pickler/unpickler pair for unicode strings in little endian byte order.  No byte order mark is encoded.
+    let utf16LittleEPU =
+        encodingPU (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = false})
 
-    /// Uses the supplied pickler to unpickle the supplied byte array into some type 'a 
-    let unpickle pickler array =
-        fst <| runUnpickle {Raw = array; Position = 0} pickler
+    /// A pickler/unpickler pair for unicode strings in big endian byte order.  No byte order mark is encoded.
+    let utf16BigEPU =
+        encodingPU (Encoding.UTF16 {Endianness = BigEndian; ByteOrderMark = false})
 
-    /// Uses the supplied pickler to pickle the supplied value into a byte array
-    let pickle pickler value =
-        (runPickle (value, {Raw = []}) pickler).Raw 
-        |> Seq.rev
-        |> Array.ofSeq
+    /// A pickler/unpickler pair for UTF-32 strings in little endian byte order.  No byte order mark is encoded.
+    let utf32LittleEPU =
+        encodingPU (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = false})
+
+    /// A pickler/unpickler pair for UTF-32 strings in big endian byte order.  No byte order mark is encoded.
+    let utf32BigEPU =
+        encodingPU (Encoding.UTF32 {Endianness = BigEndian; ByteOrderMark = false})
+
+    /// A pickler/unpickler pair for unicode strings which grabs a byte order mark to indicate endianness when unpickling.
+    let private pickleUTFXWithEndiannessDetect defaultEnc matchingEndianPickler nonMatchingEndianPickler =
+        let preamble = Encoding.preamble defaultEnc
+        sequ (fun _ -> preamble) (repeatA bytePU (Array.length preamble)) (fun bytes ->
+            match Array.forall2 (=) bytes (preamble) with
+            |true -> matchingEndianPickler
+            |false -> nonMatchingEndianPickler)
+
+    /// A pickler/unpickler pair for UTF-8 strings with byte order mark.  This pickler is not sensitive to endianness but the byte order mark does serve as an identifier that the
+    /// subsequent data is in UTF-8.
+    let utf8BomPU = pickleUTFXWithEndiannessDetect (Encoding.UTF8 {EmitIdentifier = true}) utf8PU utf8PU
+        
+    /// A pickler/unpickler pair for unicode strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
+    /// mark to indicate this is prepended.
+    let utf16PU = pickleUTFXWithEndiannessDetect (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = true}) utf16LittleEPU utf16BigEPU
+
+    /// A pickler/unpickler pair for UTF-32 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
+    /// mark to indicate this is prepended.
+    let utf32PU = pickleUTFXWithEndiannessDetect (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = true}) utf32LittleEPU utf32BigEPU
+
+    /// Uses the supplied pickler/unpickler pair to unpickle the supplied byte array into some type 'a 
+    let unpickle pu array =
+        fst <| runUnpickle (UnpickleComplete {Raw = array; Position = 0; Endianness = ByteOrder.systemEndianness}) pu
+
+    /// Uses the supplied pickler/unpickler pair to pickle the supplied value into a byte array
+    let pickle pu value =
+        let st = PickleComplete {Raw = []; Endianness = ByteOrder.systemEndianness}
+        match (runPickle (value, st) pu) with 
+        |PickleComplete ps -> ps.Raw |> Seq.rev |> Array.ofSeq
+        |_ -> invalidOp "A non-complete binary pickler state was returned from an initially complete pickler"
+
+    /// Uses the supplied pickler/unpickler pair to unpickle from the supplied binary handle incrementally
+    let unpickleIncr pu binaryHandle =
+        match binaryHandle.BinaryReader with
+        |Some binReader -> 
+            let incrUnpickler = UnpickleIncremental {Reader = binReader}
+            IO.fromEffectful (fun _ -> fst <| runUnpickle (incrUnpickler) pu)
+        |None -> raise HandleDoesNotSupportReadingException
+
+    /// Uses the supplied pickler/unpickler pair to pickle the supplied data to the supplied binary handle incrementally
+    let pickleIncr pu binaryHandle value =
+        match binaryHandle.BinaryWriter with
+        |Some binWriter -> 
+            let incrPickler = PickleIncremental {Writer = binWriter}
+            IO.fromEffectful (fun _ -> 
+                match (runPickle (value, incrPickler) pu) with 
+                |PickleIncremental ps -> binWriter.Flush()
+                |_ -> invalidOp "A non-incremental binary pickler state was returned from an initially incremental pickler")
+        |None -> raise HandleDoesNotSupportReadingException
+        
+

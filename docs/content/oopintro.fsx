@@ -55,14 +55,12 @@ let cube x = pown x 3
 2. readIntFromFile : A function that gets an int from a file.
 *)
 
-open NovelFS.NovelIO.BinaryParser
+open NovelFS.NovelIO.BinaryPickler
 
 let readIntFromFile file =
     io {
         let! bytes = File.readAllBytes file
-        match BinaryParser.run bytes (BinaryParser.parseInt32) with
-        |ParseSuccess flt -> return Some flt
-        |_ -> return None
+        return BinaryPickler.unpickle (BinaryPickler.pickleInt32) bytes
     }
 
 (**

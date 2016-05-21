@@ -1,5 +1,5 @@
 ﻿(*
-   Copyright 2015 Philip Curzon
+   Copyright 2015-2016 Philip Curzon
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -91,11 +91,42 @@ module PathDiscriminators =
 /// General functions of wide applicability
 [<AutoOpen>]
 module General =
+    /// Helper function that takes two arguments and throws away the second
     let const' x _ = x
+    /// When supplied with a function f, returns a new function that accepts the first and second arguments in the opposite order
     let flip f a b = f b a
+
+/// Specifies how the operating system should open a file
+[<RequireQualifiedAccess>]
+type FileMode =
+    /// Specifies that a new file should be created.  If the file already exists, an IOException will be thrown.
+    |CreateNew
+    /// Specifies that a new file should be created.  If the file already exists, it will be overwritten.
+    |Create
+    /// Specifies that an existing file should be opened.
+    |Open
+    /// Specifies that an existing file should be opened.  If the file does not exist, it will be created.
+    |OpenOrCreate
+    /// Specifies that an existing file should be opened but that, once opened, it should be truncated to zero bytes.
+    |Truncate
+    /// Specifies that an existing file should be opened and the end of the file sought.  If the file does not exist, it will be created.
+    |Append
+
+/// Defines the type of access to a file
+[<RequireQualifiedAccess>]
+type FileAccess =
+    /// Read access to a file
+    |Read
+    /// Write access to a file
+    |Write
+    /// Read and write access to a file
+    |ReadWrite
 
 /// A Handle that may support text being read from it and written to it
 type Handle = private {TextReader : TextReader option; TextWriter : TextWriter option}
+
+/// A Binary Handle that may support binary data being read from it or written to it
+type BinaryHandle = private {BinaryReader : BinaryReader option; BinaryWriter : BinaryWriter option}
 
 /// A TCP Server
 type TCPServer = private {TCPListener : Sockets.TcpListener}
@@ -103,19 +134,25 @@ type TCPServer = private {TCPListener : Sockets.TcpListener}
 /// A connected TCP Socket
 type TCPConnectedSocket = private {TCPConnectedSocket : System.Net.Sockets.Socket}
 
-module internal IOResult =
-    let withExceptionCheck f a =
-        try 
-            f a |> IOSuccess
-        with
-            | HandleDoesNotSupportReadingException -> HandleDoesNotSupportReading |> IOError
-            | HandleDoesNotSupportWritingException -> HandleDoesNotSupportWriting |> IOError
-            | :? EndOfStreamException as eose -> PastEndOfStream eose |> IOError
-            | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
-            | :? FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError
-            | :? PathTooLongException as ptle -> PathTooLong ptle |> IOError
-            | :? System.UnauthorizedAccessException as uaex -> UnauthourisedAccess uaex |> IOError
-            | :? IOException as ioex -> Other ioex |> IOError
+/// Defines possible endianness options
+type Endianness =
+    /// Big Endian
+    |BigEndian
+    /// Little Endian
+    |LittleEndian
 
+/// Functions for handling byte order
+module ByteOrder =
+    /// Gets the endianness of the current platform
+    let systemEndianness =
+        match System.BitConverter.IsLittleEndian with
+        |true -> LittleEndian
+        |false -> BigEndian
+
+    /// Returns true if the supplied endianness is big endian
+    let isBigEndian endianness =
+        match endianness with
+        |BigEndian -> true
+        |_ -> false
 
 
