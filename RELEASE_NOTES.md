@@ -1,4 +1,4 @@
-#### 0.1.0-alpha - 28/02/2016
+#### 0.1.0-alpha - 22/05/2016
 Initial IO functionality created
 Incorporated binary pickler with incremental and immediate execution
 Strongly versioned dependencies
