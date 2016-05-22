@@ -43,7 +43,7 @@ let description = "A library for purely functional IO in F#, implementing a Hask
 let authors = [ "Phil Curzon" ]
 
 // Tags for your project (for NuGet package)
-let tags = "F# IO"
+let tags = "fsharp io"
 
 // File system information
 let solutionFile  = "NovelIO.sln"
