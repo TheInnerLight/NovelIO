@@ -61,7 +61,7 @@
 </code></pre>
 <p>If we run these examples, we can note the different behaviour.</p>
 <p>In the first example <code>exmpl</code> represents the result of the user input from the console, we perform that side effect only once and print the same value to the console twice.</p>
-<p>In the second example <code>exmpl</code> represents the action of reading user input from the console and running it gives us the result.  Hence, in this case, the user is prompted for input twice and potentially different results are printed.</p>
+<p>In the second example <code>exmpl2</code> represents the action of reading user input from the console and running it gives us the result.  Hence, in this case, the user is prompted for input twice and potentially different results are printed.</p>
 <p><code>IO.run</code> is the only non-referentially transparent function exposed to the user in this library and is equivalent to <code>unsafePerformIO</code> in Haskell.  Since F# is fundamentally still an impure language, it is up to the developer how often they wish to make use of it.</p>
 <p>It is possible (albeit certainly not recommended!) to call <code>IO.run</code> on every small block of IO code.  It is also possible to call <code>IO.run</code> only once, in the main function, for an entire program: it is then possible to visualise the running of a program as the only effectful part of otherwise pure, referentially transparent code.</p>
 <h2><a name="Sequencing-IO-Actions" class="anchor" href="#Sequencing-IO-Actions">Sequencing IO Actions</a></h2>
