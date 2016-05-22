@@ -53,7 +53,7 @@ If we run these examples, we can note the different behaviour.
 
 In the first example `exmpl` represents the result of the user input from the console, we perform that side effect only once and print the same value to the console twice.
 
-In the second example `exmpl` represents the action of reading user input from the console and running it gives us the result.  Hence, in this case, the user is prompted for input twice and potentially different results are printed.
+In the second example `exmpl2` represents the action of reading user input from the console and running it gives us the result.  Hence, in this case, the user is prompted for input twice and potentially different results are printed.
 
 `IO.run` is the only non-referentially transparent function exposed to the user in this library and is equivalent to `unsafePerformIO` in Haskell.  Since F# is fundamentally still an impure language, it is up to the developer how often they wish to make use of it.
 
