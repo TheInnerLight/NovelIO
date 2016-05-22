@@ -33,11 +33,11 @@ let project = "NovelIO"
 
 // Short summary of the project
 // (used as description in AssemblyInfo and as a short summary for NuGet package)
-let summary = "F# Functional IO Library"
+let summary = "Functional IO Library"
 
 // Longer description of the project
 // (used as a description for NuGet package; line breaks are automatically cleaned up)
-let description = "A library for purely functional IO in F#, implementing a Haskell-like IO monad."
+let description = "A library for purely functional IO in .NET, implementing a Haskell-like IO monad."
 
 // List of author names (for NuGet package)
 let authors = [ "Phil Curzon" ]
