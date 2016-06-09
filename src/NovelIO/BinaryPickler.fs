@@ -212,6 +212,18 @@ module BinaryPickler =
             let pb = tuple2 pa (repeat pa (n-1))
             wrap ((fun (a, b) -> (a::b)),(fun (a::b) -> (a,b))) pb
 
+    /// Repeats a pickler until a condition is met
+    let rec repeatUntil cond pa =
+        let mapper = function 
+            |[] -> Unchecked.defaultof<'b>
+            |a::b -> a
+        let binder = function 
+            |x when cond(x) -> lift []
+            |x ->  
+                let pb = tuple2 (lift x) (repeatUntil cond pa)
+                wrap ((fun (a, b) -> (a::b)), (fun (a::b) -> (a,b))) pb
+        sequ (mapper) pa (binder)
+
     /// Repeats a pickler n times to create an array pickler
     let repeatA pa n =
         wrap (Array.ofList, List.ofArray) (repeat pa n)
@@ -333,6 +345,16 @@ module BinaryPickler =
     /// A pickler/unpickler pair for arrays
     let array pa = sequ (Array.length) intPU << repeatA <| pa
 
+    /// A pickler/unpickler pair for creating length prefixed strings from a char PU.
+    let lengthPrefixed (pa : BinaryPU<char>) =
+        let pArr = array pa
+        pArr |> wrap ((fun chrs -> System.String(chrs)), fun str -> str.ToCharArray()) 
+
+    /// A pickler/unpickler pair for creating null terminated strings from a char PU.
+    let nullTerminated (pa : BinaryPU<char>) : BinaryPU<string> =
+        let pNullTerm = repeatUntil ((=) '\000') pa
+        pNullTerm |> wrap (Array.ofList >> System.String, List.ofSeq) 
+        
     /// A pickler/unpickler pair for option types
     let optionPU pa = 
         let tag = function
@@ -341,9 +363,14 @@ module BinaryPickler =
         let map = Map.ofList [(0, lift None); (1, wrap (Some, Option.get) pa)]
         alt tag map
 
+    /// A pickler/unpickler pair for ASCII chars
+    let asciiCharPU =
+        let getByte (chr : char) = System.Text.Encoding.ASCII.GetBytes([|chr|]) |> Array.exactlyOne
+        let getChar (b : byte) = System.Text.Encoding.ASCII.GetChars([|b|]) |> Array.exactlyOne
+        wrap (getChar, getByte) (bytePU)
+
     /// A pickler/unpickler pair for ASCII strings
-    let asciiPU =
-        wrap (System.Text.Encoding.ASCII.GetString, System.Text.Encoding.ASCII.GetBytes) (array bytePU)
+    let asciiPU = lengthPrefixed asciiCharPU
 
     /// A pickler/unpickler pair for UTF-7 strings
     let utf7PU =

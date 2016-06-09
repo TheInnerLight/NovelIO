@@ -78,7 +78,7 @@ type ``Binary Pickler Tests`` =
         result = dec
 
     [<Property>]
-    static member ``Unpickle Ascii string from array of bytes`` (nStr : NonEmptyString) =
+    static member ``Unpickle length prefixed Ascii string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.ASCII.GetBytes str
         let bytes = 
@@ -87,6 +87,14 @@ type ``Binary Pickler Tests`` =
                  bytesWOPrefix]
         let stringPickler = BinaryPickler.asciiPU
         let result = BinaryPickler.unpickle stringPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Unpickle null terminated Ascii string from array of bytes`` (nStr : NonEmptyString) =
+        let str = (nStr.Get |> String.filter((<>) '\000')) 
+        let bytesWOPrefix = System.Text.Encoding.ASCII.GetBytes (str + string '\000')
+        let stringPickler = BinaryPickler.nullTerminated BinaryPickler.asciiCharPU
+        let result = BinaryPickler.unpickle stringPickler bytesWOPrefix
         result = str
 
     [<Property>]
@@ -382,7 +390,7 @@ type ``Incremental Binary Pickler Tests`` =
         } |> IO.run = dec
 
     [<Property>]
-    static member ``Unpickle Ascii string from array of bytes`` (nStr : NonEmptyString) =
+    static member ``Unpickle length prefixed Ascii string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.ASCII.GetBytes str
         let bytes = 
@@ -391,6 +399,17 @@ type ``Incremental Binary Pickler Tests`` =
                  bytesWOPrefix]
         let buff = MemoryBuffer.createFromByteArray bytes
         let stringPickler = BinaryPickler.asciiPU
+        io {
+            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
+            return! BinaryPickler.unpickleIncr stringPickler bHandle
+        } |> IO.run = str
+
+    [<Property>]
+    static member ``Unpickle null terminated Ascii string from array of bytes`` (nStr : NonEmptyString) =
+        let str = (nStr.Get |> String.filter((<>) '\000')) 
+        let bytes = System.Text.Encoding.ASCII.GetBytes (str + string '\000')
+        let stringPickler = BinaryPickler.nullTerminated BinaryPickler.asciiCharPU
+        let buff = MemoryBuffer.createFromByteArray bytes
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
             return! BinaryPickler.unpickleIncr stringPickler bHandle

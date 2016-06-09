@@ -88,3 +88,18 @@ type ``Binary Pickler Combinator Tests`` =
         let arrPickler = BinaryPickler.optionPU (BinaryPickler.intPU)
         let result = BinaryPickler.unpickle arrPickler bytes 
         result = opt
+
+    [<Property>]
+    static member ``Unpickle values until 0`` (lst : int list) =
+        let lst = List.filter ((<>) 0) lst @ [0]
+        let bytes = lst |> Array.ofList |> Array.map (System.BitConverter.GetBytes) |> Array.concat
+        let intConditionalPickler = BinaryPickler.repeatUntil ((=) 0) BinaryPickler.intPU
+        let result = BinaryPickler.unpickle intConditionalPickler bytes 
+        result @ [0] = lst
+
+    [<Property>]
+    static member ``Unpickle list values`` (lst : int list) =
+        let bytes = lst |> Array.ofList |> Array.map (System.BitConverter.GetBytes) |> Array.concat
+        let intConditionalPickler = BinaryPickler.repeat BinaryPickler.intPU (List.length lst)
+        let result = BinaryPickler.unpickle intConditionalPickler bytes 
+        result = lst
