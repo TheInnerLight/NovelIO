@@ -95,6 +95,8 @@ module General =
     let const' x _ = x
     /// When supplied with a function f, returns a new function that accepts the first and second arguments in the opposite order
     let flip f a b = f b a
+    /// Curried function for prepending to list, equivalent to x :: ys
+    let listCons x ys = x :: ys
 
 /// Specifies how the operating system should open a file
 [<RequireQualifiedAccess>]

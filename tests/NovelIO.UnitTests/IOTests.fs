@@ -29,3 +29,33 @@ type ``IO Unit Tests``() =
     [<Property>]
     static member ``fromEffectful of function which produces test data returns the test data when run`` (testData : obj) =
         IO.run <| IO.fromEffectful (fun _ -> testData) = testData
+
+    [<Property>]
+    static member ``mapM matches results of map when run on pure binding function`` (testData : int list) =
+        let test = IO.mapM (IO.return' << ((+)1)) testData
+        let result = List.ofSeq <| IO.run test
+        let mappedTestData = List.map ((+) 1) testData
+        result = mappedTestData
+
+    [<Property>]
+    static member ``mapM matches results of filter when run on pure binding function`` (testData : int list) =
+        let test = IO.filterM (IO.return' << ((>) 5)) testData
+        let result = List.ofSeq <| IO.run test
+        let filteredTestData = List.filter ((>) 5) testData
+        result = filteredTestData
+
+    [<Property>]
+    static member ``chooseM matches results of choose when run on pure binding function`` (testData : int list) =
+        let chooseFunc = function
+            |x when x > 5 -> Some x
+            |_ -> None
+        let test = IO.chooseM (IO.return' << chooseFunc) testData
+        let result = List.ofSeq <| IO.run test
+        let filteredTestData = List.choose (chooseFunc) testData
+        result = filteredTestData
+
+    [<Property>]
+    static member ``mapM does not create side effects until run`` (testData : obj list) =
+        let createTestFail = IO.fromEffectful (fun _ -> failwith "Side effect created")
+        let test = IO.mapM (fun _ -> createTestFail) testData
+        true
