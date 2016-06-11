@@ -180,68 +180,32 @@ module BinaryPickler =
     /// A pickler/unpickler pair (PU) for int16s in the Endianness of the current platform
     let int16PU = int16PUE (ByteOrder.systemEndianness)
 
-    /// A pickler/unpickler pair (PU) for int16s in Little Endian byte order
-    let int16LittleEPU = int16PUE LittleEndian
-
-    /// A pickler/unpickler pair (PU) for int16s in Big Endian byte order
-    let int16BigEPU = int16PUE BigEndian
-
     /// A pickler/unpickler pair (PU) for ints in the Endianness of the current platform
     let intPU = int32PUE (ByteOrder.systemEndianness)
-
-    /// A pickler/unpickler pair (PU) for ints in Little Endian byte order
-    let intLittleEPU = int32PUE LittleEndian
-
-    /// A pickler/unpickler pair (PU) for ints in Big Endian byte order
-    let intBigEPU = int32PUE BigEndian
 
     /// A pickler/unpickler pair (PU) for int64s in the Endianness of the current platform
     let int64PU = int64PUE (ByteOrder.systemEndianness)
 
-    /// A pickler/unpickler pair (PU) for int64s in Little Endian byte order
-    let int64LittleEPU = int64PUE LittleEndian
-
-    /// A pickler/unpickler pair (PU) for int64s in Big Endian byte order
-    let int64BigEPU = int64PUE BigEndian
-
     /// A pickler/unpickler pair (PU) for float32s in the Endianness of the current platform
     let float32PU = float32PUE (ByteOrder.systemEndianness)
-
-    /// A pickler/unpickler pair (PU) for float32s in Little Endian byte order
-    let float32LittleEPU = float32PUE LittleEndian
-
-    /// A pickler/unpickler pair (PU) for float32s in Big Endian byte order
-    let float32BigEPU = float32PUE BigEndian
 
     /// A pickler/unpickler pair (PU) for floats in the Endianness of the current platform
     let floatPU = floatPUE (ByteOrder.systemEndianness)
 
-    /// A pickler/unpickler pair (PU) for floats in Little Endian byte order
-    let floatLittleEPU = floatPUE LittleEndian
-
-    /// A pickler/unpickler pair (PU) for floats in Big Endian byte order
-    let floatBigEPU = floatPUE BigEndian
-
     /// A pickler/unpickler pair (PU) for decimals in the Endianness of the current platform
     let decimalPU = decimalPUE (ByteOrder.systemEndianness)
-
-    /// A pickler/unpickler pair (PU) for decimals in Little Endian byte order
-    let decimalLittleEPU = decimalPUE LittleEndian
-
-    /// A pickler/unpickler pair (PU) for decimals in Big Endian byte order
-    let decimalBigEPU = decimalPUE BigEndian
 
     /// Accepts a tagging function that partitions the type to be pickled/unpickled into two sets, then accepts a PU for each set.  This permits
     /// creating PUs that might pickle one of several alternatives
     let alt tag ps = sequ tag intPU (flip Map.find <| ps)
 
-    /// A pickler/unpickler pair (PU) for lists
+    /// A pickler/unpickler pair (PU) for lists which prefixes the length using the Endianness of the current platform
     let list pa = sequ (List.length) intPU << repeat <| pa
 
-    /// A pickler/unpickler pair (PU) for arrays
+    /// A pickler/unpickler pair (PU) for arrays which prefixes the length using the Endianness of the current platform
     let array pa = sequ (Array.length) intPU << repeatA <| pa
 
-    /// A pickler/unpickler pair (PU) for creating length prefixed strings from a char PU.
+    /// A pickler/unpickler pair (PU) for creating length prefixed strings from a char PU.  The length is prefixed in the Endianness of the current platform
     let lengthPrefixed (pa : BinaryPU<char>) =
         let pArr = array pa
         pArr |> wrap ((fun chrs -> System.String(chrs)), fun str -> str.ToCharArray()) 
@@ -269,10 +233,9 @@ module BinaryPickler =
     let asciiPU = lengthPrefixed asciiCharPU
 
     /// A pickler/unpickler pair (PU) for UTF-7 strings
-    let utf7PU =
-        wrap (System.Text.Encoding.UTF7.GetString, System.Text.Encoding.UTF7.GetBytes) (array bytePU)
+    let utf7PU = wrap (System.Text.Encoding.UTF7.GetString, System.Text.Encoding.UTF7.GetBytes) (array bytePU)
 
-    /// A pickler/unpickler pair (PU) for UTF-32 strings
+    /// Creates a pickler/unpickler pair (PU) for strings using the supplied encoding
     let encodingPU encoding =
         let pickleEncodingS byteCount = 
             {
@@ -282,24 +245,7 @@ module BinaryPickler =
         sequ (Encoding.byteLength encoding) intPU pickleEncodingS
 
     /// A pickler/unpickler pair (PU) for UTF-8 strings
-    let utf8PU =
-        encodingPU (Encoding.UTF8 {EmitIdentifier = false})
-
-    /// A pickler/unpickler pair (PU) for unicode strings in little endian byte order.  No byte order mark is encoded.
-    let utf16LittleEPU =
-        encodingPU (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = false})
-
-    /// A pickler/unpickler pair (PU) for unicode strings in big endian byte order.  No byte order mark is encoded.
-    let utf16BigEPU =
-        encodingPU (Encoding.UTF16 {Endianness = BigEndian; ByteOrderMark = false})
-
-    /// A pickler/unpickler pair (PU) for UTF-32 strings in little endian byte order.  No byte order mark is encoded.
-    let utf32LittleEPU =
-        encodingPU (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = false})
-
-    /// A pickler/unpickler pair (PU) for UTF-32 strings in big endian byte order.  No byte order mark is encoded.
-    let utf32BigEPU =
-        encodingPU (Encoding.UTF32 {Endianness = BigEndian; ByteOrderMark = false})
+    let utf8PU = encodingPU (Encoding.UTF8 {EmitIdentifier = false})
 
     /// A pickler/unpickler pair (PU) for unicode strings which grabs a byte order mark to indicate endianness when unpickling.
     let private pickleUTFXWithEndiannessDetect defaultEnc matchingEndianPickler nonMatchingEndianPickler =
@@ -313,13 +259,77 @@ module BinaryPickler =
     /// subsequent data is in UTF-8.
     let utf8BomPU = pickleUTFXWithEndiannessDetect (Encoding.UTF8 {EmitIdentifier = true}) utf8PU utf8PU
         
-    /// A pickler/unpickler pair (PU) for unicode strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
+    /// Primitive and combinator Pickler/Unpickler pairs that use Little Endian byte order
+    module LittleEndian =
+        /// A pickler/unpickler pair (PU) for int16s in Little Endian byte order
+        let int16PU = int16PUE LittleEndian
+        
+        /// A pickler/unpickler pair (PU) for ints in Little Endian byte order
+        let intPU = int32PUE LittleEndian
+
+        /// A pickler/unpickler pair (PU) for int64s in Little Endian byte order
+        let int64PU = int64PUE LittleEndian
+
+        /// A pickler/unpickler pair (PU) for float32s in Little Endian byte order
+        let float32PU = float32PUE LittleEndian
+
+        /// A pickler/unpickler pair (PU) for floats in Little Endian byte order
+        let floatLittleEPU = floatPUE LittleEndian
+
+        /// A pickler/unpickler pair (PU) for decimals in Little Endian byte order
+        let decimalLittleEPU = decimalPUE LittleEndian
+
+        /// A pickler/unpickler pair (PU) for UTF-16 strings in little endian byte order.  No byte order mark is encoded.
+        let utf16PU = encodingPU (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = false})
+
+        /// A pickler/unpickler pair (PU) for UTF-32 strings in little endian byte order.  No byte order mark is encoded.
+        let utf32PU = encodingPU (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = false})
+
+        /// A pickler/unpickler pair (PU) for lists which prefixes the length using in Little Endian byte order.
+        let list pa = sequ (List.length) intPU << repeat <| pa
+
+        /// A pickler/unpickler pair (PU) for arrays which prefixes the length using in Little Endian byte order.
+        let array pa = sequ (Array.length) intPU << repeatA <| pa
+
+    /// Primitive and combinator Pickler/Unpickler pairs that use Big Endian byte order
+    module BigEndian =
+        /// A pickler/unpickler pair (PU) for int16s in Big Endian byte order
+        let int16PU = int16PUE BigEndian
+        
+        /// A pickler/unpickler pair (PU) for ints in Big Endian byte order
+        let intPU = int32PUE BigEndian
+
+        /// A pickler/unpickler pair (PU) for int64s in Big Endian byte order
+        let int64PU = int64PUE BigEndian
+
+        /// A pickler/unpickler pair (PU) for floats in Big Endian byte order
+        let floatPU = floatPUE BigEndian
+
+        /// A pickler/unpickler pair (PU) for float32s in Big Endian byte order
+        let float32PU = float32PUE BigEndian
+
+        /// A pickler/unpickler pair (PU) for decimals in Big Endian byte order
+        let decimalPU = decimalPUE BigEndian
+
+        /// A pickler/unpickler pair (PU) for unicode strings in big endian byte order.  No byte order mark is encoded.
+        let utf16PU = encodingPU (Encoding.UTF16 {Endianness = BigEndian; ByteOrderMark = false})
+
+        /// A pickler/unpickler pair (PU) for UTF-32 strings in big endian byte order.  No byte order mark is encoded.
+        let utf32PU = encodingPU (Encoding.UTF32 {Endianness = BigEndian; ByteOrderMark = false})
+
+        /// A pickler/unpickler pair (PU) for lists which prefixes the length using in Big Endian byte order.
+        let list pa = sequ (List.length) intPU << repeat <| pa
+
+        /// A pickler/unpickler pair (PU) for arrays which prefixes the length using in Big Endian byte order.
+        let array pa = sequ (Array.length) intPU << repeatA <| pa
+
+    /// A pickler/unpickler pair (PU) for UTF-16 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
     /// mark to indicate this is prepended.
-    let utf16PU = pickleUTFXWithEndiannessDetect (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = true}) utf16LittleEPU utf16BigEPU
+    let utf16PU = pickleUTFXWithEndiannessDetect (Encoding.UTF16 {Endianness = LittleEndian; ByteOrderMark = true}) LittleEndian.utf16PU BigEndian.utf16PU
 
     /// A pickler/unpickler pair (PU) for UTF-32 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
     /// mark to indicate this is prepended.
-    let utf32PU = pickleUTFXWithEndiannessDetect (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = true}) utf32LittleEPU utf32BigEPU
+    let utf32PU = pickleUTFXWithEndiannessDetect (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = true}) LittleEndian.utf32PU BigEndian.utf16PU
 
     /// Uses the supplied pickler/unpickler pair (PU) to unpickle the supplied byte array into some type 'a 
     let unpickle pu array =
@@ -350,5 +360,3 @@ module BinaryPickler =
                 |PickleIncremental ps -> binWriter.Flush()
                 |_ -> invalidOp "A non-incremental binary pickler state was returned from an initially incremental pickler")
         |None -> raise HandleDoesNotSupportReadingException
-        
-
