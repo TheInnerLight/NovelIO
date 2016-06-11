@@ -249,8 +249,8 @@ module IO =
 
     /// Analogous to fold, except that the results are encapsulated within IO
     let foldM accFunc acc sequ =
-        fromEffectful (fun _ ->
-            Seq.fold (fun acc it -> run <| accFunc acc it) acc sequ)
+        let f' x k z = accFunc z x >>= k
+        Seq.foldBack (f') sequ return' acc
 
     /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
     let sequence seq =

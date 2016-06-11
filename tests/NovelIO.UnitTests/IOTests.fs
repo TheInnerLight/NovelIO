@@ -38,7 +38,14 @@ type ``IO Unit Tests``() =
         result = mappedTestData
 
     [<Property>]
-    static member ``mapM matches results of filter when run on pure binding function`` (testData : int list) =
+    static member ``foldM matches results of fold when run on pure binding function`` (testData : int list) =
+        let test = IO.foldM (fun acc b -> IO.return' <| acc - b) 0 testData
+        let result = IO.run test
+        let foldedTestData = List.fold ((-)) 0 testData
+        result = foldedTestData
+
+    [<Property>]
+    static member ``filterM matches results of filter when run on pure binding function`` (testData : int list) =
         let test = IO.filterM (IO.return' << ((>) 5)) testData
         let result = List.ofSeq <| IO.run test
         let filteredTestData = List.filter ((>) 5) testData
