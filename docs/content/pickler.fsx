@@ -40,13 +40,13 @@ The default PUs for each datatype, such as `intPU` will pickle in the endianness
 
 *)
 
-let intPULtE = BinaryPickler.int16LittleEPU // little endian int PU
+let littleEndianIntPU = BinaryPickler.LittleEndian.intPU // little endian int PU
 
-let utf32PUBgE = BinaryPickler.utf32BigEPU // big endian utf-32 PU
+let bigEndianUtf32PU = BinaryPickler.BigEndian.utf32PU // big endian utf-32 PU
 
 (**
 
-Little endian PUs are suffixed with `LittleEPU` and big endian PUs are suffixed with `BigEPU`.
+Little endian PUs are found in the `LittleEndian` submodule and big endian PUs are found in the `BigEndian` submodule.  Note that both of these modules also contain `list` and `array` combinator PUs, that's because these combinators prefix a length to the output and that length needs a defined endianness.
 
 ## Running PUs
 *)
