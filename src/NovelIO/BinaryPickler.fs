@@ -206,7 +206,7 @@ module BinaryPickler =
     let array pa = sequ (Array.length) intPU << repeatA <| pa
 
     /// A pickler/unpickler pair (PU) for creating length prefixed strings from a char PU.  The length is prefixed in the Endianness of the current platform
-    let lengthPrefixed (pa : BinaryPU<char>) =
+    let lengthPrefixed (pa : BinaryPU<char>) : BinaryPU<string> =
         let pArr = array pa
         pArr |> wrap ((fun chrs -> System.String(chrs)), fun str -> str.ToCharArray()) 
 
