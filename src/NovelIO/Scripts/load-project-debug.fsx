@@ -5,6 +5,7 @@
       "../Helper.fs"
       "../Encoding.fs"
       "../IO.fs"
+      "../PicklerInfrastructure.fs"
       "../BinaryPickler.fs"
       "../File.fs"
       "../TCP.fs"

@@ -22,6 +22,25 @@ open FsCheck
 open FsCheck.Xunit
 
 type ``Binary Pickler Combinator Tests`` =
+    
+    [<Property>]
+    static member ``Pickle values until 0 should create zero terminated list`` (lst : int list) =
+        let lst = List.filter ((<>) 0) lst
+        let intConditionalPickler = BinaryPickler.repeatUntil ((=) 0) BinaryPickler.intPU
+        let result = BinaryPickler.pickle intConditionalPickler lst 
+        let lst = List.filter ((<>) 0) lst @ [0]
+        let bytes = lst |> Array.ofList |> Array.map (System.BitConverter.GetBytes) |> Array.concat
+        result = bytes
+
+    [<Property>]
+    static member ``Pickle values while 0 should create zero terminated list`` (lst : int list) =
+        let lst = List.filter ((<>) 0) lst
+        let intConditionalPickler = BinaryPickler.repeatWhile ((<>) 0) BinaryPickler.intPU
+        let result = BinaryPickler.pickle intConditionalPickler lst 
+        let lst = List.filter ((<>) 0) lst @ [0]
+        let bytes = lst |> Array.ofList |> Array.map (System.BitConverter.GetBytes) |> Array.concat
+        result = bytes
+
     [<Property>]
     static member ``Unpickle tuple of ints from two ints should match the tuple of the two ints`` (i1 : int, i2: int) =
         let bytes =
@@ -90,7 +109,7 @@ type ``Binary Pickler Combinator Tests`` =
         result = opt
 
     [<Property>]
-    static member ``Unpickle values until 0`` (lst : int list) =
+    static member ``Unpickle values until 0 should match zero terminated list`` (lst : int list) =
         let lst = List.filter ((<>) 0) lst @ [0]
         let bytes = lst |> Array.ofList |> Array.map (System.BitConverter.GetBytes) |> Array.concat
         let intConditionalPickler = BinaryPickler.repeatUntil ((=) 0) BinaryPickler.intPU
@@ -98,8 +117,10 @@ type ``Binary Pickler Combinator Tests`` =
         result @ [0] = lst
 
     [<Property>]
-    static member ``Unpickle list values`` (lst : int list) =
+    static member ``Unpickle values while not 0 should match zero terminated list`` (lst : int list) =
+        let lst = List.filter ((<>) 0) lst @ [0]
         let bytes = lst |> Array.ofList |> Array.map (System.BitConverter.GetBytes) |> Array.concat
-        let intConditionalPickler = BinaryPickler.repeat BinaryPickler.intPU (List.length lst)
+        let intConditionalPickler = BinaryPickler.repeatWhile ((<>) 0) BinaryPickler.intPU
         let result = BinaryPickler.unpickle intConditionalPickler bytes 
-        result = lst
+        result @ [0] = lst
+
