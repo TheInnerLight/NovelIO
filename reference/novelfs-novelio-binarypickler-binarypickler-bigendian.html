@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>IOErrorResult - NovelIO</title>
+    <title>BigEndian - NovelIO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Phil Curzon"/>
@@ -35,36 +35,40 @@
 
 
 
-<h1>IOErrorResult</h1>
+<h1>BigEndian</h1>
 <p>
-  <span>Namespace: NovelFS.NovelIO</span><br />
+  <span>Namespace: NovelFS.NovelIO.BinaryPickler</span><br />
+  <span>Parent Module: <a href="novelfs-novelio-binarypickler-binarypickler.html">BinaryPickler</a></span>
 </p>
 <div class="xmldoc">
-<p>A set of possible failure modes for IO Operations</p>
+<p>Primitive and combinator Pickler/Unpickler pairs that use Big Endian byte order</p>
 
 </div>
-  <h3>Union Cases</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '204', 204)" onmouseover="showTip(event, '204', 204)">
-            DirectoryNotFound(...)
+          <code onmouseout="hideTip(event, '139', 139)" onmouseover="showTip(event, '139', 139)">
+            array pa
           </code>
-          <div class="tip" id="204">
-            <strong>Signature:</strong> DirectoryNotFoundException<br />
-                      </div>
+          <div class="tip" id="139">
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7751&gt; -&gt; BinaryPU&lt;&#39;?7751 []&gt;<br />
+                          <strong>Type parameters:</strong> '?7751          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L39-39" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L324-324" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>IO failure due to a directory not being found</p>
+          <p>A pickler/unpickler pair (PU) for arrays which prefixes the length using in Big Endian byte order.</p>
 
 
         </td>
@@ -72,19 +76,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '205', 205)" onmouseover="showTip(event, '205', 205)">
-            DriveNotFound(DriveNotFoundException)
+          <code onmouseout="hideTip(event, '140', 140)" onmouseover="showTip(event, '140', 140)">
+            decimalPU 
           </code>
-          <div class="tip" id="205">
-            <strong>Signature:</strong> DriveNotFoundException<br />
+          <div class="tip" id="140">
+            <strong>Signature:</strong> BinaryPU&lt;Decimal&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L41-41" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L312-312" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>IO failure due to a drive not being found</p>
+          <p>A pickler/unpickler pair (PU) for decimals in Big Endian byte order</p>
 
 
         </td>
@@ -92,19 +96,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '206', 206)" onmouseover="showTip(event, '206', 206)">
-            FileNotFound(FileNotFoundException)
+          <code onmouseout="hideTip(event, '141', 141)" onmouseover="showTip(event, '141', 141)">
+            float32PU 
           </code>
-          <div class="tip" id="206">
-            <strong>Signature:</strong> FileNotFoundException<br />
+          <div class="tip" id="141">
+            <strong>Signature:</strong> BinaryPU&lt;float32&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L43-43" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L309-309" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>IO failure due to a file not being found</p>
+          <p>A pickler/unpickler pair (PU) for float32s in Big Endian byte order</p>
 
 
         </td>
@@ -112,19 +116,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '207', 207)" onmouseover="showTip(event, '207', 207)">
-            HandleDoesNotSupportReading
+          <code onmouseout="hideTip(event, '142', 142)" onmouseover="showTip(event, '142', 142)">
+            floatPU 
           </code>
-          <div class="tip" id="207">
-            <strong>Signature:</strong> <br />
+          <div class="tip" id="142">
+            <strong>Signature:</strong> BinaryPU&lt;float&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L51-51" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L306-306" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>IO failure due to the supplied handle not supporting reading</p>
+          <p>A pickler/unpickler pair (PU) for floats in Big Endian byte order</p>
 
 
         </td>
@@ -132,19 +136,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '208', 208)" onmouseover="showTip(event, '208', 208)">
-            HandleDoesNotSupportWriting
+          <code onmouseout="hideTip(event, '143', 143)" onmouseover="showTip(event, '143', 143)">
+            int16PU 
           </code>
-          <div class="tip" id="208">
-            <strong>Signature:</strong> <br />
+          <div class="tip" id="143">
+            <strong>Signature:</strong> BinaryPU&lt;int16&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L53-53" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L297-297" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>IO failure due to the supplied handle not supporting writing</p>
+          <p>A pickler/unpickler pair (PU) for int16s in Big Endian byte order</p>
 
 
         </td>
@@ -152,19 +156,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '209', 209)" onmouseover="showTip(event, '209', 209)">
-            IncorrectFormat
+          <code onmouseout="hideTip(event, '144', 144)" onmouseover="showTip(event, '144', 144)">
+            int64PU 
           </code>
-          <div class="tip" id="209">
-            <strong>Signature:</strong> <br />
+          <div class="tip" id="144">
+            <strong>Signature:</strong> BinaryPU&lt;int64&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L57-57" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L303-303" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Incorrect format</p>
+          <p>A pickler/unpickler pair (PU) for int64s in Big Endian byte order</p>
 
 
         </td>
@@ -172,19 +176,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '210', 210)" onmouseover="showTip(event, '210', 210)">
-            Other(IOException)
+          <code onmouseout="hideTip(event, '145', 145)" onmouseover="showTip(event, '145', 145)">
+            intPU 
           </code>
-          <div class="tip" id="210">
-            <strong>Signature:</strong> IOException<br />
+          <div class="tip" id="145">
+            <strong>Signature:</strong> BinaryPU&lt;int32&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L37-37" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L300-300" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A generic IO failure</p>
+          <p>A pickler/unpickler pair (PU) for ints in Big Endian byte order</p>
 
 
         </td>
@@ -192,19 +196,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '211', 211)" onmouseover="showTip(event, '211', 211)">
-            PastEndOfStream(EndOfStreamException)
+          <code onmouseout="hideTip(event, '146', 146)" onmouseover="showTip(event, '146', 146)">
+            list pa
           </code>
-          <div class="tip" id="211">
-            <strong>Signature:</strong> EndOfStreamException<br />
-                      </div>
+          <div class="tip" id="146">
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7749&gt; -&gt; BinaryPU&lt;&#39;?7749 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7749          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L55-55" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L321-321" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>IO failure due to trying to read past the end of the stream</p>
+          <p>A pickler/unpickler pair (PU) for lists which prefixes the length using in Big Endian byte order.</p>
 
 
         </td>
@@ -212,19 +216,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '212', 212)" onmouseover="showTip(event, '212', 212)">
-            PathTooLong(PathTooLongException)
+          <code onmouseout="hideTip(event, '147', 147)" onmouseover="showTip(event, '147', 147)">
+            utf16PU 
           </code>
-          <div class="tip" id="212">
-            <strong>Signature:</strong> PathTooLongException<br />
+          <div class="tip" id="147">
+            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L45-45" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L315-315" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>IO failure due to a path being too long</p>
+          <p>A pickler/unpickler pair (PU) for unicode strings in big endian byte order.  No byte order mark is encoded.</p>
 
 
         </td>
@@ -232,59 +236,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '213', 213)" onmouseover="showTip(event, '213', 213)">
-            StreamClosed(ObjectDisposedException)
+          <code onmouseout="hideTip(event, '148', 148)" onmouseover="showTip(event, '148', 148)">
+            utf32PU 
           </code>
-          <div class="tip" id="213">
-            <strong>Signature:</strong> ObjectDisposedException<br />
+          <div class="tip" id="148">
+            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L49-49" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L318-318" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>IO failure due a stream being closed</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '214', 214)" onmouseover="showTip(event, '214', 214)">
-            StreamStateUnsupported(string)
-          </code>
-          <div class="tip" id="214">
-            <strong>Signature:</strong> string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L59-59" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>IO failure due to an action being attempted on a stream which does not support it</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '215', 215)" onmouseover="showTip(event, '215', 215)">
-            UnauthourisedAccess(...)
-          </code>
-          <div class="tip" id="215">
-            <strong>Signature:</strong> UnauthorizedAccessException<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L47-47" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>IO failure due to unathourised access to a resource</p>
+          <p>A pickler/unpickler pair (PU) for UTF-32 strings in big endian byte order.  No byte order mark is encoded.</p>
 
 
         </td>

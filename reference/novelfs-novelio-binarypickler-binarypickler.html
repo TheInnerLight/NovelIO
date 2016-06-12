@@ -45,6 +45,33 @@
 </div>
 
 <!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered module-list">
+    <thead>
+      <tr><td>Module</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="module-name">
+            <a href="novelfs-novelio-binarypickler-binarypickler-bigendian.html">BigEndian</a>
+          </td>
+          <td class="xmldoc"><p>Primitive and combinator Pickler/Unpickler pairs that use Big Endian byte order</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="novelfs-novelio-binarypickler-binarypickler-littleendian.html">LittleEndian</a>
+          </td>
+          <td class="xmldoc"><p>Primitive and combinator Pickler/Unpickler pairs that use Little Endian byte order</p>
+
+</td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
 
   <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
@@ -55,59 +82,20 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '101', 101)" onmouseover="showTip(event, '101', 101)">
+          <code onmouseout="hideTip(event, '103', 103)" onmouseover="showTip(event, '103', 103)">
             alt tag ps
           </code>
-          <div class="tip" id="101">
-            <strong>Signature:</strong> tag:(&#39;?7706 -&gt; int32) -&gt; ps:Map&lt;int32,BinaryPU&lt;&#39;?7706&gt;&gt; -&gt; BinaryPU&lt;&#39;?7706&gt;<br />
-                          <strong>Type parameters:</strong> '?7706          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L328-328" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Accepts a tagging function that partitions the type to be pickled into two sets, then accepts a pickler for each set</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '102', 102)" onmouseover="showTip(event, '102', 102)">
-            array pa
-          </code>
-          <div class="tip" id="102">
-            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7710&gt; -&gt; BinaryPU&lt;&#39;?7710 []&gt;<br />
-                          <strong>Type parameters:</strong> '?7710          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L334-334" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>A pickler/unpickler pair for arrays</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '103', 103)" onmouseover="showTip(event, '103', 103)">
-            asciiPU 
-          </code>
           <div class="tip" id="103">
-            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
-                      </div>
+            <strong>Signature:</strong> tag:(&#39;?7700 -&gt; int32) -&gt; ps:Map&lt;int32,BinaryPU&lt;&#39;?7700&gt;&gt; -&gt; BinaryPU&lt;&#39;?7700&gt;<br />
+                          <strong>Type parameters:</strong> '?7700          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L345-345" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L200-200" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for ASCII strings</p>
+          <p>Accepts a tagging function that partitions the type to be pickled/unpickled into two sets, then accepts a PU for each set.  This permits
+creating PUs that might pickle one of several alternatives</p>
 
 
         </td>
@@ -116,18 +104,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '104', 104)" onmouseover="showTip(event, '104', 104)">
-            boolPU 
+            array pa
           </code>
           <div class="tip" id="104">
-            <strong>Signature:</strong> BinaryPU&lt;bool&gt;<br />
-                      </div>
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7704&gt; -&gt; BinaryPU&lt;&#39;?7704 []&gt;<br />
+                          <strong>Type parameters:</strong> '?7704          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L220-220" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L206-206" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for bools</p>
+          <p>A pickler/unpickler pair (PU) for arrays which prefixes the length using the Endianness of the current platform</p>
 
 
         </td>
@@ -136,10 +124,10 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '105', 105)" onmouseover="showTip(event, '105', 105)">
-            bytePU 
+            asciiCharPU 
           </code>
           <div class="tip" id="105">
-            <strong>Signature:</strong> BinaryPU&lt;byte&gt;<br />
+            <strong>Signature:</strong> BinaryPU&lt;char&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -147,7 +135,7 @@
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for bytes</p>
+          <p>A pickler/unpickler pair (PU) for ASCII chars</p>
 
 
         </td>
@@ -156,18 +144,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '106', 106)" onmouseover="showTip(event, '106', 106)">
-            decimalBigEPU 
+            asciiPU 
           </code>
           <div class="tip" id="106">
-            <strong>Signature:</strong> BinaryPU&lt;Decimal&gt;<br />
+            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L325-325" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L233-233" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for decimals in Big Endian byte order</p>
+          <p>A pickler/unpickler pair (PU) for ASCII strings</p>
 
 
         </td>
@@ -176,18 +164,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '107', 107)" onmouseover="showTip(event, '107', 107)">
-            decimalLittleEPU 
+            boolPU 
           </code>
           <div class="tip" id="107">
-            <strong>Signature:</strong> BinaryPU&lt;Decimal&gt;<br />
+            <strong>Signature:</strong> BinaryPU&lt;bool&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L322-322" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L127-127" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for decimals in Little Endian byte order</p>
+          <p>A pickler/unpickler pair (PU) for bools</p>
 
 
         </td>
@@ -196,18 +184,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '108', 108)" onmouseover="showTip(event, '108', 108)">
-            decimalPU 
+            bytePU 
           </code>
           <div class="tip" id="108">
-            <strong>Signature:</strong> BinaryPU&lt;Decimal&gt;<br />
+            <strong>Signature:</strong> BinaryPU&lt;byte&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L319-319" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L134-134" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for decimals in the Endianness of the current platform</p>
+          <p>A pickler/unpickler pair (PU) for bytes</p>
 
 
         </td>
@@ -216,18 +204,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '109', 109)" onmouseover="showTip(event, '109', 109)">
-            encodingPU encoding
+            decimalPU 
           </code>
           <div class="tip" id="109">
-            <strong>Signature:</strong> encoding:Encoding -&gt; BinaryPU&lt;string&gt;<br />
+            <strong>Signature:</strong> BinaryPU&lt;Decimal&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L353-353" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L196-196" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for UTF-32 strings</p>
+          <p>A pickler/unpickler pair (PU) for decimals in the Endianness of the current platform</p>
 
 
         </td>
@@ -236,18 +224,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '110', 110)" onmouseover="showTip(event, '110', 110)">
-            float32BigEPU 
+            encodingPU encoding
           </code>
           <div class="tip" id="110">
-            <strong>Signature:</strong> BinaryPU&lt;float32&gt;<br />
+            <strong>Signature:</strong> encoding:Encoding -&gt; BinaryPU&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L307-307" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L239-239" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for float32s in Big Endian byte order</p>
+          <p>Creates a pickler/unpickler pair (PU) for strings using the supplied encoding</p>
 
 
         </td>
@@ -256,18 +244,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '111', 111)" onmouseover="showTip(event, '111', 111)">
-            float32LittleEPU 
+            float32PU 
           </code>
           <div class="tip" id="111">
             <strong>Signature:</strong> BinaryPU&lt;float32&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L304-304" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L190-190" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for float32s in Little Endian byte order</p>
+          <p>A pickler/unpickler pair (PU) for float32s in the Endianness of the current platform</p>
 
 
         </td>
@@ -276,18 +264,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '112', 112)" onmouseover="showTip(event, '112', 112)">
-            float32PU 
+            floatPU 
           </code>
           <div class="tip" id="112">
-            <strong>Signature:</strong> BinaryPU&lt;float32&gt;<br />
+            <strong>Signature:</strong> BinaryPU&lt;float&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L301-301" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L193-193" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for float32s in the Endianness of the current platform</p>
+          <p>A pickler/unpickler pair (PU) for floats in the Endianness of the current platform</p>
 
 
         </td>
@@ -296,18 +284,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '113', 113)" onmouseover="showTip(event, '113', 113)">
-            floatBigEPU 
+            int16PU 
           </code>
           <div class="tip" id="113">
-            <strong>Signature:</strong> BinaryPU&lt;float&gt;<br />
+            <strong>Signature:</strong> BinaryPU&lt;int16&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L316-316" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L181-181" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for floats in Big Endian byte order</p>
+          <p>A pickler/unpickler pair (PU) for int16s in the Endianness of the current platform</p>
 
 
         </td>
@@ -316,18 +304,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '114', 114)" onmouseover="showTip(event, '114', 114)">
-            floatLittleEPU 
+            int64PU 
           </code>
           <div class="tip" id="114">
-            <strong>Signature:</strong> BinaryPU&lt;float&gt;<br />
+            <strong>Signature:</strong> BinaryPU&lt;int64&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L313-313" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L187-187" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for floats in Little Endian byte order</p>
+          <p>A pickler/unpickler pair (PU) for int64s in the Endianness of the current platform</p>
 
 
         </td>
@@ -336,18 +324,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '115', 115)" onmouseover="showTip(event, '115', 115)">
-            floatPU 
+            intPU 
           </code>
           <div class="tip" id="115">
-            <strong>Signature:</strong> BinaryPU&lt;float&gt;<br />
+            <strong>Signature:</strong> BinaryPU&lt;int32&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L310-310" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L184-184" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for floats in the Endianness of the current platform</p>
+          <p>A pickler/unpickler pair (PU) for ints in the Endianness of the current platform</p>
 
 
         </td>
@@ -356,18 +344,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
-            int16BigEPU 
+            lengthPrefixed pa
           </code>
           <div class="tip" id="116">
-            <strong>Signature:</strong> BinaryPU&lt;int16&gt;<br />
+            <strong>Signature:</strong> pa:BinaryPU&lt;char&gt; -&gt; BinaryPU&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L280-280" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L209-209" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for int16s in Big Endian byte order</p>
+          <p>A pickler/unpickler pair (PU) for creating length prefixed strings from a char PU.  The length is prefixed in the Endianness of the current platform</p>
 
 
         </td>
@@ -376,18 +364,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '117', 117)" onmouseover="showTip(event, '117', 117)">
-            int16LittleEPU 
+            lift x
           </code>
           <div class="tip" id="117">
-            <strong>Signature:</strong> BinaryPU&lt;int16&gt;<br />
-                      </div>
+            <strong>Signature:</strong> x:&#39;?7658 -&gt; BinaryPU&lt;&#39;?7658&gt;<br />
+                          <strong>Type parameters:</strong> '?7658          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L277-277" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L58-58" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for int16s in Little Endian byte order</p>
+          <p>Given a value of x, returns a PU of x without affecting the underlying read/write states</p>
 
 
         </td>
@@ -396,18 +384,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '118', 118)" onmouseover="showTip(event, '118', 118)">
-            int16PU 
+            list pa
           </code>
           <div class="tip" id="118">
-            <strong>Signature:</strong> BinaryPU&lt;int16&gt;<br />
-                      </div>
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7702&gt; -&gt; BinaryPU&lt;&#39;?7702 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7702          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L274-274" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L203-203" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for int16s in the Endianness of the current platform</p>
+          <p>A pickler/unpickler pair (PU) for lists which prefixes the length using the Endianness of the current platform</p>
 
 
         </td>
@@ -416,18 +404,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '119', 119)" onmouseover="showTip(event, '119', 119)">
-            int64BigEPU 
+            nullTerminated pa
           </code>
           <div class="tip" id="119">
-            <strong>Signature:</strong> BinaryPU&lt;int64&gt;<br />
+            <strong>Signature:</strong> pa:BinaryPU&lt;char&gt; -&gt; BinaryPU&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L298-298" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L214-214" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for int64s in Big Endian byte order</p>
+          <p>A pickler/unpickler pair (PU) for creating null terminated strings from a char PU.</p>
 
 
         </td>
@@ -436,18 +424,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '120', 120)" onmouseover="showTip(event, '120', 120)">
-            int64LittleEPU 
+            optionPU pa
           </code>
           <div class="tip" id="120">
-            <strong>Signature:</strong> BinaryPU&lt;int64&gt;<br />
-                      </div>
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7708&gt; -&gt; BinaryPU&lt;&#39;?7708 option&gt;<br />
+                          <strong>Type parameters:</strong> '?7708          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L295-295" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L219-219" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for int64s in Little Endian byte order</p>
+          <p>A pickler/unpickler pair (PU) for option types</p>
 
 
         </td>
@@ -456,18 +444,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '121', 121)" onmouseover="showTip(event, '121', 121)">
-            int64PU 
+            pickle pu value
           </code>
           <div class="tip" id="121">
-            <strong>Signature:</strong> BinaryPU&lt;int64&gt;<br />
-                      </div>
+            <strong>Signature:</strong> pu:BinaryPU&lt;&#39;?7722&gt; -&gt; value:&#39;?7722 -&gt; byte []<br />
+                          <strong>Type parameters:</strong> '?7722          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L292-292" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L339-339" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for int64s in the Endianness of the current platform</p>
+          <p>Uses the supplied pickler/unpickler pair (PU) to pickle the supplied value into a byte array</p>
 
 
         </td>
@@ -476,18 +464,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '122', 122)" onmouseover="showTip(event, '122', 122)">
-            intBigEPU 
+            pickleIncr pu binaryHandle value
           </code>
           <div class="tip" id="122">
-            <strong>Signature:</strong> BinaryPU&lt;int32&gt;<br />
-                      </div>
+            <strong>Signature:</strong> pu:BinaryPU&lt;&#39;?7726&gt; -&gt; binaryHandle:BinaryHandle -&gt; value:&#39;?7726 -&gt; IO&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7726          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L289-289" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L354-354" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for ints in Big Endian byte order</p>
+          <p>Uses the supplied pickler/unpickler pair (PU) to pickle the supplied data to the supplied binary handle incrementally</p>
 
 
         </td>
@@ -496,18 +484,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '123', 123)" onmouseover="showTip(event, '123', 123)">
-            intLittleEPU 
+            repeat pa n
           </code>
           <div class="tip" id="123">
-            <strong>Signature:</strong> BinaryPU&lt;int32&gt;<br />
-                      </div>
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7678&gt; -&gt; n:int -&gt; BinaryPU&lt;&#39;?7678 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7678          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L286-286" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L100-100" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for ints in Little Endian byte order</p>
+          <p>Repeats a PU n times to create a list PU</p>
 
 
         </td>
@@ -516,18 +504,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '124', 124)" onmouseover="showTip(event, '124', 124)">
-            intPU 
+            repeatA pa n
           </code>
           <div class="tip" id="124">
-            <strong>Signature:</strong> BinaryPU&lt;int32&gt;<br />
-                      </div>
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7684&gt; -&gt; n:int -&gt; BinaryPU&lt;&#39;?7684 []&gt;<br />
+                          <strong>Type parameters:</strong> '?7684          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L283-283" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L124-124" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for ints in the Endianness of the current platform</p>
+          <p>Repeats a PU n times to create an array pickler</p>
 
 
         </td>
@@ -536,18 +524,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '125', 125)" onmouseover="showTip(event, '125', 125)">
-            lift x
+            repeatUntil cond pa
           </code>
           <div class="tip" id="125">
-            <strong>Signature:</strong> x:&#39;?7656 -&gt; BinaryPU&lt;&#39;?7656&gt;<br />
-                          <strong>Type parameters:</strong> '?7656          </div>
+            <strong>Signature:</strong> cond:(&#39;?7680 -&gt; bool) -&gt; pa:BinaryPU&lt;&#39;?7680&gt; -&gt; BinaryPU&lt;&#39;?7680 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7680          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L166-166" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L108-108" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Given a value of x, returns a pickler of x</p>
+          <p>Repeats a PU until a condition is met to create a list PU</p>
 
 
         </td>
@@ -556,18 +544,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '126', 126)" onmouseover="showTip(event, '126', 126)">
-            list pa
+            repeatWhile cond pa
           </code>
           <div class="tip" id="126">
-            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7708&gt; -&gt; BinaryPU&lt;&#39;?7708 list&gt;<br />
-                          <strong>Type parameters:</strong> '?7708          </div>
+            <strong>Signature:</strong> cond:(&#39;?7682 -&gt; bool) -&gt; pa:BinaryPU&lt;&#39;?7682&gt; -&gt; BinaryPU&lt;&#39;?7682 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7682          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L331-331" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L120-120" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for lists</p>
+          <p>Repeats a PU until a condition is met to create a list PU</p>
 
 
         </td>
@@ -576,18 +564,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '127', 127)" onmouseover="showTip(event, '127', 127)">
-            optionPU pa
+            sequ f pa k
           </code>
           <div class="tip" id="127">
-            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7712&gt; -&gt; BinaryPU&lt;&#39;?7712 option&gt;<br />
-                          <strong>Type parameters:</strong> '?7712          </div>
+            <strong>Signature:</strong> f:(&#39;b -&gt; &#39;a) -&gt; pa:BinaryPU&lt;&#39;a&gt; -&gt; k:(&#39;a -&gt; BinaryPU&lt;&#39;b&gt;) -&gt; BinaryPU&lt;&#39;b&gt;<br />
+                          <strong>Type parameters:</strong> 'b, 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L337-337" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L61-61" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for option types</p>
+          <p>Creates a sequential combination of PU</p>
 
 
         </td>
@@ -596,18 +584,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '128', 128)" onmouseover="showTip(event, '128', 128)">
-            pickle pu value
+            tuple2 pa pb
           </code>
           <div class="tip" id="128">
-            <strong>Signature:</strong> pu:BinaryPU&lt;&#39;?7729&gt; -&gt; value:&#39;?7729 -&gt; byte []<br />
-                          <strong>Type parameters:</strong> '?7729          </div>
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7663&gt; -&gt; pb:BinaryPU&lt;&#39;?7664&gt; -&gt; BinaryPU&lt;&#39;?7663 * &#39;?7664&gt;<br />
+                          <strong>Type parameters:</strong> '?7663, '?7664          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L406-406" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L76-76" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Uses the supplied pickler/unpickler pair to pickle the supplied value into a byte array</p>
+          <p>Combines two PU into a PU that pickles a tuple-2</p>
 
 
         </td>
@@ -616,18 +604,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '129', 129)" onmouseover="showTip(event, '129', 129)">
-            pickleIncr pu binaryHandle value
+            tuple3 pa pb pc
           </code>
           <div class="tip" id="129">
-            <strong>Signature:</strong> pu:BinaryPU&lt;&#39;?7733&gt; -&gt; binaryHandle:BinaryHandle -&gt; value:&#39;?7733 -&gt; IO&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7733          </div>
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7666&gt; -&gt; pb:BinaryPU&lt;&#39;?7667&gt; -&gt; pc:BinaryPU&lt;&#39;?7668&gt; -&gt; BinaryPU&lt;&#39;?7666 * &#39;?7667 * &#39;?7668&gt;<br />
+                          <strong>Type parameters:</strong> '?7666, '?7667, '?7668          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L421-421" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L81-81" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Uses the supplied pickler/unpickler pair to pickle the supplied data to the supplied binary handle incrementally</p>
+          <p>Combines three PU into a PU that pickles a tuple-3</p>
 
 
         </td>
@@ -636,18 +624,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '130', 130)" onmouseover="showTip(event, '130', 130)">
-            repeat pa n
+            tuple4 pa pb pc pd
           </code>
           <div class="tip" id="130">
-            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7676&gt; -&gt; n:int -&gt; BinaryPU&lt;&#39;?7676 list&gt;<br />
-                          <strong>Type parameters:</strong> '?7676          </div>
+            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7670&gt; -&gt; pb:BinaryPU&lt;&#39;?7671&gt; -&gt; pc:BinaryPU&lt;&#39;?7672&gt; -&gt; pd:BinaryPU&lt;&#39;?7673&gt; -&gt; BinaryPU&lt;&#39;?7670 * &#39;?7671 * &#39;?7672 * &#39;?7673&gt;<br />
+                          <strong>Type parameters:</strong> '?7670, '?7671, '?7672, '?7673          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L208-208" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L88-88" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Repeats a pickler n times to create a list pickler</p>
+          <p>Combines four PU into a PU that pickles a tuple-4</p>
 
 
         </td>
@@ -656,18 +644,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '131', 131)" onmouseover="showTip(event, '131', 131)">
-            repeatA pa n
+            unpickle pu array
           </code>
           <div class="tip" id="131">
-            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7678&gt; -&gt; n:int -&gt; BinaryPU&lt;&#39;?7678 []&gt;<br />
-                          <strong>Type parameters:</strong> '?7678          </div>
+            <strong>Signature:</strong> pu:BinaryPU&lt;&#39;a&gt; -&gt; array:byte array -&gt; &#39;a<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L216-216" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L335-335" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Repeats a pickler n times to create an array pickler</p>
+          <p>Uses the supplied pickler/unpickler pair (PU) to unpickle the supplied byte array into some type 'a</p>
 
 
         </td>
@@ -676,18 +664,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '132', 132)" onmouseover="showTip(event, '132', 132)">
-            sequ f pa k
+            unpickleIncr pu binaryHandle
           </code>
           <div class="tip" id="132">
-            <strong>Signature:</strong> f:(&#39;b -&gt; &#39;a) -&gt; pa:BinaryPU&lt;&#39;a&gt; -&gt; k:(&#39;a -&gt; BinaryPU&lt;&#39;b&gt;) -&gt; BinaryPU&lt;&#39;b&gt;<br />
-                          <strong>Type parameters:</strong> 'b, 'a          </div>
+            <strong>Signature:</strong> pu:BinaryPU&lt;&#39;?7724&gt; -&gt; binaryHandle:BinaryHandle -&gt; IO&lt;&#39;?7724&gt;<br />
+                          <strong>Type parameters:</strong> '?7724          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L169-169" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L346-346" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Creates a sequential combination of picklers</p>
+          <p>Uses the supplied pickler/unpickler pair (PU) to unpickle from the supplied binary handle incrementally</p>
 
 
         </td>
@@ -696,18 +684,19 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '133', 133)" onmouseover="showTip(event, '133', 133)">
-            tuple2 pa pb
+            utf16PU 
           </code>
           <div class="tip" id="133">
-            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7661&gt; -&gt; pb:BinaryPU&lt;&#39;?7662&gt; -&gt; BinaryPU&lt;&#39;?7661 * &#39;?7662&gt;<br />
-                          <strong>Type parameters:</strong> '?7661, '?7662          </div>
+            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L184-184" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L328-328" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Combines two picklers into a pickler that pickles a tuple-2</p>
+          <p>A pickler/unpickler pair (PU) for UTF-16 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
+mark to indicate this is prepended.</p>
 
 
         </td>
@@ -716,18 +705,19 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '134', 134)" onmouseover="showTip(event, '134', 134)">
-            tuple3 pa pb pc
+            utf32PU 
           </code>
           <div class="tip" id="134">
-            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7664&gt; -&gt; pb:BinaryPU&lt;&#39;?7665&gt; -&gt; pc:BinaryPU&lt;&#39;?7666&gt; -&gt; BinaryPU&lt;&#39;?7664 * &#39;?7665 * &#39;?7666&gt;<br />
-                          <strong>Type parameters:</strong> '?7664, '?7665, '?7666          </div>
+            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L189-189" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L332-332" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Combines three picklers into a pickler that pickles a tuple-3</p>
+          <p>A pickler/unpickler pair (PU) for UTF-32 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
+mark to indicate this is prepended.</p>
 
 
         </td>
@@ -736,18 +726,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '135', 135)" onmouseover="showTip(event, '135', 135)">
-            tuple4 pa pb pc pd
+            utf7PU 
           </code>
           <div class="tip" id="135">
-            <strong>Signature:</strong> pa:BinaryPU&lt;&#39;?7668&gt; -&gt; pb:BinaryPU&lt;&#39;?7669&gt; -&gt; pc:BinaryPU&lt;&#39;?7670&gt; -&gt; pd:BinaryPU&lt;&#39;?7671&gt; -&gt; BinaryPU&lt;&#39;?7668 * &#39;?7669 * &#39;?7670 * &#39;?7671&gt;<br />
-                          <strong>Type parameters:</strong> '?7668, '?7669, '?7670, '?7671          </div>
+            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L196-196" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L236-236" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Combines four picklers into a pickler that pickles a tuple-4</p>
+          <p>A pickler/unpickler pair (PU) for UTF-7 strings</p>
 
 
         </td>
@@ -756,200 +746,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '136', 136)" onmouseover="showTip(event, '136', 136)">
-            unpickle pu array
-          </code>
-          <div class="tip" id="136">
-            <strong>Signature:</strong> pu:BinaryPU&lt;&#39;a&gt; -&gt; array:byte array -&gt; &#39;a<br />
-                          <strong>Type parameters:</strong> 'a          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L402-402" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Uses the supplied pickler/unpickler pair to unpickle the supplied byte array into some type 'a</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '137', 137)" onmouseover="showTip(event, '137', 137)">
-            unpickleIncr pu binaryHandle
-          </code>
-          <div class="tip" id="137">
-            <strong>Signature:</strong> pu:BinaryPU&lt;&#39;?7731&gt; -&gt; binaryHandle:BinaryHandle -&gt; IO&lt;&#39;?7731&gt;<br />
-                          <strong>Type parameters:</strong> '?7731          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L413-413" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Uses the supplied pickler/unpickler pair to unpickle from the supplied binary handle incrementally</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '138', 138)" onmouseover="showTip(event, '138', 138)">
-            utf16BigEPU 
-          </code>
-          <div class="tip" id="138">
-            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L370-370" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>A pickler/unpickler pair for unicode strings in big endian byte order.  No byte order mark is encoded.</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '139', 139)" onmouseover="showTip(event, '139', 139)">
-            utf16LittleEPU 
-          </code>
-          <div class="tip" id="139">
-            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L366-366" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>A pickler/unpickler pair for unicode strings in little endian byte order.  No byte order mark is encoded.</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '140', 140)" onmouseover="showTip(event, '140', 140)">
-            utf16PU 
-          </code>
-          <div class="tip" id="140">
-            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L395-395" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>A pickler/unpickler pair for unicode strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
-mark to indicate this is prepended.</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '141', 141)" onmouseover="showTip(event, '141', 141)">
-            utf32BigEPU 
-          </code>
-          <div class="tip" id="141">
-            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L378-378" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>A pickler/unpickler pair for UTF-32 strings in big endian byte order.  No byte order mark is encoded.</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '142', 142)" onmouseover="showTip(event, '142', 142)">
-            utf32LittleEPU 
-          </code>
-          <div class="tip" id="142">
-            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L374-374" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>A pickler/unpickler pair for UTF-32 strings in little endian byte order.  No byte order mark is encoded.</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '143', 143)" onmouseover="showTip(event, '143', 143)">
-            utf32PU 
-          </code>
-          <div class="tip" id="143">
-            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L399-399" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>A pickler/unpickler pair for UTF-32 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
-mark to indicate this is prepended.</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '144', 144)" onmouseover="showTip(event, '144', 144)">
-            utf7PU 
-          </code>
-          <div class="tip" id="144">
-            <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L349-349" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>A pickler/unpickler pair for UTF-7 strings</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '145', 145)" onmouseover="showTip(event, '145', 145)">
             utf8BomPU 
           </code>
-          <div class="tip" id="145">
+          <div class="tip" id="136">
             <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L391-391" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L260-260" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for UTF-8 strings with byte order mark.  This pickler is not sensitive to endianness but the byte order mark does serve as an identifier that the
+          <p>A pickler/unpickler pair (PU) for UTF-8 strings with byte order mark.  This pickler is not sensitive to endianness but the byte order mark does serve as an identifier that the
 subsequent data is in UTF-8.</p>
 
 
@@ -958,19 +766,19 @@ subsequent data is in UTF-8.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '146', 146)" onmouseover="showTip(event, '146', 146)">
+          <code onmouseout="hideTip(event, '137', 137)" onmouseover="showTip(event, '137', 137)">
             utf8PU 
           </code>
-          <div class="tip" id="146">
+          <div class="tip" id="137">
             <strong>Signature:</strong> BinaryPU&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L362-362" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L248-248" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A pickler/unpickler pair for UTF-8 strings</p>
+          <p>A pickler/unpickler pair (PU) for UTF-8 strings</p>
 
 
         </td>
@@ -978,20 +786,20 @@ subsequent data is in UTF-8.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '147', 147)" onmouseover="showTip(event, '147', 147)">
+          <code onmouseout="hideTip(event, '138', 138)" onmouseover="showTip(event, '138', 138)">
             wrap (fab, fba) pa
           </code>
-          <div class="tip" id="147">
-            <strong>Signature:</strong> (fab:(&#39;?7673 -&gt; &#39;?7674) * fba:(&#39;?7674 -&gt; &#39;?7673)) -&gt; pa:BinaryPU&lt;&#39;?7673&gt; -&gt; BinaryPU&lt;&#39;?7674&gt;<br />
-                          <strong>Type parameters:</strong> '?7673, '?7674          </div>
+          <div class="tip" id="138">
+            <strong>Signature:</strong> (fab:(&#39;?7675 -&gt; &#39;?7676) * fba:(&#39;?7676 -&gt; &#39;?7675)) -&gt; pa:BinaryPU&lt;&#39;?7675&gt; -&gt; BinaryPU&lt;&#39;?7676&gt;<br />
+                          <strong>Type parameters:</strong> '?7675, '?7676          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L205-205" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/BinaryPickler.fs#L97-97" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           <p>When supplied with a method of transforming between two types reversably and a pickler of the first of those types, returns a
-pickler of the second type.</p>
+PU of the second type.</p>
 
 
         </td>
