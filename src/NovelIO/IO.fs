@@ -177,6 +177,9 @@ module IO =
     let (<*>) (f : IO<'a -> 'b>) (x : IO<'a>) = apply f x
     /// Removes a level of IO structure
     let join x = x >>= id
+    /// Takes a function which transforms two values in another value and two IO actions which produce the first two
+    /// values, producing a new IO action which produces the result of the function application
+    let lift2 f x1 x2 = f <!> x1 <*> x2
 
     // ----- GENERAL ----- //
           
@@ -222,38 +225,32 @@ module IO =
 
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
     let mapM mFunc sequ =
-        fromEffectful (fun _ ->
-            sequ
-            |> Seq.map (run << mFunc)
-            |> List.ofSeq
-            |> Seq.ofList)
+        let consF x ys = lift2 (listCons) (mFunc x) ys
+        Seq.foldBack (consF) sequ (return' [])
+        |> map (Seq.ofList)
 
     /// Map each element of a list to a monadic action of options, evaluate these actions from left to right and collect the results which are 'Some' as a sequence.
     let chooseM mFunc sequ =
-        fromEffectful (fun _ ->
-            sequ
-            |> Seq.choose (run << mFunc)
-            |> List.ofSeq
-            |> Seq.ofList)
+        let consF = function
+            |Some v -> listCons (v)
+            |None -> id
+        Seq.foldBack (fun x -> lift2 consF (mFunc x)) sequ (return' [])
+        |> map (Seq.ofList)
 
     /// Filters a sequence based upon a monadic predicate, collecting the results as a sequence
     let filterM pred sequ =
-        fromEffectful (fun _ ->
-            sequ
-            |> Seq.filter (run << pred)
-            |> List.ofSeq
-            |> Seq.ofList)
+        Seq.foldBack (fun x -> lift2 (fun flg -> if flg then (listCons x) else id) (pred x)) sequ (return' [])
+        |> map (Seq.ofList)
 
     /// As mapM but ignores the result.
     let iterM mFunc sequ =
-        fromEffectful (fun _ ->
-            sequ
-            |> Seq.iter (ignore << run << mFunc))
+        mapM (mFunc) sequ
+        |> map (ignore)
 
     /// Analogous to fold, except that the results are encapsulated within IO
     let foldM accFunc acc sequ =
-        fromEffectful (fun _ ->
-            Seq.fold (fun acc it -> run <| accFunc acc it) acc sequ)
+        let f' x k z = accFunc z x >>= k
+        Seq.foldBack (f') sequ return' acc
 
     /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
     let sequence seq =

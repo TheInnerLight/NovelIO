@@ -78,7 +78,7 @@ type ``Binary Pickler Tests`` =
         result = dec
 
     [<Property>]
-    static member ``Unpickle Ascii string from array of bytes`` (nStr : NonEmptyString) =
+    static member ``Unpickle length prefixed Ascii string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.ASCII.GetBytes str
         let bytes = 
@@ -87,6 +87,14 @@ type ``Binary Pickler Tests`` =
                  bytesWOPrefix]
         let stringPickler = BinaryPickler.asciiPU
         let result = BinaryPickler.unpickle stringPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Unpickle null terminated Ascii string from array of bytes`` (nStr : NonEmptyString) =
+        let str = (nStr.Get |> String.filter((<>) '\000')) 
+        let bytesWOPrefix = System.Text.Encoding.ASCII.GetBytes (str + string '\000')
+        let stringPickler = BinaryPickler.nullTerminated BinaryPickler.asciiCharPU
+        let result = BinaryPickler.unpickle stringPickler bytesWOPrefix
         result = str
 
     [<Property>]
@@ -122,7 +130,7 @@ type ``Binary Pickler Tests`` =
             Array.concat 
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
-        let stringPickler = BinaryPickler.utf16LittleEPU
+        let stringPickler = BinaryPickler.LittleEndian.utf16PU
         let result = BinaryPickler.unpickle stringPickler bytes
         result = str
 
@@ -135,7 +143,7 @@ type ``Binary Pickler Tests`` =
             Array.concat 
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
-        let stringPickler = BinaryPickler.utf16BigEPU
+        let stringPickler = BinaryPickler.BigEndian.utf16PU
         let result = BinaryPickler.unpickle stringPickler bytes
         result = str
 
@@ -147,7 +155,7 @@ type ``Binary Pickler Tests`` =
             Array.concat 
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
-        let stringPickler = BinaryPickler.utf32LittleEPU
+        let stringPickler = BinaryPickler.LittleEndian.utf32PU
         let result = BinaryPickler.unpickle stringPickler bytes
         result = str
 
@@ -159,7 +167,7 @@ type ``Binary Pickler Tests`` =
             Array.concat 
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
-        let stringPickler = BinaryPickler.utf32BigEPU
+        let stringPickler = BinaryPickler.BigEndian.utf32PU
         let result = BinaryPickler.unpickle stringPickler bytes
         result = str
 
@@ -251,7 +259,7 @@ type ``Binary Pickler Tests`` =
     [<Property>]
     static member ``Pickle Little Endian UTF-16 from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
-        let strPickler = BinaryPickler.utf16LittleEPU
+        let strPickler = BinaryPickler.LittleEndian.utf16PU
         let bytes = BinaryPickler.pickle strPickler str
         let result = BinaryPickler.unpickle strPickler bytes
         result = str
@@ -259,7 +267,7 @@ type ``Binary Pickler Tests`` =
     [<Property>]
     static member ``Pickle Big Endian UTF-16 from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
-        let strPickler = BinaryPickler.utf16BigEPU
+        let strPickler = BinaryPickler.BigEndian.utf16PU
         let bytes = BinaryPickler.pickle strPickler str
         let result = BinaryPickler.unpickle strPickler bytes
         result = str
@@ -275,7 +283,7 @@ type ``Binary Pickler Tests`` =
     [<Property>]
     static member ``Pickle Little Endian UTF-32 from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
-        let strPickler = BinaryPickler.utf32LittleEPU
+        let strPickler = BinaryPickler.LittleEndian.utf32PU
         let bytes = BinaryPickler.pickle strPickler str
         let result = BinaryPickler.unpickle strPickler bytes
         result = str
@@ -283,7 +291,7 @@ type ``Binary Pickler Tests`` =
     [<Property>]
     static member ``Pickle Big Endian UTF-32 from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
-        let strPickler = BinaryPickler.utf32BigEPU
+        let strPickler = BinaryPickler.BigEndian.utf32PU
         let bytes = BinaryPickler.pickle strPickler str
         let result = BinaryPickler.unpickle strPickler bytes
         result = str
@@ -382,7 +390,7 @@ type ``Incremental Binary Pickler Tests`` =
         } |> IO.run = dec
 
     [<Property>]
-    static member ``Unpickle Ascii string from array of bytes`` (nStr : NonEmptyString) =
+    static member ``Unpickle length prefixed Ascii string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.ASCII.GetBytes str
         let bytes = 
@@ -391,6 +399,17 @@ type ``Incremental Binary Pickler Tests`` =
                  bytesWOPrefix]
         let buff = MemoryBuffer.createFromByteArray bytes
         let stringPickler = BinaryPickler.asciiPU
+        io {
+            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
+            return! BinaryPickler.unpickleIncr stringPickler bHandle
+        } |> IO.run = str
+
+    [<Property>]
+    static member ``Unpickle null terminated Ascii string from array of bytes`` (nStr : NonEmptyString) =
+        let str = (nStr.Get |> String.filter((<>) '\000')) 
+        let bytes = System.Text.Encoding.ASCII.GetBytes (str + string '\000')
+        let stringPickler = BinaryPickler.nullTerminated BinaryPickler.asciiCharPU
+        let buff = MemoryBuffer.createFromByteArray bytes
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
             return! BinaryPickler.unpickleIncr stringPickler bHandle
@@ -436,7 +455,7 @@ type ``Incremental Binary Pickler Tests`` =
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
         let buff = MemoryBuffer.createFromByteArray bytes
-        let stringPickler = BinaryPickler.utf16LittleEPU
+        let stringPickler = BinaryPickler.LittleEndian.utf16PU
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
             return! BinaryPickler.unpickleIncr stringPickler bHandle
@@ -452,7 +471,7 @@ type ``Incremental Binary Pickler Tests`` =
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
         let buff = MemoryBuffer.createFromByteArray bytes
-        let stringPickler = BinaryPickler.utf16BigEPU
+        let stringPickler = BinaryPickler.BigEndian.utf16PU
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
             return! BinaryPickler.unpickleIncr stringPickler bHandle
@@ -467,7 +486,7 @@ type ``Incremental Binary Pickler Tests`` =
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
         let buff = MemoryBuffer.createFromByteArray bytes
-        let stringPickler = BinaryPickler.utf32LittleEPU
+        let stringPickler = BinaryPickler.LittleEndian.utf32PU
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
             return! BinaryPickler.unpickleIncr stringPickler bHandle
@@ -482,7 +501,7 @@ type ``Incremental Binary Pickler Tests`` =
                 [System.BitConverter.GetBytes (Array.length bytesWOPrefix);
                  bytesWOPrefix]
         let buff = MemoryBuffer.createFromByteArray bytes
-        let stringPickler = BinaryPickler.utf32BigEPU
+        let stringPickler = BinaryPickler.BigEndian.utf32PU
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
             return! BinaryPickler.unpickleIncr stringPickler bHandle
@@ -617,9 +636,9 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createExpandable()
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.utf16LittleEPU) bHandle str
+            do! BinaryPickler.pickleIncr (BinaryPickler.LittleEndian.utf16PU) bHandle str
             do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.utf16LittleEPU) bHandle
+            return! BinaryPickler.unpickleIncr (BinaryPickler.LittleEndian.utf16PU) bHandle
         } |> IO.run = str
 
     [<Property>]
@@ -628,9 +647,9 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createExpandable()
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.utf16BigEPU) bHandle str
+            do! BinaryPickler.pickleIncr (BinaryPickler.BigEndian.utf16PU) bHandle str
             do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.utf16BigEPU) bHandle
+            return! BinaryPickler.unpickleIncr (BinaryPickler.BigEndian.utf16PU) bHandle
         } |> IO.run = str
 
     [<Property>]
@@ -650,9 +669,9 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createExpandable()
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.utf32LittleEPU) bHandle str
+            do! BinaryPickler.pickleIncr (BinaryPickler.LittleEndian.utf32PU) bHandle str
             do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.utf32LittleEPU) bHandle
+            return! BinaryPickler.unpickleIncr (BinaryPickler.LittleEndian.utf32PU) bHandle
         } |> IO.run = str
 
     [<Property>]
@@ -661,9 +680,9 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createExpandable()
         io {
             let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.utf32BigEPU) bHandle str
+            do! BinaryPickler.pickleIncr (BinaryPickler.BigEndian.utf32PU) bHandle str
             do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.utf32BigEPU) bHandle
+            return! BinaryPickler.unpickleIncr (BinaryPickler.BigEndian.utf32PU) bHandle
         } |> IO.run = str
 
     [<Property>]

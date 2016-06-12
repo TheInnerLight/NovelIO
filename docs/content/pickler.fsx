@@ -40,13 +40,13 @@ The default PUs for each datatype, such as `intPU` will pickle in the endianness
 
 *)
 
-let intPULtE = BinaryPickler.int16LittleEPU // little endian int PU
+let littleEndianIntPU = BinaryPickler.LittleEndian.intPU // little endian int PU
 
-let utf32PUBgE = BinaryPickler.utf32BigEPU // big endian utf-32 PU
+let bigEndianUtf32PU = BinaryPickler.BigEndian.utf32PU // big endian utf-32 PU
 
 (**
 
-Little endian PUs are suffixed with `LittleEPU` and big endian PUs are suffixed with `BigEPU`.
+Little endian PUs are found in the `LittleEndian` submodule and big endian PUs are found in the `BigEndian` submodule.  Note that both of these modules also contain `list` and `array` combinator PUs, that's because these combinators prefix a length to the output and that length needs a defined endianness.
 
 ## Running PUs
 *)
@@ -120,6 +120,40 @@ let complexPickler =
 
 (**
 
+## Fixed length string encodings
+
+Fixed length strings can be encoded either in bulk, as a complete string, or character by character.  Take ASCII, for example:
+
+*)
+
+let asciiStringPU = BinaryPickler.asciiPU
+
+let asciiCharPU = BinaryPickler.asciiCharPU
+
+(**
+
+Char PUs can also be combined using the 'lengthPrefixed' and 'nullTerminated' combinators to build derived string PUs.
+
+*)
+
+let lengthPrefixedAscii = BinaryPickler.lengthPrefixed BinaryPickler.asciiCharPU
+
+let nullTermAscii = BinaryPickler.nullTerminated BinaryPickler.asciiCharPU
+
+(**
+
+The 'lengthPrefixed' combinator encodes the number of characters in the string before the list of characters while the 'nullTerminated' encodes a 'NULL' character as the final item in the string.
+
+## Variable length string encodings
+
+Variable length strings (such as UTF-8) cannot be encoded character by character so only the bulk string option exists.
+
+*)
+
+let utf8PU = BinaryPickler.utf8PU
+
+(**
+
 ## Incremental Pickling
 
 In many cases, especially when dealing with large binary files, it could be desirable to not have to convert back and forth between extremely large byte arrays, indeed this approach might not be viable due to available memory.
@@ -138,7 +172,9 @@ io {
 }
 
 (**
+
 Example of incremental pickling:
+
 *)
 
 io {

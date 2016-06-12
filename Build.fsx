@@ -334,15 +334,28 @@ Target "ReleaseDocs" (fun _ ->
 #load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
 open Octokit
 
+type GithubAuth =
+    |APIToken of string
+    |UsernamePW of string * string
+
+let createClientFromAuth = function
+    |APIToken str -> createClientWithToken str
+    |UsernamePW (user,pw) -> createClient user pw
+
 Target "Release" (fun _ ->
-    let user =
-        match getBuildParam "github-user" with
-        | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserInput "Username: "
-    let pw =
-        match getBuildParam "github-pw" with
-        | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserPassword "Password: "
+//    let user =
+//        match getBuildParam "github-user" with
+//        | s when not (String.IsNullOrWhiteSpace s) -> s
+//        | _ -> getUserInput "Username: "
+//    let pw =
+//        match getBuildParam "github-pw" with
+//        | s when not (String.IsNullOrWhiteSpace s) -> s
+//        | _ -> getUserPassword "Password: "
+    let auth =
+        match getBuildParam "github-token" with
+        | s when not (String.IsNullOrWhiteSpace s) -> APIToken s
+        | _ -> UsernamePW (getUserInput "Username: ", getUserInput "Password: ")
+
     let remote =
         Git.CommandHelper.getGitResult "" "remote -v"
         |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
@@ -357,7 +370,7 @@ Target "Release" (fun _ ->
     Branches.pushTag "" remote release.NugetVersion
 
     // release on github
-    createClient user pw
+    createClientFromAuth auth
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
     // TODO: |> uploadFile "PATH_TO_FILE"
     |> releaseDraft
