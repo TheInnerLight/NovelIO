@@ -1,3 +1,8 @@
+#### 0.2.0-alpha - 12/06/2016
+Added char PUs for fixed length string encodings
+Redesigned the naming structure of big endian / little endian PUs to make them easier to work with
+Made various improvements to the implementations of monadic functions in IO
+
 #### 0.1.1-alpha - 22/05/2016
 Removed test applications which should not be included
 
