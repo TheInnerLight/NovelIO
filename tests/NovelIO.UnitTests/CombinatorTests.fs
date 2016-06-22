@@ -42,6 +42,20 @@ type ``Binary Pickler Combinator Tests`` =
         result = bytes
 
     [<Property>]
+    static member ``Pickle length prefixed int64 should have prefix equal to sizeof<int64> preceeding the byte representation of the int64`` (lng : int64 ) =
+        let bytes = Array.concat [System.BitConverter.GetBytes(sizeof<int64>); System.BitConverter.GetBytes(lng) ]
+        let lPrefixInt64 = BinaryPickler.byteLengthPrefixed BinaryPickler.int64PU
+        let pBytes = BinaryPickler.pickle lPrefixInt64 lng
+        bytes = pBytes
+
+    [<Property>]
+    static member ``Pickle length prefixed triple of byte, int16 and int 64 should have prefix equal to sizeof<byte> + sizeof<int16> + sizeof<int64> preceeding the byte representation of the triple`` (b : byte, i16 : int16, lng : int64 ) =
+        let bytes = Array.concat [System.BitConverter.GetBytes(sizeof<byte> + sizeof<int16> + sizeof<int64>); [|b|]; System.BitConverter.GetBytes(i16); System.BitConverter.GetBytes(lng) ]
+        let lPrefixInt64 = BinaryPickler.byteLengthPrefixed (BinaryPickler.tuple3 BinaryPickler.bytePU BinaryPickler.int16PU BinaryPickler.int64PU)
+        let pBytes = BinaryPickler.pickle lPrefixInt64 (b, i16, lng)
+        bytes = pBytes
+
+    [<Property>]
     static member ``Unpickle tuple of ints from two ints should match the tuple of the two ints`` (i1 : int, i2: int) =
         let bytes =
             Array.concat 
@@ -123,4 +137,11 @@ type ``Binary Pickler Combinator Tests`` =
         let intConditionalPickler = BinaryPickler.repeatWhile ((<>) 0) BinaryPickler.intPU
         let result = BinaryPickler.unpickle intConditionalPickler bytes 
         result @ [0] = lst
+
+    [<Property>]
+    static member ``Unpickle length prefixed int64 should ignore first 4 bytes and return value of the int64`` (lng : int64) =
+        let bytes = Array.concat [(System.BitConverter.GetBytes sizeof<int64>); (System.BitConverter.GetBytes lng)]
+        let lPrefixInt64 = BinaryPickler.byteLengthPrefixed BinaryPickler.int64PU
+        let result = BinaryPickler.unpickle lPrefixInt64 bytes 
+        result = lng
 
