@@ -49,6 +49,8 @@ module internal PickleConvertors =
         |true, BigEndian |false, LittleEndian -> Array.rev arr
         |_ -> arr
 
+    let inline arrSub start count arr = Array.sub arr start count 
+
     /// Convert a chunk of a byte array into an bool with exception checking
     let convToBool pos array =
         let unchecked pos arr = System.BitConverter.ToBoolean(arr, pos)
@@ -56,28 +58,28 @@ module internal PickleConvertors =
 
     /// Convert a chunk of a byte array into an int16 with exception checking
     let convToInt16 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToInt16(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+        let unchecked pos arr = System.BitConverter.ToInt16(flipForEndianness endianness (arrSub pos sizeof<int16> arr), 0)
+        checkConversionException (unchecked pos) pos array
 
     /// Convert a chunk of a byte array into an int32 with exception checking
     let convToInt32 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToInt32(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+        let unchecked pos arr = System.BitConverter.ToInt32(flipForEndianness endianness (arrSub pos sizeof<int32> arr), 0)
+        checkConversionException (unchecked pos) pos array
 
     /// Convert a chunk of a byte array into an int64 with exception checking
     let convToInt64 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToInt64(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+        let unchecked pos arr = System.BitConverter.ToInt64(flipForEndianness endianness (arrSub pos sizeof<int64> arr), 0)
+        checkConversionException (unchecked pos) pos array
 
     /// Convert a chunk of a byte array into an float32 with exception checking
     let convToFloat32 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToSingle(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+        let unchecked pos arr = System.BitConverter.ToSingle(flipForEndianness endianness (arrSub pos sizeof<float32> arr), 0)
+        checkConversionException (unchecked pos) pos array
 
     /// Convert a chunk of a byte array into an float64 with exception checking
     let convToFloat64 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToDouble(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+        let unchecked pos arr = System.BitConverter.ToDouble(flipForEndianness endianness (arrSub pos sizeof<float> arr), 0)
+        checkConversionException (unchecked pos) pos array
 
     /// Flips an array to produce a list in the opposite order
     let arrayFlipToList a =  Array.fold(fun lst it -> it :: lst) [] a

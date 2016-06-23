@@ -53,6 +53,7 @@
   <ItemGroup>
     <None Include="Script.fsx" />
     <Content Include="packages.config" />
+    <Compile Include="Endian.fs" />
     <Compile Include="BinaryTests.fs" />
     <Compile Include="CombinatorTests.fs" />
     <Compile Include="FileTests.fs" />

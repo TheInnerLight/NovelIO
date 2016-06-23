@@ -37,6 +37,18 @@ type ``Binary Pickler Tests`` =
         result = i16
 
     [<Property>]
+    static member ``Unpickle int16 (little endian) from array of bytes`` (i16 : int16) =
+        let bytes = EndianHelper.convertToEndianness LittleEndian <| System.BitConverter.GetBytes i16
+        let result = BinaryPickler.unpickle BinaryPickler.LittleEndian.int16PU bytes
+        result = i16
+
+    [<Property>]
+    static member ``Unpickle int16 (big endian) from array of bytes`` (i16 : int16) =
+        let bytes = EndianHelper.convertToEndianness BigEndian <| System.BitConverter.GetBytes i16
+        let result = BinaryPickler.unpickle BinaryPickler.BigEndian.int16PU bytes
+        result = i16
+
+    [<Property>]
     static member ``Unpickle int from array of bytes`` (i32 : int32) =
         let bytes = System.BitConverter.GetBytes i32
         let int32Pickler = BinaryPickler.intPU
@@ -44,10 +56,34 @@ type ``Binary Pickler Tests`` =
         result = i32
 
     [<Property>]
+    static member ``Unpickle int32 (little endian) from array of bytes`` (i32 : int32) =
+        let bytes = EndianHelper.convertToEndianness LittleEndian <| System.BitConverter.GetBytes i32
+        let result = BinaryPickler.unpickle BinaryPickler.LittleEndian.intPU bytes
+        result = i32
+
+    [<Property>]
+    static member ``Unpickle int32 (big endian) from array of bytes`` (i32 : int32) =
+        let bytes = EndianHelper.convertToEndianness BigEndian <| System.BitConverter.GetBytes i32
+        let result = BinaryPickler.unpickle BinaryPickler.BigEndian.intPU bytes
+        result = i32
+
+    [<Property>]
     static member ``Unpickle int64 from array of bytes`` (i64 : int64) =
         let bytes = System.BitConverter.GetBytes i64
         let int64Pickler = BinaryPickler.int64PU
         let result = BinaryPickler.unpickle int64Pickler bytes
+        result = i64
+
+    [<Property>]
+    static member ``Unpickle int64 (little endian) from array of bytes`` (i64 : int64) =
+        let bytes = EndianHelper.convertToEndianness LittleEndian <| System.BitConverter.GetBytes i64
+        let result = BinaryPickler.unpickle BinaryPickler.LittleEndian.int64PU bytes
+        result = i64
+
+    [<Property>]
+    static member ``Unpickle int64 (big endian) from array of bytes`` (i64 : int64) =
+        let bytes = EndianHelper.convertToEndianness BigEndian <| System.BitConverter.GetBytes i64
+        let result = BinaryPickler.unpickle BinaryPickler.BigEndian.int64PU bytes
         result = i64
 
     [<Property>]
@@ -60,10 +96,42 @@ type ``Binary Pickler Tests`` =
         |_ -> result = flt
 
     [<Property>]
+    static member ``Unpickle float64 (little endian) from array of bytes`` (flt : float) =
+        let bytes = EndianHelper.convertToEndianness LittleEndian <| System.BitConverter.GetBytes flt
+        let result = BinaryPickler.unpickle BinaryPickler.LittleEndian.floatPU bytes
+        match result with
+        |x when System.Double.IsNaN(x) -> System.Double.IsNaN(flt)
+        |_ -> result = flt
+
+    [<Property>]
+    static member ``Unpickle float64 (big endian) from array of bytes`` (flt : float) =
+        let bytes = EndianHelper.convertToEndianness BigEndian <| System.BitConverter.GetBytes flt
+        let result = BinaryPickler.unpickle BinaryPickler.BigEndian.floatPU bytes
+        match result with
+        |x when System.Double.IsNaN(x) -> System.Double.IsNaN(flt)
+        |_ -> result = flt
+
+    [<Property>]
     static member ``Unpickle float32 from array of bytes`` (flt : float32) =
         let bytes = System.BitConverter.GetBytes flt
         let float32Pickler = BinaryPickler.float32PU
         let result = BinaryPickler.unpickle float32Pickler bytes
+        match result with
+        |x when System.Single.IsNaN(x) -> System.Single.IsNaN(flt)
+        |_ -> result = flt
+
+    [<Property>]
+    static member ``Unpickle float32 (little endian) from array of bytes`` (flt : float32) =
+        let bytes = EndianHelper.convertToEndianness LittleEndian <| System.BitConverter.GetBytes flt
+        let result = BinaryPickler.unpickle BinaryPickler.LittleEndian.float32PU bytes
+        match result with
+        |x when System.Single.IsNaN(x) -> System.Single.IsNaN(flt)
+        |_ -> result = flt
+
+    [<Property>]
+    static member ``Unpickle float32 (big endian) from array of bytes`` (flt : float32) =
+        let bytes = EndianHelper.convertToEndianness BigEndian <| System.BitConverter.GetBytes flt
+        let result = BinaryPickler.unpickle BinaryPickler.BigEndian.float32PU bytes
         match result with
         |x when System.Single.IsNaN(x) -> System.Single.IsNaN(flt)
         |_ -> result = flt

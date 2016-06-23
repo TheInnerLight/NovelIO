@@ -219,7 +219,7 @@ module BinaryPickler =
 
     /// Accepts a tagging function that partitions the type to be pickled/unpickled into two sets, then accepts a PU for each set.  This permits
     /// creating PUs that might pickle one of several alternatives
-    let alt tag ps = sequ tag intPU (flip Map.find <| ps)
+    let altE endianness tag ps = sequ tag (int32PUE endianness) (flip Map.find <| ps)
 
     /// A pickler/unpickler pair (PU) for lists which prefixes the length using the Endianness of the current platform
     let list pa = sequ (List.length) intPU << repeat <| pa
@@ -240,13 +240,16 @@ module BinaryPickler =
         let pNullTerm = repeatUntil ((=) '\000') pa
         pNullTerm |> wrap (Array.ofList >> System.String, List.ofSeq) 
         
-    /// A pickler/unpickler pair (PU) for option types
-    let optionPU pa = 
+    /// A pickler/unpickler pair (PU) for option types in the supplied endianness
+    let private optionalPUE endianness pa = 
         let tag = function
             |Some _ -> 1
             |None -> 0
         let map = Map.ofList [(0, lift None); (1, wrap (Some, Option.get) pa)]
-        alt tag map
+        altE endianness tag map
+
+    /// A pickler/unpickler pair (PU) for option types in the Endianness of the current platform
+    let optional pa = optionalPUE (ByteOrder.systemEndianness) pa
 
     /// A pickler/unpickler pair (PU) for ASCII chars
     let asciiCharPU =
@@ -299,7 +302,7 @@ module BinaryPickler =
         let float32PU = float32PUE LittleEndian
 
         /// A pickler/unpickler pair (PU) for floats in Little Endian byte order
-        let floatLittleEPU = floatPUE LittleEndian
+        let floatPU = floatPUE LittleEndian
 
         /// A pickler/unpickler pair (PU) for decimals in Little Endian byte order
         let decimalLittleEPU = decimalPUE LittleEndian
@@ -318,6 +321,9 @@ module BinaryPickler =
 
         /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure in Little Endian byte order
         let byteLengthPrefixed pu = byteLengthPrefixE LittleEndian pu
+
+        /// A pickler/unpickler pair (PU) for option types in the Endianness in Little Endian byte order
+        let optional pa = optionalPUE LittleEndian pa
 
     /// Primitive and combinator Pickler/Unpickler pairs that use Big Endian byte order
     module BigEndian =
@@ -353,6 +359,9 @@ module BinaryPickler =
 
         /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure in Big Endian byte order
         let byteLengthPrefixed pu = byteLengthPrefixE BigEndian pu
+
+        /// A pickler/unpickler pair (PU) for option types in the Endianness in Big Endian byte order
+        let optional pa = optionalPUE BigEndian pa
 
     /// A pickler/unpickler pair (PU) for UTF-16 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
     /// mark to indicate this is prepended.

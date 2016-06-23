@@ -21,7 +21,9 @@ open NovelFS.NovelIO.BinaryPickler
 open FsCheck
 open FsCheck.Xunit
 
-type ``Binary Pickler Combinator Tests`` =
+type ``Binary Pickler Combinator Tests``() =
+
+    
     
     [<Property>]
     static member ``Pickle values until 0 should create zero terminated list`` (lst : int list) =
@@ -118,7 +120,29 @@ type ``Binary Pickler Combinator Tests`` =
             match opt with
             |Some i -> Array.concat [System.BitConverter.GetBytes 1; System.BitConverter.GetBytes i]
             |None -> System.BitConverter.GetBytes 0
-        let arrPickler = BinaryPickler.optionPU (BinaryPickler.intPU)
+        let arrPickler = BinaryPickler.optional (BinaryPickler.intPU)
+        let result = BinaryPickler.unpickle arrPickler bytes 
+        result = opt
+
+    [<Property>]
+    static member ``Unpickle int option (little endian) should match 0 or 1 tagged int`` (opt : int option) =
+        let convLE arr = EndianHelper.convertToEndianness LittleEndian arr
+        let bytes =
+            match opt with
+            |Some i -> Array.concat [convLE <| System.BitConverter.GetBytes 1; convLE <| System.BitConverter.GetBytes i]
+            |None -> convLE <| System.BitConverter.GetBytes 0
+        let arrPickler = BinaryPickler.LittleEndian.optional (BinaryPickler.LittleEndian.intPU)
+        let result = BinaryPickler.unpickle arrPickler bytes 
+        result = opt
+
+    [<Property>]
+    static member ``Unpickle int option (big endian) should match 0 or 1 tagged int`` (opt : int option) =
+        let convBE arr = EndianHelper.convertToEndianness BigEndian arr
+        let bytes =
+            match opt with
+            |Some i -> Array.concat [convBE <| System.BitConverter.GetBytes 1; convBE <| System.BitConverter.GetBytes i]
+            |None -> convBE <| System.BitConverter.GetBytes 0
+        let arrPickler = BinaryPickler.BigEndian.optional (BinaryPickler.BigEndian.intPU)
         let result = BinaryPickler.unpickle arrPickler bytes 
         result = opt
 
