@@ -155,6 +155,13 @@ module BinaryPickler =
         Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt16 endianness) st
         }
 
+    /// A pickler/unpickler pair (PU) for uint16s of the supplied endianness
+    let private uint16PUE endianness =
+        {
+        Pickle = fun (i16, s) -> pickleHelper (PickleConvertors.convFromUInt16 endianness) i16 s
+        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt16 endianness) st
+        }
+
     /// A pickler/unpickler pair (PU) for int32s of the supplied endianness
     let private int32PUE endianness =
         {
@@ -162,11 +169,25 @@ module BinaryPickler =
         Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt32 endianness) st
         }
 
+    /// A pickler/unpickler pair (PU) for uint32s of the supplied endianness
+    let private uint32PUE endianness =
+        {
+        Pickle = fun (i32, s) -> pickleHelper (PickleConvertors.convFromUInt32 endianness) i32 s
+        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt32 endianness) st
+        }
+
     /// A pickler/unpickler pair (PU) for int64s of the supplied endianness
     let private int64PUE endianness =
         {
         Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromInt64 endianness) i64 s
         Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt64 endianness) st
+        }
+
+    /// A pickler/unpickler pair (PU) for uint64s of the supplied endianness
+    let private uint64PUE endianness =
+        {
+        Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromUInt64 endianness) i64 s
+        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt64 endianness) st
         }
 
     /// A pickler/unpickler pair (PU) for float32s of the supplied endianness
@@ -188,25 +209,48 @@ module BinaryPickler =
         let intAToDecimal (a : int[]) = System.Decimal a
         wrap (intAToDecimal, System.Decimal.GetBits) (repeatA (int32PUE endianness) 4)
 
-    /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure in the supplied endianness
-    let private byteLengthPrefixE endianness pu =
+    let private byteLengthPrefixE fPickle fConv endianness pu =
         {
         Pickle = fun (v, s) -> 
             pickleHelper (fun v' -> 
                 let arr = pickle pu v'
-                let byteLen = PickleConvertors.convFromInt32 endianness (Array.length arr)
+                let byteLen = fPickle endianness (fConv <| Array.length arr)
                 Array.concat [byteLen; arr]) v s
         Unpickle = fun st -> unpickleHelper (fun _ b -> unpickle pu (Array.skip 4 b)) st
         }
 
-    /// A pickler/unpickler pair (PU) for int16s in the Endianness of the current platform
+    /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure as a (signed) int in the supplied endianness
+    let private intByteLengthPrefixE endianness pu = byteLengthPrefixE PickleConvertors.convFromInt32 id endianness pu
+
+    /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure as an (unsigned) uint in the supplied endianness
+    let private uintByteLengthPrefixE endianness pu = byteLengthPrefixE PickleConvertors.convFromUInt32 uint32 endianness pu
+
+    /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure as a (signed) int16 in the supplied endianness
+    let private int16ByteLengthPrefixE endianness pu = byteLengthPrefixE PickleConvertors.convFromInt16 int16 endianness pu
+
+    /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure as an (unsigned) uint16 in the supplied endianness
+    let private uint16ByteLengthPrefixE endianness pu = byteLengthPrefixE PickleConvertors.convFromUInt16 uint16 endianness pu
+
+    /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure as am (unsigned) byte in the supplied endianness
+    let private byteByteLengthPrefixE endianness pu = byteLengthPrefixE (fun _ -> Array.singleton) byte endianness pu
+
+    /// A pickler/unpickler pair (PU) for (signed) int16s in the Endianness of the current platform
     let int16PU = int16PUE (ByteOrder.systemEndianness)
 
-    /// A pickler/unpickler pair (PU) for ints in the Endianness of the current platform
+    /// A pickler/unpickler pair (PU) for (unsigned) uint16s in the Endianness of the current platform
+    let uint16PU = uint16PUE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair (PU) for (signed) ints in the Endianness of the current platform
     let intPU = int32PUE (ByteOrder.systemEndianness)
 
-    /// A pickler/unpickler pair (PU) for int64s in the Endianness of the current platform
+    /// A pickler/unpickler pair (PU) for (unsigned) uints in the Endianness of the current platform
+    let uintPU = uint32PUE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair (PU) for (signed) int64s in the Endianness of the current platform
     let int64PU = int64PUE (ByteOrder.systemEndianness)
+
+    /// A pickler/unpickler pair (PU) for (unsigned) uint64s in the Endianness of the current platform
+    let uint64PU = uint64PUE (ByteOrder.systemEndianness)
 
     /// A pickler/unpickler pair (PU) for float32s in the Endianness of the current platform
     let float32PU = float32PUE (ByteOrder.systemEndianness)
@@ -228,7 +272,7 @@ module BinaryPickler =
     let array pa = sequ (Array.length) intPU << repeatA <| pa
 
     /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure  using the Endianness of the current platform
-    let byteLengthPrefixed pu = byteLengthPrefixE (ByteOrder.systemEndianness) pu
+    let byteLengthPrefixed pu = intByteLengthPrefixE (ByteOrder.systemEndianness) pu
 
     /// A pickler/unpickler pair (PU) for creating length prefixed strings from a char PU.  The length is prefixed in the Endianness of the current platform
     let lengthPrefixed (pa : BinaryPU<char>) : BinaryPU<string> =
@@ -289,14 +333,23 @@ module BinaryPickler =
         
     /// Primitive and combinator Pickler/Unpickler pairs that use Little Endian byte order
     module LittleEndian =
-        /// A pickler/unpickler pair (PU) for int16s in Little Endian byte order
+        /// A pickler/unpickler pair (PU) for (signed) int16s in Little Endian byte order
         let int16PU = int16PUE LittleEndian
+
+        /// A pickler/unpickler pair (PU) for (unsigned) uint16s in Little Endian byte order
+        let uint16PU = uint16PUE LittleEndian
         
-        /// A pickler/unpickler pair (PU) for ints in Little Endian byte order
+        /// A pickler/unpickler pair (PU) for (signed) ints in Little Endian byte order
         let intPU = int32PUE LittleEndian
 
-        /// A pickler/unpickler pair (PU) for int64s in Little Endian byte order
+        /// A pickler/unpickler pair (PU) for (unsigned) uint32s in Little Endian byte order
+        let uintPU = uint32PUE LittleEndian
+
+        /// A pickler/unpickler pair (PU) for (signed) int64s in Little Endian byte order
         let int64PU = int64PUE LittleEndian
+
+        /// A pickler/unpickler pair (PU) for (unsigned) uint64s in Little Endian byte order
+        let uint64PU = uint64PUE LittleEndian
 
         /// A pickler/unpickler pair (PU) for float32s in Little Endian byte order
         let float32PU = float32PUE LittleEndian
@@ -320,7 +373,7 @@ module BinaryPickler =
         let array pa = sequ (Array.length) intPU << repeatA <| pa
 
         /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure in Little Endian byte order
-        let byteLengthPrefixed pu = byteLengthPrefixE LittleEndian pu
+        let byteLengthPrefixed pu = intByteLengthPrefixE LittleEndian pu
 
         /// A pickler/unpickler pair (PU) for option types in the Endianness in Little Endian byte order
         let optional pa = optionalPUE LittleEndian pa
@@ -358,7 +411,7 @@ module BinaryPickler =
         let array pa = sequ (Array.length) intPU << repeatA <| pa
 
         /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure in Big Endian byte order
-        let byteLengthPrefixed pu = byteLengthPrefixE BigEndian pu
+        let byteLengthPrefixed pu = intByteLengthPrefixE BigEndian pu
 
         /// A pickler/unpickler pair (PU) for option types in the Endianness in Big Endian byte order
         let optional pa = optionalPUE BigEndian pa
