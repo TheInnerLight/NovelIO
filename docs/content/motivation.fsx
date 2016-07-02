@@ -118,7 +118,7 @@ At first glance, this program might appear to record key strokes until the user 
 
 In reality, this program counts key strokes until the user presses 'Enter' and prints this length, then it records key strokes again until the user presses 'Enter' and prints the result.
 
-If we express this program using this library, the side effects are clearly apparent:
+If we express this program using this library, the effects are clearly apparent:
 
 *)
 
@@ -166,7 +166,7 @@ Consider this code:
 
 *)
 
-let randomSeq = Seq.init 20 (fun _ -> rnd.Next())
+let randomSeq = Seq.init 4 (fun _ -> rnd.Next())
 let sortedSeq = Seq.sort randomSeq
 
 printfn "Sorted: %A" sortedSeq
@@ -174,29 +174,21 @@ printfn "Random: %A" randomSeq
 
 (**
 
-Indeed, the numbers shown in the 'Sorted' and 'Random' lists could be totally different.  Each time we enumerate **randomSeq**, the side effect of getting the next random number is produced again!
+Let's at the results of an example run of this program:
 
-Here is the same program written using NovelIO.  Notice that we have to explicitly ask for a second sequence.
+> Sorted: seq [42595606; 980900814; 1328311795; 1497661916]
+> Random: seq [308839936; 1514073672; 36105878; 741971034]
 
-*)
+While this program appears to generate one sequence, sort it, then print the sorted and unsorted result - that isn't what it actually does.  What it actually does is effectively define two random sequence generators, one of which is sorted and the other is not.
 
-io {
-    let randomSeqIO = IO.replicateM (Random.nextIO) 20
-    let! randomSeq = randomSeqIO
-    let! randomSeq2 = randomSeqIO
-    let sortedSeq = Seq.sort randomSeq2
-    do! IO.putStrLn <| sprintf "Sorted: %A" sortedSeq
-    do! IO.putStrLn <| sprintf "Random: %A" randomSeq
-    } |> IO.run
+Each time we enumerate `randomSeq` or `sortedSeq`, the original side effect of getting random numbers is produced again and again!
 
-(**
-
-If we do not ask for the second sequence, we get what was the original desired behaviour of the program:
+Here is the original program we desired to write using NovelIO.
 
 *)
 
 io {
-    let randomSeqIO = IO.replicateM (Random.nextIO) 20
+    let randomSeqIO = IO.replicateM (Random.nextIO) 4
     let! randomSeq = randomSeqIO
     let sortedSeq = Seq.sort randomSeq
     do! IO.putStrLn <| sprintf "Sorted: %A" sortedSeq
@@ -204,6 +196,29 @@ io {
     } |> IO.run
 
 (**
+
+> Sorted: seq [75121301; 124930198; 609009994; 824551074]
+> Random: [824551074; 609009994; 75121301; 124930198]
+
+Notice that now, both sequences contain the same values.  The generation of actual random numbers is triggered by the line `let! randomSeq = randomSeqIO` which makes the effect completely explicit.
+
+In order to get our program to behave like the original one that uses a sequence with side effects, we have to explicitly ask for a second set of evaluated effects.
+
+*)
+
+io {
+    let randomSeqIO = IO.replicateM (Random.nextIO) 4
+    let! randomSeq = randomSeqIO
+    let! randomSeq2 = randomSeqIO // evaluate the effects of randomSeqIO again
+    let sortedSeq = Seq.sort randomSeq2
+    do! IO.putStrLn <| sprintf "Sorted: %A" sortedSeq
+    do! IO.putStrLn <| sprintf "Random: %A" randomSeq
+    } |> IO.run
+
+(**
+
+> Sorted: seq [79034179; 1625119183; 1651455963; 1775638512]
+> Random: [1801985798; 963004958; 1819358047; 292397249]
 
 Hopefully this demonstrates how being explicit about when side-effects occur can massively improve the ability of developers to understand and reason about their code.
 
