@@ -23,7 +23,7 @@ type BasicBinaryPU<'a> = private {Pickle : 'a * BPickleState -> BPickleState; Un
 /// A pickler/unpickler pair for type 'a
 type BinaryPU<'a> = 
     /// A PU containing a BasicBinaryPU which is resolvable immediately
-    |FinalPU of BasicBinaryPU<'a> 
+    |PU of BasicBinaryPU<'a> 
     /// A recursive PU containing a PU generating expression which is resolved when the PU is run 
     |RecursivePU of (unit -> BinaryPU<'a>)
 
@@ -31,12 +31,12 @@ type BinaryPU<'a> =
 module BinaryPickler =
     let rec private runUnpickle state x =
         match x with
-        |FinalPU {Unpickle = g; Pickle = _} -> g state
+        |PU {Unpickle = g; Pickle = _} -> g state
         |RecursivePU y -> runUnpickle state (y())
 
     let rec private runPickle (a, st) x =
         match x with
-        |FinalPU {Unpickle = _; Pickle = g} -> g (a, st)
+        |PU {Unpickle = _; Pickle = g} -> g (a, st)
         |RecursivePU y -> runPickle (a,st) (y())
 
 
@@ -74,12 +74,12 @@ module BinaryPickler =
         unpickleHelperSized (sizeof<'a>) f st
 
     /// Given a value of x, returns a PU of x without affecting the underlying read/write states
-    let lift x = FinalPU{Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
+    let lift x = PU{Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
 
     /// Creates a sequential combination of PU 
     let rec sequ (f : 'b -> 'a) (pa : BinaryPU<'a>) (k : 'a -> BinaryPU<'b>) : BinaryPU<'b> =
         match pa with
-        |FinalPU{Unpickle = unPck; Pickle = pck} ->
+        |PU{Unpickle = unPck; Pickle = pck} ->
             // unpickling is sequenced like bind in the state monad
             let unPck' s =
                 let a, s' = runUnpickle s pa
@@ -89,7 +89,7 @@ module BinaryPickler =
                 let a = f b
                 let pb = k a
                 runPickle (b, runPickle (a, s) pa) pb
-            FinalPU{Unpickle = unPck'; Pickle = pck'}
+            PU{Unpickle = unPck'; Pickle = pck'}
         |RecursivePU y ->
             let lazySequ = fun () -> sequ f (y()) k
             RecursivePU lazySequ
@@ -150,7 +150,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for bools
     let boolPU =
-        FinalPU
+        PU
             {
             Pickle = fun (b, s) -> pickleHelper (PickleConvertors.convFromBool) b s
             Unpickle = fun st -> unpickleHelper (PickleConvertors.convToBool) st
@@ -158,7 +158,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for bytes
     let bytePU =
-        FinalPU
+        PU
             {
             Pickle = fun (b, s) -> pickleHelper (Array.singleton) b s
             Unpickle = fun st -> unpickleHelper (Array.item) st
@@ -166,7 +166,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for int16s of the supplied endianness
     let private int16PUE endianness =
-        FinalPU
+        PU
             {
             Pickle = fun (i16, s) -> pickleHelper (PickleConvertors.convFromInt16 endianness) i16 s
             Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt16 endianness) st
@@ -174,7 +174,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for uint16s of the supplied endianness
     let private uint16PUE endianness =
-        FinalPU
+        PU
             {
             Pickle = fun (i16, s) -> pickleHelper (PickleConvertors.convFromUInt16 endianness) i16 s
             Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt16 endianness) st
@@ -182,7 +182,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for int32s of the supplied endianness
     let private int32PUE endianness =
-        FinalPU
+        PU
             {
             Pickle = fun (i32, s) -> pickleHelper (PickleConvertors.convFromInt32 endianness) i32 s
             Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt32 endianness) st
@@ -190,7 +190,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for uint32s of the supplied endianness
     let private uint32PUE endianness =
-        FinalPU
+        PU
             {
             Pickle = fun (i32, s) -> pickleHelper (PickleConvertors.convFromUInt32 endianness) i32 s
             Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt32 endianness) st
@@ -198,7 +198,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for int64s of the supplied endianness
     let private int64PUE endianness =
-        FinalPU
+        PU
             {
             Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromInt64 endianness) i64 s
             Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt64 endianness) st
@@ -206,7 +206,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for uint64s of the supplied endianness
     let private uint64PUE endianness =
-        FinalPU
+        PU
             {
             Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromUInt64 endianness) i64 s
             Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt64 endianness) st
@@ -214,7 +214,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for float32s of the supplied endianness
     let private float32PUE endianness =
-        FinalPU
+        PU
             {
             Pickle = fun (f32, s) -> pickleHelper (PickleConvertors.convFromFloat32 endianness) f32 s
             Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat32 endianness) st
@@ -222,7 +222,7 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for floats of the supplied endianness
     let private floatPUE endianness =
-        FinalPU
+        PU
             {
             Pickle = fun (f64, s) -> pickleHelper (PickleConvertors.convFromFloat64 endianness) f64 s
             Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat64 endianness) st
@@ -234,7 +234,7 @@ module BinaryPickler =
         wrap (intAToDecimal, System.Decimal.GetBits) (repeatA (int32PUE endianness) 4)
 
     let private byteLengthPrefixE fPickle fConv endianness pu =
-        FinalPU
+        PU
             {
             Pickle = fun (v, s) -> 
                 pickleHelper (fun v' -> 
@@ -339,7 +339,7 @@ module BinaryPickler =
     /// Creates a pickler/unpickler pair (PU) for strings using the supplied encoding
     let encodingPU encoding =
         let pickleEncodingS byteCount = 
-            FinalPU
+            PU
                 {
                 Pickle = fun (str, s) -> pickleHelper (PickleConvertors.Encodings.convFromEncoding encoding) str s
                 Unpickle = fun st -> unpickleHelperSized byteCount (PickleConvertors.Encodings.convToEncoding encoding byteCount) st
