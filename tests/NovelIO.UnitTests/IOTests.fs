@@ -66,3 +66,24 @@ type ``IO Unit Tests``() =
         let createTestFail = IO.fromEffectful (fun _ -> failwith "Side effect created")
         let test = IO.mapM (fun _ -> createTestFail) testData
         true
+
+    [<Property>]
+    static member ``bracket calls close action if exception thrown`` () =
+        let create = IO.return' ()
+        let mutable called = false
+        let closed = IO.fromEffectful (fun _ -> called <- true)
+        let expt = IO.fromEffectful (fun _ -> failwith "test exception")
+        try
+            IO.bracket create (fun _ -> closed) (fun _ -> expt) |> IO.run
+        with 
+            exn -> ()
+        called = true
+
+    [<Property>]
+    static member ``bracket calls close action if exception not thrown`` () =
+        let create = IO.return' ()
+        let mutable called = false
+        let closed = IO.fromEffectful (fun _ -> called <- true)
+        let nothing = IO.fromEffectful (fun _ -> ())
+        IO.bracket create (fun _ -> closed) (fun _ -> nothing) |> IO.run
+        called = true
