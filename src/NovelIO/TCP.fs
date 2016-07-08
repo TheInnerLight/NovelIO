@@ -26,17 +26,22 @@ module Network =
 
 /// Provides functions relating to TCP connections
 module TCP =
+    let private acceptConn serv = IO.fromEffectful (fun () -> SideEffectingIO.acceptSocketFromServer serv)
+
     /// Create a TCP server at the specfied IP on the specified port
     let createServer ip port = IO.fromEffectful (fun () -> SideEffectingIO.startTCPServer ip port)
 
     /// Create a TCP server at the specfied IP
     let createServerOnFreePort ip = IO.fromEffectful (fun () -> SideEffectingIO.startTCPServer ip 0)
 
-    /// Accept a connection from the supplied TCP server
-    let acceptConnection serv = IO.fromEffectful (fun () -> SideEffectingIO.acceptSocketFromServer serv)
-
     /// Close a connected socket
     let closeConnection socket = IO.fromEffectful (fun () -> SideEffectingIO.closeSocket socket)
+
+    /// Accept a connection from the supplied TCP server and handle it with the supplied function 
+    let acceptConnection serv f = IO.bracket (acceptConn serv) (closeConnection) (f)
+
+    /// Accept a connection from the supplied TCP server and handle it with the supplied function on a different thread
+    let acceptFork serv f = IO.forkIO <| acceptConnection serv f
 
     /// Create a TCP connection to the supplied IP and specified port
     let connectSocket ip port = IO.fromEffectful (fun () -> SideEffectingIO.connectTCPSocket ip port)

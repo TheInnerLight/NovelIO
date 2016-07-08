@@ -129,12 +129,6 @@ module IO =
         |Return a -> f a
         |Delay (g) -> Delay (fun _ -> bind (g ()) f)
 
-    let private using (x : #System.IDisposable) f : IO<'b> =
-        try
-            f x
-        finally
-            x.Dispose()
-
     /// Computation Expression builder for IO actions
     type IOBuilder() =
         /// Return a value as an IO action
@@ -204,6 +198,8 @@ module IO =
     /// An action that writes a line to console
     let putStrLn (str : string) = fromEffectful (fun _ -> System.Console.WriteLine str)
 
+    
+
     // ------- RUN ------- //
 
     /// Runs the IO actions and evaluates the result
@@ -213,6 +209,18 @@ module IO =
             |Return a -> a            
             |Delay (a) -> runRec <| a()
         runRec io
+
+
+    /// Allows you to supply an effect which acquires acquires a resource, an effect which releases that research and an action to perform during the resource's lifetime
+    let bracket act fClnUp fBind =
+        io {
+            let! a = act
+            return! fromEffectful (fun _ ->
+                try 
+                    run <| fBind a
+                finally
+                    ignore << run <| fClnUp a)
+        }
 
     /// Runs the IO actions and evaluates the result, handling success or failure using IOResult
     let runGuarded io =

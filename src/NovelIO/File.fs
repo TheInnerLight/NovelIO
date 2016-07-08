@@ -100,6 +100,10 @@ module File =
     let openFileHandle mode access (fName : Filename) =
         IO.fromEffectful (fun _ -> SideEffectingIO.openFileHandle fName mode access)
 
+    /// Opens a handle to the specified file using the supplied file mode and performs the supplied computation fHandle with the handle before cleaning it up.
+    let withFileHandle mode access (fName : Filename) fHandle =
+        IO.bracket (openFileHandle mode access fName) (IO.hClose) fHandle
+
     /// Reads all the bytes from a specified file as an array
     let readAllBytes filename = 
         IO.fromEffectful(fun _ -> File.ReadAllBytes <| getPathString filename)
