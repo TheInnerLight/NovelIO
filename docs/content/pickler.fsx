@@ -154,6 +154,29 @@ let utf8PU = BinaryPickler.utf8PU
 
 (**
 
+## Encoding Discriminated Unions (the `alt` combinator)
+
+Consider a simple data type:
+
+*)
+
+type Shape =
+    |Circle of float
+    |Rectangle of float * float
+
+let shapePU =
+    // create a pickler for the circle and recangle case, wrap takes a method of constructing and deconstructing each case
+    let circlePU = BinaryPickler.wrap (Circle, function Circle r -> r) BinaryPickler.floatPU
+    let rectanglePU = BinaryPickler.wrap (Rectangle, function Rectangle (w, h) -> w, h) (BinaryPickler.tuple2 BinaryPickler.floatPU BinaryPickler.floatPU)
+    // a tag map : 0 -> circle, 1 -> rectangle defining which PU to use for which tag
+    let altMap = Map.ofList [(0, circlePU); (1, rectanglePU)]
+    // use the alt combinator and the deconstruction of Shape to the tags defined above
+    BinaryPickler.alt (function | Circle _ -> 0 | Rectangle _ -> 1) altMap
+
+(**
+
+The `alt` combinator is the key to this process.  It accepts a function that deconstructs a data type into a simple numeric tag and a `Map` which defines the PU to use internally for each of the cases.
+
 ## Incremental Pickling
 
 In many cases, especially when dealing with large binary files, it could be desirable to not have to convert back and forth between extremely large byte arrays, indeed this approach might not be viable due to available memory.

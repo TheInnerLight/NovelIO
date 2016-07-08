@@ -18,18 +18,27 @@ namespace NovelFS.NovelIO.BinaryPickler
 
 open NovelFS.NovelIO
 
+type BasicBinaryPU<'a> = private {Pickle : 'a * BPickleState -> BPickleState; Unpickle : BUnpickleState -> 'a * BUnpickleState}
+
 /// A pickler/unpickler pair for type 'a
-type BinaryPU<'a> = private {Pickle : 'a * BPickleState -> BPickleState; Unpickle : BUnpickleState -> 'a * BUnpickleState}
+type BinaryPU<'a> = 
+    /// A PU containing a BasicBinaryPU which is resolvable immediately
+    |PU of BasicBinaryPU<'a> 
+    /// A recursive PU containing a PU generating expression which is resolved when the PU is run 
+    |RecursivePU of (unit -> BinaryPU<'a>)
 
 /// Provides functions for pickling binary data
 module BinaryPickler =
-    let private runUnpickle state x =
+    let rec private runUnpickle state x =
         match x with
-        |{Unpickle = g; Pickle = _} -> g state
+        |PU {Unpickle = g; Pickle = _} -> g state
+        |RecursivePU y -> runUnpickle state (y())
 
-    let private runPickle (a, st) x =
+    let rec private runPickle (a, st) x =
         match x with
-        |{Unpickle = _; Pickle = g} -> g (a, st)
+        |PU {Unpickle = _; Pickle = g} -> g (a, st)
+        |RecursivePU y -> runPickle (a,st) (y())
+
 
     /// Uses the supplied pickler/unpickler pair (PU) to unpickle the supplied byte array into some type 'a 
     let unpickle pu array =
@@ -63,16 +72,15 @@ module BinaryPickler =
     /// Helper function that chooses between complete or incremental unpickling and gets the size from the size of the data type
     let private unpickleHelper (f : int -> byte array -> 'a) st =
         unpickleHelperSized (sizeof<'a>) f st
-            
 
     /// Given a value of x, returns a PU of x without affecting the underlying read/write states
-    let lift x = {Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
+    let lift x = PU{Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
 
     /// Creates a sequential combination of PU 
-    let sequ (f : 'b -> 'a) (pa : BinaryPU<'a>) (k : 'a -> BinaryPU<'b>) : BinaryPU<'b> =
+    let rec sequ (f : 'b -> 'a) (pa : BinaryPU<'a>) (k : 'a -> BinaryPU<'b>) : BinaryPU<'b> =
         match pa with
-        |{Unpickle = unPck; Pickle = pck} ->
-            // unpickling is sequenced like bind in the reader monad
+        |PU{Unpickle = unPck; Pickle = pck} ->
+            // unpickling is sequenced like bind in the state monad
             let unPck' s =
                 let a, s' = runUnpickle s pa
                 runUnpickle s' (k a)
@@ -81,7 +89,10 @@ module BinaryPickler =
                 let a = f b
                 let pb = k a
                 runPickle (b, runPickle (a, s) pa) pb
-            {Unpickle = unPck'; Pickle = pck'}
+            PU{Unpickle = unPck'; Pickle = pck'}
+        |RecursivePU y ->
+            let lazySequ = fun () -> sequ f (y()) k
+            RecursivePU lazySequ
 
     /// Combines two PU into a PU that pickles a tuple-2
     let tuple2 pa pb =
@@ -134,75 +145,88 @@ module BinaryPickler =
     /// Repeats a PU n times to create an array pickler
     let repeatA pa n = wrap (Array.ofList, List.ofArray) (repeat pa n)
 
+    /// A pickler/unpickler pair (PU) for the unit type
+    let unitPU = lift ()
+
     /// A pickler/unpickler pair (PU) for bools
     let boolPU =
-        {
-        Pickle = fun (b, s) -> pickleHelper (PickleConvertors.convFromBool) b s
-        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToBool) st
-        }
+        PU
+            {
+            Pickle = fun (b, s) -> pickleHelper (PickleConvertors.convFromBool) b s
+            Unpickle = fun st -> unpickleHelper (PickleConvertors.convToBool) st
+            }
 
     /// A pickler/unpickler pair (PU) for bytes
     let bytePU =
-        {
-        Pickle = fun (b, s) -> pickleHelper (Array.singleton) b s
-        Unpickle = fun st -> unpickleHelper (Array.item) st
-        }
+        PU
+            {
+            Pickle = fun (b, s) -> pickleHelper (Array.singleton) b s
+            Unpickle = fun st -> unpickleHelper (Array.item) st
+            }
 
     /// A pickler/unpickler pair (PU) for int16s of the supplied endianness
     let private int16PUE endianness =
-        {
-        Pickle = fun (i16, s) -> pickleHelper (PickleConvertors.convFromInt16 endianness) i16 s
-        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt16 endianness) st
-        }
+        PU
+            {
+            Pickle = fun (i16, s) -> pickleHelper (PickleConvertors.convFromInt16 endianness) i16 s
+            Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt16 endianness) st
+            }
 
     /// A pickler/unpickler pair (PU) for uint16s of the supplied endianness
     let private uint16PUE endianness =
-        {
-        Pickle = fun (i16, s) -> pickleHelper (PickleConvertors.convFromUInt16 endianness) i16 s
-        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt16 endianness) st
-        }
+        PU
+            {
+            Pickle = fun (i16, s) -> pickleHelper (PickleConvertors.convFromUInt16 endianness) i16 s
+            Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt16 endianness) st
+            }
 
     /// A pickler/unpickler pair (PU) for int32s of the supplied endianness
     let private int32PUE endianness =
-        {
-        Pickle = fun (i32, s) -> pickleHelper (PickleConvertors.convFromInt32 endianness) i32 s
-        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt32 endianness) st
-        }
+        PU
+            {
+            Pickle = fun (i32, s) -> pickleHelper (PickleConvertors.convFromInt32 endianness) i32 s
+            Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt32 endianness) st
+            }
 
     /// A pickler/unpickler pair (PU) for uint32s of the supplied endianness
     let private uint32PUE endianness =
-        {
-        Pickle = fun (i32, s) -> pickleHelper (PickleConvertors.convFromUInt32 endianness) i32 s
-        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt32 endianness) st
-        }
+        PU
+            {
+            Pickle = fun (i32, s) -> pickleHelper (PickleConvertors.convFromUInt32 endianness) i32 s
+            Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt32 endianness) st
+            }
 
     /// A pickler/unpickler pair (PU) for int64s of the supplied endianness
     let private int64PUE endianness =
-        {
-        Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromInt64 endianness) i64 s
-        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt64 endianness) st
-        }
+        PU
+            {
+            Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromInt64 endianness) i64 s
+            Unpickle = fun st -> unpickleHelper (PickleConvertors.convToInt64 endianness) st
+            }
 
     /// A pickler/unpickler pair (PU) for uint64s of the supplied endianness
     let private uint64PUE endianness =
-        {
-        Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromUInt64 endianness) i64 s
-        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt64 endianness) st
-        }
+        PU
+            {
+            Pickle = fun (i64, s) -> pickleHelper (PickleConvertors.convFromUInt64 endianness) i64 s
+            Unpickle = fun st -> unpickleHelper (PickleConvertors.convToUInt64 endianness) st
+            }
 
     /// A pickler/unpickler pair (PU) for float32s of the supplied endianness
     let private float32PUE endianness =
-        {
-        Pickle = fun (f32, s) -> pickleHelper (PickleConvertors.convFromFloat32 endianness) f32 s
-        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat32 endianness) st
-        }
+        PU
+            {
+            Pickle = fun (f32, s) -> pickleHelper (PickleConvertors.convFromFloat32 endianness) f32 s
+            Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat32 endianness) st
+            }
 
     /// A pickler/unpickler pair (PU) for floats of the supplied endianness
     let private floatPUE endianness =
-        {
-        Pickle = fun (f64, s) -> pickleHelper (PickleConvertors.convFromFloat64 endianness) f64 s
-        Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat64 endianness) st
-        }
+        PU
+            {
+            Pickle = fun (f64, s) -> pickleHelper (PickleConvertors.convFromFloat64 endianness) f64 s
+            Unpickle = fun st -> unpickleHelper (PickleConvertors.convToFloat64 endianness) st
+            }
 
     /// A pickler/unpickler pair (PU) for decimals of the supplied endianness
     let private decimalPUE endianness =
@@ -210,14 +234,15 @@ module BinaryPickler =
         wrap (intAToDecimal, System.Decimal.GetBits) (repeatA (int32PUE endianness) 4)
 
     let private byteLengthPrefixE fPickle fConv endianness pu =
-        {
-        Pickle = fun (v, s) -> 
-            pickleHelper (fun v' -> 
-                let arr = pickle pu v'
-                let byteLen = fPickle endianness (fConv <| Array.length arr)
-                Array.concat [byteLen; arr]) v s
-        Unpickle = fun st -> unpickleHelper (fun _ b -> unpickle pu (Array.skip 4 b)) st
-        }
+        PU
+            {
+            Pickle = fun (v, s) -> 
+                pickleHelper (fun v' -> 
+                    let arr = pickle pu v'
+                    let byteLen = fPickle endianness (fConv <| Array.length arr)
+                    Array.concat [byteLen; arr]) v s
+            Unpickle = fun st -> unpickleHelper (fun _ b -> unpickle pu (Array.skip 4 b)) st
+            }
 
     /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure as a (signed) int in the supplied endianness
     let private intByteLengthPrefixE endianness pu = byteLengthPrefixE PickleConvertors.convFromInt32 id endianness pu
@@ -262,8 +287,12 @@ module BinaryPickler =
     let decimalPU = decimalPUE (ByteOrder.systemEndianness)
 
     /// Accepts a tagging function that partitions the type to be pickled/unpickled into two sets, then accepts a PU for each set.  This permits
-    /// creating PUs that might pickle one of several alternatives
-    let altE endianness tag ps = sequ tag (int32PUE endianness) (flip Map.find <| ps)
+    /// creating PUs that might pickle one of several alternatives.  The tag is stored using the supplied endianness.
+    let private altE endianness tag ps = sequ tag (int32PUE endianness) (flip Map.find <| ps)
+
+    /// Accepts a tagging function that partitions the type to be pickled/unpickled into two sets, then accepts a PU for each set.  This permits
+    /// creating PUs that might pickle one of several alternatives. The tag is stored in the Endianness of the current platform
+    let alt tag ps = altE (ByteOrder.systemEndianness) tag ps
 
     /// A pickler/unpickler pair (PU) for lists which prefixes the length using the Endianness of the current platform
     let list pa = sequ (List.length) intPU << repeat <| pa
@@ -310,10 +339,11 @@ module BinaryPickler =
     /// Creates a pickler/unpickler pair (PU) for strings using the supplied encoding
     let encodingPU encoding =
         let pickleEncodingS byteCount = 
-            {
-            Pickle = fun (str, s) -> pickleHelper (PickleConvertors.Encodings.convFromEncoding encoding) str s
-            Unpickle = fun st -> unpickleHelperSized byteCount (PickleConvertors.Encodings.convToEncoding encoding byteCount) st
-            }
+            PU
+                {
+                Pickle = fun (str, s) -> pickleHelper (PickleConvertors.Encodings.convFromEncoding encoding) str s
+                Unpickle = fun st -> unpickleHelperSized byteCount (PickleConvertors.Encodings.convToEncoding encoding byteCount) st
+                }
         sequ (Encoding.byteLength encoding) intPU pickleEncodingS
 
     /// A pickler/unpickler pair (PU) for UTF-8 strings
@@ -375,6 +405,10 @@ module BinaryPickler =
         /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure in Little Endian byte order
         let byteLengthPrefixed pu = intByteLengthPrefixE LittleEndian pu
 
+        /// Accepts a tagging function that partitions the type to be pickled/unpickled into two sets, then accepts a PU for each set.  This permits
+        /// creating PUs that might pickle one of several alternatives. The tag is stored in Little Endian byte order
+        let alt tag ps = altE LittleEndian tag ps
+
         /// A pickler/unpickler pair (PU) for option types in the Endianness in Little Endian byte order
         let optional pa = optionalPUE LittleEndian pa
 
@@ -412,6 +446,10 @@ module BinaryPickler =
 
         /// A pickler/unpickler pair (PU) that prefixes the byte length of the structure in Big Endian byte order
         let byteLengthPrefixed pu = intByteLengthPrefixE BigEndian pu
+
+        /// Accepts a tagging function that partitions the type to be pickled/unpickled into two sets, then accepts a PU for each set.  This permits
+        /// creating PUs that might pickle one of several alternatives. The tag is stored in Big Endian byte order
+        let alt tag ps = altE BigEndian tag ps
 
         /// A pickler/unpickler pair (PU) for option types in the Endianness in Big Endian byte order
         let optional pa = optionalPUE BigEndian pa
