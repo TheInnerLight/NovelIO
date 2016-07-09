@@ -25,98 +25,6 @@ type IO<'a> =
     |Return of 'a
     |Delay of (unit -> IO<'a>)
 
-/// Side effecting helper functions - this is where ugly things happen
-module internal SideEffectingIO =
-    /// Hidden helper functions
-    module private Helpers =
-        /// Writes a a string to the console with a supplied function
-        let hPutStrF f handle =
-            match handle.TextWriter with
-            |Some txtWrtr ->
-                f txtWrtr
-                txtWrtr.Flush()
-            |None -> raise HandleDoesNotSupportWritingException
-    /// Accept a socket from a TCP Server
-    let acceptSocketFromServer serv =
-        {TCPConnectedSocket = serv.TCPListener.AcceptSocket()}
-    /// Connect a TCP Socket to a specified ip and port
-    let connectTCPSocket (ip : IPAddress) (port : int) =
-        let sock = new Sockets.Socket(Sockets.SocketType.Stream, Sockets.ProtocolType.Tcp)
-        sock.Connect(ip, port)
-        {TCPConnectedSocket = sock}
-    /// Close a socket
-    let closeSocket sock =
-        sock.TCPConnectedSocket.Disconnect false
-    /// Close a binary handle
-    let bhClose handle =
-        match handle.BinaryReader with
-        |Some binRdr -> binRdr.Close()
-        |None -> ()
-        match handle.BinaryReader with
-        |Some binWtr -> binWtr.Close()
-        |None -> ()
-    /// Close a handle
-    let hClose handle =
-        match handle.TextReader with
-        |Some txtRdr -> txtRdr.Close()
-        |None -> ()
-        match handle.TextWriter with
-        |Some txtWtr -> txtWtr.Close()
-        |None -> ()
-    /// Gets a line from a handle
-    let hGetLine handle =
-        match handle.TextReader with
-        |Some txtRdr -> txtRdr.ReadLine()
-        |None -> raise HandleDoesNotSupportReadingException
-    /// Writes a string to a handle
-    let hPutStr (str : string) handle =
-        Helpers.hPutStrF (fun txtWrtr -> txtWrtr.Write str) handle
-    /// Writes a string line to a handle
-    let hPutStrLn (str : string) handle =
-        Helpers.hPutStrF (fun txtWrtr -> txtWrtr.WriteLine str) handle
-    /// Determines whether a supplied handle is ready to be read from
-    let isHandleReadyToRead handle = 
-        match handle.TextReader with
-        |Some txtRdr -> txtRdr.Peek() = -1
-        |None -> raise HandleDoesNotSupportReadingException
-    /// Create a file handle for a supplied file name, file mode and file access
-    let openFileHandle (fName : Filename) mode access =
-        let crTxtRdr (fStream : FileStream) = new StreamReader(fStream) :> TextReader
-        let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream) :> TextWriter
-        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
-        let (reader, writer) =
-            match access with
-            |NovelFS.NovelIO.FileAccess.Read -> Some <| crTxtRdr fStream, None
-            |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
-            |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crTxtWrtr fStream
-        {TextReader = reader; TextWriter = writer}
-    /// Create a binary file handle for a supplied file name, file mode and file access
-    let openBinaryFileHandle (fName : Filename) mode access =
-        let crBinRdr (fStream : FileStream) = new BinaryReader(fStream)
-        let crBinWrtr (fStream : FileStream) = new BinaryWriter(fStream)
-        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
-        let (reader, writer) =
-            match access with
-            |NovelFS.NovelIO.FileAccess.Read -> Some <| crBinRdr fStream, None
-            |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crBinRdr fStream, Some <| crBinWrtr fStream
-            |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crBinWrtr fStream
-        {BinaryReader = reader; BinaryWriter = writer}
-
-    /// Sets the absolute position of the binary handle
-    let bhSetAbsPosition pos bHandle =
-        match bHandle.BinaryReader with
-        |Some br -> br.BaseStream.Position <- pos
-        |_ -> ()
-        match bHandle.BinaryWriter with
-        |Some bw -> bw.BaseStream.Position <- pos
-        |_ -> ()
-
-    /// Start a TCP server on a supplied ip address and port
-    let startTCPServer ip port =
-        let listener = Sockets.TcpListener(ip, port)
-        listener.Start()
-        {TCPListener = listener}
-
 /// Pure IO Functions
 module IO =
     /// Return a value as an IO action
@@ -176,29 +84,9 @@ module IO =
     let lift2 f x1 x2 = f <!> x1 <*> x2
 
     // ----- GENERAL ----- //
-          
-    /// An action that closes a binary handle  
-    let bhClose handle = fromEffectful (fun _ -> SideEffectingIO.bhClose handle)
-
-    /// An action that sets the position of the binary handle to the supplied absolute position
-    let bhSetAbsPosition bHandle pos = fromEffectful (fun _ -> SideEffectingIO.bhSetAbsPosition pos bHandle)
-
-    /// An action that closes a handle
-    let hClose handle = fromEffectful (fun _ -> SideEffectingIO.hClose handle)
-
-    /// An action that reads a line from the file or channel
-    let hGetLine handle = fromEffectful (fun _ -> SideEffectingIO.hGetLine handle)
-
-    /// An action that determines if the handle has data available
-    let hIsReady handle = fromEffectful (fun _ -> SideEffectingIO.isHandleReadyToRead handle)
-
-    /// An action that writes a line to the final or channel
-    let hPutStrLn handle str = fromEffectful (fun _ -> SideEffectingIO.hPutStrLn str handle)
 
     /// An action that writes a line to console
     let putStrLn (str : string) = fromEffectful (fun _ -> System.Console.WriteLine str)
-
-    
 
     // ------- RUN ------- //
 
@@ -224,7 +112,7 @@ module IO =
 
     /// Runs the IO actions and evaluates the result, handling success or failure using IOResult
     let runGuarded io =
-        // run recursively and handle exceptions in IO
+        // run recursively and channel exceptions in IO
         InternalIOHelper.withExceptionCheck (run) io
 
     /// Sparks off a new thread to run the IO action passed as the first argument
@@ -389,8 +277,10 @@ module IO =
 module Console =
     /// An action that reads a key from the console
     let readKey = IO.fromEffectful (fun () -> System.Console.ReadKey())
-    /// Ac action that reads a line from the console
+    /// An action that reads a line from the console
     let readLine = IO.fromEffectful (fun () -> System.Console.ReadLine())
+    /// An action that writes a line to the console
+    let writeLine (str : string) = IO.fromEffectful (fun () -> System.Console.WriteLine str)
 
 /// Threading functions
 module Thread =

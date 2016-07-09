@@ -86,8 +86,8 @@ In order to execute items in parallel, we can simply build a list of the IO acti
 
 io {
     let fName = File.assumeValidFilename "file.txt"
-    let! handle = File.openFileHandle FileMode.Open FileAccess.Read fName
-    return IO.Parallel.par [Console.readLine; IO.hGetLine handle]
+    let! channel = File.openTextChannel FileMode.Open FileAccess.Read fName
+    return IO.Parallel.par [Console.readLine; TextChannel.getLine channel]
 } |> IO.run
 
 (**

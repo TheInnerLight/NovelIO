@@ -383,8 +383,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let bytePickler = BinaryPickler.bytePU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr bytePickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr bytePickler bChannel
         } |> IO.run = byte
 
     [<Property>]
@@ -393,8 +393,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let int16Pickler = BinaryPickler.int16PU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr int16Pickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr int16Pickler bChannel
         } |> IO.run = i16
 
     [<Property>]
@@ -403,8 +403,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let int32Pickler = BinaryPickler.intPU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr int32Pickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr int32Pickler bChannel
         } |> IO.run = i32
 
     [<Property>]
@@ -413,8 +413,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let int32Pickler = BinaryPickler.int64PU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr int32Pickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr int32Pickler bChannel
         } |> IO.run = i64
         
     [<Property>]
@@ -424,8 +424,8 @@ type ``Incremental Binary Pickler Tests`` =
         let float32Pickler = BinaryPickler.float32PU
         let result = 
             io {
-                let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-                return! BinaryPickler.unpickleIncr float32Pickler bHandle
+                let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+                return! BinaryPickler.unpickleIncr float32Pickler bChannel
             } |> IO.run 
         match result with
         |x when System.Single.IsNaN(x) -> System.Single.IsNaN(f32)
@@ -438,8 +438,8 @@ type ``Incremental Binary Pickler Tests`` =
         let float64Pickler = BinaryPickler.floatPU
         let result = 
             io {
-                let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-                return! BinaryPickler.unpickleIncr float64Pickler bHandle
+                let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+                return! BinaryPickler.unpickleIncr float64Pickler bChannel
             } |> IO.run
         match result with
         |x when System.Double.IsNaN(x) -> System.Double.IsNaN(f64)
@@ -453,8 +453,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let decPickler = BinaryPickler.decimalPU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr decPickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr decPickler bChannel
         } |> IO.run = dec
 
     [<Property>]
@@ -468,8 +468,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let stringPickler = BinaryPickler.asciiPU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr stringPickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr stringPickler bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -479,8 +479,8 @@ type ``Incremental Binary Pickler Tests`` =
         let stringPickler = BinaryPickler.nullTerminated BinaryPickler.asciiCharPU
         let buff = MemoryBuffer.createFromByteArray bytes
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr stringPickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr stringPickler bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -494,8 +494,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let stringPickler = BinaryPickler.utf7PU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr stringPickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr stringPickler bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -509,8 +509,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let stringPickler = BinaryPickler.utf8PU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr stringPickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr stringPickler bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -525,8 +525,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let stringPickler = BinaryPickler.LittleEndian.utf16PU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr stringPickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr stringPickler bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -541,8 +541,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let stringPickler = BinaryPickler.BigEndian.utf16PU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr stringPickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr stringPickler bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -556,8 +556,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let stringPickler = BinaryPickler.LittleEndian.utf32PU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr stringPickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr stringPickler bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -571,8 +571,8 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createFromByteArray bytes
         let stringPickler = BinaryPickler.BigEndian.utf32PU
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            return! BinaryPickler.unpickleIncr stringPickler bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            return! BinaryPickler.unpickleIncr stringPickler bChannel
         } |> IO.run = str
 
 
@@ -580,40 +580,40 @@ type ``Incremental Binary Pickler Tests`` =
     static member ``Pickle byte from one byte`` (byte : byte) =
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.bytePU) bHandle byte
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.bytePU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.bytePU) bChannel byte
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.bytePU) bChannel
         } |> IO.run = byte
 
     [<Property>]
     static member ``Pickle int16 from one int16`` (i16 : int16) =
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.int16PU) bHandle i16
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.int16PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.int16PU) bChannel i16
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.int16PU) bChannel
         } |> IO.run = i16
 
     [<Property>]
     static member ``Pickle int from one int`` (i32 : int32) =
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.intPU) bHandle i32
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.intPU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.intPU) bChannel i32
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.intPU) bChannel
         } |> IO.run = i32
 
     [<Property>]
     static member ``Pickle int64 from one int64`` (i64 : int64) =
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.int64PU) bHandle i64
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.int64PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.int64PU) bChannel i64
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.int64PU) bChannel
         } |> IO.run = i64
 
     [<Property>]
@@ -621,10 +621,10 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createExpandable()
         let result = 
             io {
-                let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-                do! BinaryPickler.pickleIncr (BinaryPickler.floatPU) bHandle f64
-                do! IO.bhSetAbsPosition bHandle 0L
-                return! BinaryPickler.unpickleIncr (BinaryPickler.floatPU) bHandle
+                let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+                do! BinaryPickler.pickleIncr (BinaryPickler.floatPU) bChannel f64
+                do! BinaryChannel.setAbsPosition bChannel 0L
+                return! BinaryPickler.unpickleIncr (BinaryPickler.floatPU) bChannel
             } |> IO.run
         match result with
         |x when System.Double.IsNaN(x) -> System.Double.IsNaN(f64)
@@ -635,10 +635,10 @@ type ``Incremental Binary Pickler Tests`` =
         let buff = MemoryBuffer.createExpandable()
         let result = 
             io {
-                let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-                do! BinaryPickler.pickleIncr (BinaryPickler.float32PU) bHandle f32
-                do! IO.bhSetAbsPosition bHandle 0L
-                return! BinaryPickler.unpickleIncr (BinaryPickler.float32PU) bHandle
+                let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+                do! BinaryPickler.pickleIncr (BinaryPickler.float32PU) bChannel f32
+                do! BinaryChannel.setAbsPosition bChannel 0L
+                return! BinaryPickler.unpickleIncr (BinaryPickler.float32PU) bChannel
             } |> IO.run
         match result with
         |x when System.Single.IsNaN(x) -> System.Single.IsNaN(f32)
@@ -648,10 +648,10 @@ type ``Incremental Binary Pickler Tests`` =
     static member ``Pickle decimal from one decimal`` (dec : decimal) =
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.decimalPU) bHandle dec
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.decimalPU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.decimalPU) bChannel dec
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.decimalPU) bChannel
         } |> IO.run = dec
 
     [<Property>]
@@ -659,10 +659,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.asciiPU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.asciiPU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.asciiPU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.asciiPU) bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -670,10 +670,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.utf7PU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.utf7PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.utf7PU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.utf7PU) bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -681,10 +681,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.utf8PU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.utf8PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.utf8PU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.utf8PU) bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -692,10 +692,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.utf8BomPU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.utf8BomPU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.utf8BomPU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.utf8BomPU) bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -703,10 +703,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.LittleEndian.utf16PU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.LittleEndian.utf16PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.LittleEndian.utf16PU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.LittleEndian.utf16PU) bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -714,10 +714,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.BigEndian.utf16PU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.BigEndian.utf16PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.BigEndian.utf16PU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.BigEndian.utf16PU) bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -725,10 +725,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.utf16PU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.utf16PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.utf16PU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.utf16PU) bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -736,10 +736,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.LittleEndian.utf32PU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.LittleEndian.utf32PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.LittleEndian.utf32PU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.LittleEndian.utf32PU) bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -747,10 +747,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.BigEndian.utf32PU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.BigEndian.utf32PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.BigEndian.utf32PU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.BigEndian.utf32PU) bChannel
         } |> IO.run = str
 
     [<Property>]
@@ -758,10 +758,10 @@ type ``Incremental Binary Pickler Tests`` =
         let str = nStr.Get
         let buff = MemoryBuffer.createExpandable()
         io {
-            let! bHandle = MemoryBuffer.bufferToBinaryHandle buff
-            do! BinaryPickler.pickleIncr (BinaryPickler.utf32PU) bHandle str
-            do! IO.bhSetAbsPosition bHandle 0L
-            return! BinaryPickler.unpickleIncr (BinaryPickler.utf32PU) bHandle
+            let! bChannel = MemoryBuffer.bufferToBinaryChannel buff
+            do! BinaryPickler.pickleIncr (BinaryPickler.utf32PU) bChannel str
+            do! BinaryChannel.setAbsPosition bChannel 0L
+            return! BinaryPickler.unpickleIncr (BinaryPickler.utf32PU) bChannel
         } |> IO.run = str
 
 

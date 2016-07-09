@@ -21,6 +21,8 @@ open NovelFS.NovelIO.BinaryPickler
 open FsCheck
 open FsCheck.Xunit
 
+exception BracketCloseTestException
+
 type ``IO Unit Tests``() =
     [<Property>]
     static member ``return' of some test data returns the test data when run`` (testData : obj) =
@@ -67,16 +69,19 @@ type ``IO Unit Tests``() =
         let test = IO.mapM (fun _ -> createTestFail) testData
         true
 
+
+
     [<Property>]
     static member ``bracket calls close action if exception thrown`` () =
         let create = IO.return' ()
         let mutable called = false
         let closed = IO.fromEffectful (fun _ -> called <- true)
-        let expt = IO.fromEffectful (fun _ -> failwith "test exception")
+        let expt = IO.fromEffectful (fun _ -> raise BracketCloseTestException)
         try
             IO.bracket create (fun _ -> closed) (fun _ -> expt) |> IO.run
         with 
-            exn -> ()
+            | BracketCloseTestException -> ()
+            | exn -> reraise()
         called = true
 
     [<Property>]

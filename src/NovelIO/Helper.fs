@@ -24,8 +24,8 @@ module internal InternalIOHelper =
         try 
             f a |> IOSuccess
         with
-            | HandleDoesNotSupportReadingException -> HandleDoesNotSupportReading |> IOError
-            | HandleDoesNotSupportWritingException -> HandleDoesNotSupportWriting |> IOError
+            | ChannelDoesNotSupportReadingException -> ChannelDoesNotSupportReading |> IOError
+            | ChannelDoesNotSupportWritingException -> ChannelDoesNotSupportWriting |> IOError
             | :? EndOfStreamException as eose -> PastEndOfStream eose |> IOError
             | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
             | :? FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError

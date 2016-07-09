@@ -462,24 +462,24 @@ module BinaryPickler =
     /// mark to indicate this is prepended.
     let utf32PU = pickleUTFXWithEndiannessDetect (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = true}) LittleEndian.utf32PU BigEndian.utf16PU
 
-    /// Uses the supplied pickler/unpickler pair (PU) to unpickle from the supplied binary handle incrementally
-    let unpickleIncr pu binaryHandle =
-        match binaryHandle.BinaryReader with
+    /// Uses the supplied pickler/unpickler pair (PU) to unpickle from the supplied binary channel incrementally
+    let unpickleIncr pu binaryChannel =
+        match binaryChannel.BinaryReader with
         |Some binReader -> 
             let incrUnpickler = UnpickleIncremental {Reader = binReader}
             IO.fromEffectful (fun _ -> fst <| runUnpickle (incrUnpickler) pu)
-        |None -> raise HandleDoesNotSupportReadingException
+        |None -> raise ChannelDoesNotSupportReadingException
 
-    /// Uses the supplied pickler/unpickler pair (PU) to pickle the supplied data to the supplied binary handle incrementally
-    let pickleIncr pu binaryHandle value =
-        match binaryHandle.BinaryWriter with
+    /// Uses the supplied pickler/unpickler pair (PU) to pickle the supplied data to the supplied binary channel incrementally
+    let pickleIncr pu binaryChannel value =
+        match binaryChannel.BinaryWriter with
         |Some binWriter -> 
             let incrPickler = PickleIncremental {Writer = binWriter}
             IO.fromEffectful (fun _ -> 
                 match (runPickle (value, incrPickler) pu) with 
                 |PickleIncremental ps -> binWriter.Flush()
                 |_ -> invalidOp "A non-incremental binary pickler state was returned from an initially incremental pickler")
-        |None -> raise HandleDoesNotSupportReadingException
+        |None -> raise ChannelDoesNotSupportReadingException
 
 
     

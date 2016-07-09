@@ -60,7 +60,7 @@ open NovelFS.NovelIO.BinaryPickler
 let readIntFromFile file =
     io {
         let! bytes = File.readAllBytes file
-        return BinaryPickler.unpickle (BinaryPickler.pickleInt32) bytes
+        return BinaryPickler.unpickle (BinaryPickler.intPU) bytes
     }
 
 (**
