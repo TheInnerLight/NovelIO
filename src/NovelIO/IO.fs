@@ -171,7 +171,7 @@ module IO =
     let repeatM mFunc n  =
         replicateM mFunc n >>= (return' << ignore)
 
-    /// IOBuilder extensions so that traverseM_ can be used to define For
+    /// IOBuilder extensions so that iterM can be used to define For
     type IOBuilder with
         /// Definition of for loops within IO computation expressions
         member this.For (sequence : seq<_>, body) =
