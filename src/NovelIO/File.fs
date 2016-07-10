@@ -33,8 +33,8 @@ module private SideEffectingFileIO =
 
     /// Create a file channel for a supplied file name, file mode and file access
     let openTextFileChannel (fName : Filename) mode access =
-        let crTxtRdr (fStream : FileStream) = new StreamReader(fStream) :> TextReader
-        let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream) :> TextWriter
+        let crTxtRdr (fStream : FileStream) = new StreamReader(fStream)
+        let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream)
         let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
         let (reader, writer) =
             match access with

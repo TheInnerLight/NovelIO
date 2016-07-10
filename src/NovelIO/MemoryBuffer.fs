@@ -18,8 +18,10 @@ namespace NovelFS.NovelIO
 
 open System.IO
 
+/// A memory buffer that can be read from and written to
 type MemBuffer = private {MemStream : MemoryStream}
 
+/// Operations on memory buffers
 module MemoryBuffer =
     /// Creates an expandable memory buffer with zero initial size
     let createExpandable() = {MemStream = new MemoryStream()}
@@ -30,8 +32,8 @@ module MemoryBuffer =
     /// Create a channel from a memory buffer
     let bufferToTextChannel buffer =
         IO.return' 
-            {TextReader = new StreamReader(buffer.MemStream) :> TextReader |> Some;
-             TextWriter = new StreamWriter(buffer.MemStream) :> TextWriter |> Some}
+            {TextReader = new StreamReader(buffer.MemStream) |> Some;
+             TextWriter = new StreamWriter(buffer.MemStream) |> Some}
 
      /// Create a binary channel from a memory buffer
     let bufferToBinaryChannel buffer =

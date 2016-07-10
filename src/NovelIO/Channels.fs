@@ -50,7 +50,12 @@ module TextChannel =
         /// Determines whether a supplied text channel is ready to be read from
         let isChannelReadyToRead channel = 
             match channel.TextReader with
-            |Some txtRdr -> txtRdr.Peek() = -1
+            |Some txtRdr -> txtRdr.Peek() <> -1
+            |None -> raise ChannelDoesNotSupportReadingException
+        /// Determines whether a supplied text channel has reached the end of the stream
+        let isChannelAtEndOfStream channel = 
+            match channel.TextReader with
+            |Some txtRdr -> txtRdr.EndOfStream
             |None -> raise ChannelDoesNotSupportReadingException
 
     /// An action that closes a text channel
@@ -58,6 +63,12 @@ module TextChannel =
 
     /// An action that reads a line from the text channel
     let getLine channel = IO.fromEffectful (fun _ -> SideEffecting.getLine channel)
+
+    /// An action that determines if the text channel is at the end of the stream.  This a synonym for isEOF
+    let isEOS channel = IO.fromEffectful (fun _ -> SideEffecting.isChannelAtEndOfStream channel)
+
+    /// An action that determines if the text channel is at the end of the file.  This a synonym for isEOS
+    let isEOF channel = isEOS channel
 
     /// An action that determines if the text channel has data available
     let isReady channel = IO.fromEffectful (fun _ -> SideEffecting.isChannelReadyToRead channel)
@@ -76,6 +87,11 @@ module BinaryChannel =
             match channel.BinaryReader with
             |Some binWtr -> binWtr.Close()
             |None -> ()
+        /// Determines whether a supplied binary channel is ready to be read from
+        let isChannelReadyToRead channel = 
+            match channel.BinaryReader with
+            |Some binRdr -> binRdr.PeekChar() <> -1
+            |None -> raise ChannelDoesNotSupportReadingException
         /// Sets the absolute position of the binary channel
         let setAbsPosition pos bChannel =
             match bChannel.BinaryReader with
@@ -98,8 +114,8 @@ module BinaryChannel =
     /// An action that closes a binary channel  
     let close channel = IO.fromEffectful (fun _ -> SideEffecting.close channel)
 
-    /// An action that sets the position of the binary channel to the supplied absolute position
-    let setAbsPosition channel pos = IO.fromEffectful (fun _ -> SideEffecting.setAbsPosition pos channel)
+    /// An action that determines if the binary channel has data available
+    let isReady channel = IO.fromEffectful (fun _ -> SideEffecting.isChannelReadyToRead channel)
 
     /// Channel reading partial byte arrays in different ways
     let private readPartialByteArray channel count f =
@@ -118,6 +134,9 @@ module BinaryChannel =
             match count = count' with
             |true -> Some bytes
             |false -> None)
+
+    /// An action that sets the position of the binary channel to the supplied absolute position
+    let setAbsPosition channel pos = IO.fromEffectful (fun _ -> SideEffecting.setAbsPosition pos channel)
 
     /// An action that writes a supplied array of bytes to the binary channel
     let writeBytes channel (bytes : byte[]) = IO.fromEffectful (fun _ -> SideEffecting.write (fun bw -> bw.Write bytes) channel)

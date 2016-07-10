@@ -59,24 +59,34 @@ module IO =
             |true -> bind (body) (fun () -> this.While(guard, body))
 
     let private io = IOBuilder()
-    /// Monadic bind operator for IO actions
-    let (>>=) x f = bind x f
-    /// Left to right Kleisli composition of IO actions, allows composition of binding functions
-    let (>=>) f g x = f x >>= g
-    /// Right to left Kleisli composition of IO actions, allows composition of binding functions
-    let (<=<) f g x = flip (>=>) f g x
+
     /// Takes a function which transforms a value to another value and an IO action which produces 
     /// the first value, producing a new IO action which produces the second value
-    let map f x = x >>= (return' << f)
-    /// Map operator for IO actions
-    let (<!>) f x = map f x
+    let map f x = bind x (return' << f)
     /// Takes an IO action which produces a function that maps from a value to another value and an IO action
     /// which produces the first value, producing a new IO action which produces the second value.  This is like 
     /// map but the mapping function is contained within IO.
     let apply (f : IO<'a -> 'b>) (x : IO<'a>) =
-        f >>= (fun fe -> map fe x)
-    /// Apply operator for IO actions
-    let (<*>) (f : IO<'a -> 'b>) (x : IO<'a>) = apply f x
+        bind f (fun fe -> map fe x)
+
+    module Operators =
+        /// Apply operator for IO actions
+        let inline (<*>) (f : IO<'a -> 'b>) (x : IO<'a>) = apply f x
+        /// Sequence actions, discarding the value of the first argument.
+        let inline ( *> ) u v = return' (const' id) <*> u <*> v
+        /// Sequence actions, discarding the value of the second argument.
+        let inline ( <* ) u v = return' const' <*> u <*> v
+        /// Monadic bind operator for IO actions
+        let inline (>>=) x f = bind x f
+        /// Left to right Kleisli composition of IO actions, allows composition of binding functions
+        let inline (>=>) f g x = f x >>= g
+        /// Right to left Kleisli composition of IO actions, allows composition of binding functions
+        let inline (<=<) f g x = flip (>=>) f g x
+        /// Map operator for IO actions
+        let inline (<!>) f x = map f x
+
+    open Operators
+
     /// Removes a level of IO structure
     let join x = x >>= id
     /// Takes a function which transforms two values in another value and two IO actions which produce the first two
@@ -197,6 +207,9 @@ module IO =
                 |> List.ofSeq
                 |> Seq.ofList)
 
+        /// Execute an action repeatedly until the given boolean IO action returns true
+        let untilM (pAct : IO<bool>) (f : IO<'a>) = whileM (not <!> pAct) f
+
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
         let whileSome act binder =
@@ -240,12 +253,11 @@ module IO =
             member __.Value = value
 
         /// Executes the given IO actions in parallel
-        let par (ios : IO<_> list)  =
+        let par (ios : IO<'a> list)  =
             fromEffectful (fun _ ->
                 ios 
-                |> Seq.map (fun io -> async {return run io})
-                |> Async.Parallel
-                |> Async.RunSynchronously
+                |> Array.ofList
+                |> Array.Parallel.map (run)
                 |> List.ofArray)
 
         /// Executes the given IO actions in parallel and ignores the result

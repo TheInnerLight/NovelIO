@@ -77,7 +77,7 @@ module TCP =
     /// Create a channel from a connected socket
     let socketToTextChannel tcpSocket =
         IO.return' 
-            {TextReader = new StreamReader(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) :> TextReader |> Some;
-             TextWriter = new StreamWriter(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) :> TextWriter |> Some}
+            {TextReader = new StreamReader(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some;
+             TextWriter = new StreamWriter(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some}
 
 

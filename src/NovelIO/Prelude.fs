@@ -92,12 +92,16 @@ module PathDiscriminators =
 [<AutoOpen>]
 module General =
     /// Helper function that takes two arguments and throws away the second, returning the first
-    let const' x _ = x
+    let inline const' x _ = x
     /// When supplied with a function f, returns a new function that accepts the first and second arguments in the opposite order
-    let flip f a b = f b a
+    let inline flip f a b = f b a
     /// Curried function for prepending to list, equivalent to x :: ys
-    let listCons x ys = x :: ys
-
+    let inline listCons x ys = x :: ys
+    /// Converts an uncurried function to a curried function.
+    let inline curry f a b = f(a, b)
+    /// Converts a curried function to a function on pairs.
+    let inline uncurry f (a, b) = f a b 
+        
 /// Specifies how the operating system should open a file
 [<RequireQualifiedAccess>]
 type FileMode =
@@ -125,7 +129,7 @@ type FileAccess =
     |ReadWrite
 
 /// A channel that may support text being read from it and written to it
-type TChannel = private {TextReader : TextReader option; TextWriter : TextWriter option}
+type TChannel = private {TextReader : StreamReader option; TextWriter : StreamWriter option}
 
 /// A channel that may support binary data being read from it or written to it
 type BChannel = private {BinaryReader : BinaryReader option; BinaryWriter : BinaryWriter option}
