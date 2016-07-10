@@ -69,8 +69,6 @@ type ``IO Unit Tests``() =
         let test = IO.mapM (fun _ -> createTestFail) testData
         true
 
-
-
     [<Property>]
     static member ``bracket calls close action if exception thrown`` () =
         let create = IO.return' ()

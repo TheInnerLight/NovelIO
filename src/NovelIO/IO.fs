@@ -63,6 +63,7 @@ module IO =
     /// Takes a function which transforms a value to another value and an IO action which produces 
     /// the first value, producing a new IO action which produces the second value
     let map f x = bind x (return' << f)
+
     /// Takes an IO action which produces a function that maps from a value to another value and an IO action
     /// which produces the first value, producing a new IO action which produces the second value.  This is like 
     /// map but the mapping function is contained within IO.
