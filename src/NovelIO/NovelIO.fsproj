@@ -54,6 +54,7 @@
     <Compile Include="Helper.fs" />
     <Compile Include="Encoding.fs" />
     <Compile Include="IO.fs" />
+    <Compile Include="Actions.fs" />
     <Compile Include="Channels.fs" />
     <Compile Include="PicklerInfrastructure.fs" />
     <Compile Include="BinaryPickler.fs" />

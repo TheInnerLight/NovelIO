@@ -23,19 +23,31 @@ open System.Net
 type IO<'a> = 
     private 
     |Return of 'a
-    |Delay of (unit -> IO<'a>)
+    |Delay of (unit -> 'a)
 
 /// Pure IO Functions
 module IO =
+    // ------- RUN ------- //
+
+    /// Runs the IO actions and evaluates the result
+    let run io =
+        match io with
+        |Return a -> a            
+        |Delay (a) -> a()
+
+    // ------- MONAD ------- //
+
     /// Return a value as an IO action
     let return' x = Return x
     /// Creates an IO action from an effectful computation, this simply takes a side effecting function and brings it into IO
-    let fromEffectful f = Delay (return' << f)
+    let fromEffectful f = Delay (f)
     /// Monadic bind for IO action, this is used to combine and sequence IO actions
-    let rec bind x f =
+    let bind x f =
         match x with
         |Return a -> f a
-        |Delay (g) -> Delay (fun _ -> bind (g ()) f)
+        |Delay (g) -> Delay (fun _ -> run << f <| g())
+    /// Removes a level of IO structure
+    let join x = bind x id
 
     /// Computation Expression builder for IO actions
     type IOBuilder() =
@@ -46,7 +58,7 @@ module IO =
         /// Monadic bind for IO action, this is used to combine and sequence IO action
         member this.Bind (x : IO<'a>, f : 'a -> IO<'b>) = bind x f
         /// Delays a function of type unit -> IO<'a> as an IO<'a>
-        member this.Delay f : IO<'a> = Delay f
+        member this.Delay f : IO<'a> = f()
         /// Combine an IO action of type unit an IO action of type 'a into a combined IO action of type 'a
         member this.Combine(f1, f2) =
             bind f1 (fun () -> f2)
@@ -58,17 +70,27 @@ module IO =
             |false -> this.Zero()
             |true -> bind (body) (fun () -> this.While(guard, body))
 
+    // For use within this module, later we need to define this again in an auto-open module
     let private io = IOBuilder()
+
+    // ------- FUNCTOR ------- //
 
     /// Takes a function which transforms a value to another value and an IO action which produces 
     /// the first value, producing a new IO action which produces the second value
     let map f x = bind x (return' << f)
+
+    // ------- APPLICATIVE ------- //
 
     /// Takes an IO action which produces a function that maps from a value to another value and an IO action
     /// which produces the first value, producing a new IO action which produces the second value.  This is like 
     /// map but the mapping function is contained within IO.
     let apply (f : IO<'a -> 'b>) (x : IO<'a>) =
         bind f (fun fe -> map fe x)
+
+    /// Lift a value.
+    let pure' x = Return x
+
+    // ------- OPERATORS ------- //
 
     module Operators =
         /// Apply operator for IO actions
@@ -88,8 +110,6 @@ module IO =
 
     open Operators
 
-    /// Removes a level of IO structure
-    let join x = x >>= id
     /// Takes a function which transforms two values in another value and two IO actions which produce the first two
     /// values, producing a new IO action which produces the result of the function application
     let lift2 f x1 x2 = f <!> x1 <*> x2
@@ -98,17 +118,6 @@ module IO =
 
     /// An action that writes a line to console
     let putStrLn (str : string) = fromEffectful (fun _ -> System.Console.WriteLine str)
-
-    // ------- RUN ------- //
-
-    /// Runs the IO actions and evaluates the result
-    let run io =
-        let rec runRec (io : IO<'a>) =
-            match io with
-            |Return a -> a            
-            |Delay (a) -> runRec <| a()
-        runRec io
-
 
     /// Allows you to supply an effect which acquires acquires a resource, an effect which releases that research and an action to perform during the resource's lifetime
     let bracket act fClnUp fBind =
@@ -285,30 +294,6 @@ module IO =
                     None
                 with 
                 | :? SuccessException<'b> as ex -> Some <| ex.Value)
-
-/// Console functions
-module Console =
-    /// An action that reads a key from the console
-    let readKey = IO.fromEffectful (fun () -> System.Console.ReadKey())
-    /// An action that reads a line from the console
-    let readLine = IO.fromEffectful (fun () -> System.Console.ReadLine())
-    /// An action that writes a line to the console
-    let writeLine (str : string) = IO.fromEffectful (fun () -> System.Console.WriteLine str)
-
-/// Threading functions
-module Thread =
-    /// An action that causes the current thread to sleep for a supplied number of milliseconds
-    let sleep (ms : int) = IO.fromEffectful (fun _ -> System.Threading.Thread.Sleep(ms))
-
-    /// An action that causes the current thread to yield execution to another thread
-    let yld = IO.fromEffectful (fun _ -> ignore <| System.Threading.Thread.Yield())
-
-/// Provides purely functional Date/Time functions
-module DateTime =
-    /// An aciton that gets the current local time
-    let localNow = IO.fromEffectful (fun () -> System.DateTime.Now)
-    /// An aciton that gets the current UTC time
-    let utcNow = IO.fromEffectful (fun () -> System.DateTime.UtcNow)
 
 /// Module to provide the definition of the io computation expression
 [<AutoOpen>]
