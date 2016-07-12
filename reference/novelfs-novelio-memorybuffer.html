@@ -40,6 +40,8 @@
   <span>Namespace: NovelFS.NovelIO</span><br />
 </p>
 <div class="xmldoc">
+<p>Operations on memory buffers</p>
+
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -53,19 +55,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
-            bufferToBinaryHandle buffer
+          <code onmouseout="hideTip(event, '95', 95)" onmouseover="showTip(event, '95', 95)">
+            bufferToBinaryChannel buffer
           </code>
-          <div class="tip" id="85">
-            <strong>Signature:</strong> buffer:MemBuffer -&gt; IO&lt;BinaryHandle&gt;<br />
+          <div class="tip" id="95">
+            <strong>Signature:</strong> buffer:MemBuffer -&gt; IO&lt;BChannel&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/MemoryBuffer.fs#L37-37" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/MemoryBuffer.fs#L39-39" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Create a binary handle from a memory buffer</p>
+          <p>Create a binary channel from a memory buffer</p>
 
 
         </td>
@@ -73,19 +75,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '86', 86)" onmouseover="showTip(event, '86', 86)">
-            bufferToHandle buffer
+          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
+            bufferToTextChannel buffer
           </code>
-          <div class="tip" id="86">
-            <strong>Signature:</strong> buffer:MemBuffer -&gt; IO&lt;Handle&gt;<br />
+          <div class="tip" id="96">
+            <strong>Signature:</strong> buffer:MemBuffer -&gt; IO&lt;TChannel&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/MemoryBuffer.fs#L31-31" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/MemoryBuffer.fs#L33-33" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Create a handle from a memory buffer</p>
+          <p>Create a channel from a memory buffer</p>
 
 
         </td>
@@ -93,15 +95,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '87', 87)" onmouseover="showTip(event, '87', 87)">
+          <code onmouseout="hideTip(event, '97', 97)" onmouseover="showTip(event, '97', 97)">
             createExpandable ()
           </code>
-          <div class="tip" id="87">
+          <div class="tip" id="97">
             <strong>Signature:</strong> unit -&gt; MemBuffer<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/MemoryBuffer.fs#L25-25" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/MemoryBuffer.fs#L27-27" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -113,15 +115,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '88', 88)" onmouseover="showTip(event, '88', 88)">
+          <code onmouseout="hideTip(event, '98', 98)" onmouseover="showTip(event, '98', 98)">
             createFromByteArray arr
           </code>
-          <div class="tip" id="88">
+          <div class="tip" id="98">
             <strong>Signature:</strong> arr:byte array -&gt; MemBuffer<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/MemoryBuffer.fs#L28-28" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/MemoryBuffer.fs#L30-30" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -150,7 +152,7 @@
             <li><a href="/NovelIO/oopintro.html">From an OOP Perspective</a></li>
             <li><a href="/NovelIO/files.html">Working with Files</a></li>
             <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
-
+            <li><a href="/NovelIO/channels.html">Channels</a></li>
             <li class="nav-header">Documentation</li>
             <li><a href="/NovelIO/reference/index.html">API Reference</a></li>
           </ul>

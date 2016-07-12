@@ -55,19 +55,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '40', 40)" onmouseover="showTip(event, '40', 40)">
+          <code onmouseout="hideTip(event, '49', 49)" onmouseover="showTip(event, '49', 49)">
             const&#39; x arg2
           </code>
-          <div class="tip" id="40">
-            <strong>Signature:</strong> x:&#39;b -&gt; &#39;c -&gt; &#39;b<br />
-                          <strong>Type parameters:</strong> 'b, 'c          </div>
+          <div class="tip" id="49">
+            <strong>Signature:</strong> x:&#39;c -&gt; &#39;d -&gt; &#39;c<br />
+                          <strong>Type parameters:</strong> 'c, 'd          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L95-95" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Helper function that takes two arguments and throws away the second</p>
+          <p>Helper function that takes two arguments and throws away the second, returning the first</p>
 
 
         </td>
@@ -75,10 +75,30 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '41', 41)" onmouseover="showTip(event, '41', 41)">
+          <code onmouseout="hideTip(event, '50', 50)" onmouseover="showTip(event, '50', 50)">
+            curry f a b
+          </code>
+          <div class="tip" id="50">
+            <strong>Signature:</strong> f:(&#39;?7489 * &#39;?7490 -&gt; &#39;?7491) -&gt; a:&#39;?7489 -&gt; b:&#39;?7490 -&gt; &#39;?7491<br />
+                          <strong>Type parameters:</strong> '?7489, '?7490, '?7491          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L101-101" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Converts an uncurried function to a curried function.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '51', 51)" onmouseover="showTip(event, '51', 51)">
             flip f a b
           </code>
-          <div class="tip" id="41">
+          <div class="tip" id="51">
             <strong>Signature:</strong> f:(&#39;d -&gt; &#39;e -&gt; &#39;f) -&gt; a:&#39;e -&gt; b:&#39;d -&gt; &#39;f<br />
                           <strong>Type parameters:</strong> 'd, 'e, 'f          </div>
         </td>
@@ -95,10 +115,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '42', 42)" onmouseover="showTip(event, '42', 42)">
+          <code onmouseout="hideTip(event, '52', 52)" onmouseover="showTip(event, '52', 52)">
             listCons x ys
           </code>
-          <div class="tip" id="42">
+          <div class="tip" id="52">
             <strong>Signature:</strong> x:&#39;c -&gt; ys:&#39;c list -&gt; &#39;c list<br />
                           <strong>Type parameters:</strong> 'c          </div>
         </td>
@@ -108,6 +128,26 @@
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           <p>Curried function for prepending to list, equivalent to x :: ys</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '53', 53)" onmouseover="showTip(event, '53', 53)">
+            uncurry f (a, b)
+          </code>
+          <div class="tip" id="53">
+            <strong>Signature:</strong> f:(&#39;?7493 -&gt; &#39;?7494 -&gt; &#39;?7495) -&gt; (a:&#39;?7493 * b:&#39;?7494) -&gt; &#39;?7495<br />
+                          <strong>Type parameters:</strong> '?7493, '?7494, '?7495          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L103-103" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Converts a curried function to a function on pairs.</p>
 
 
         </td>
@@ -132,7 +172,7 @@
             <li><a href="/NovelIO/oopintro.html">From an OOP Perspective</a></li>
             <li><a href="/NovelIO/files.html">Working with Files</a></li>
             <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
-
+            <li><a href="/NovelIO/channels.html">Channels</a></li>
             <li class="nav-header">Documentation</li>
             <li><a href="/NovelIO/reference/index.html">API Reference</a></li>
           </ul>

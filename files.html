@@ -53,6 +53,17 @@
    <span class="k">return</span> <span onmouseout="hideTip(event, 'fs12', 17)" onmouseover="showTip(event, 'fs12', 17)" class="i">lines</span>
 }
 </code></pre>
+<h2><a name="File-Channels" class="anchor" href="#File-Channels">File Channels</a></h2>
+<p>If you need more fine-grained control over File IO, the way to achieve this is using Channels.  Text and Binary Channels (<code>TChannels</code> and <code>BChannels</code>) support explicit reading and writing of their corresponding datatype.</p>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs14', 18)" onmouseover="showTip(event, 'fs14', 18)" class="f">readLines</span> <span onmouseout="hideTip(event, 'fs15', 19)" onmouseover="showTip(event, 'fs15', 19)" class="i">file</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs11', 20)" onmouseover="showTip(event, 'fs11', 20)" class="i">io</span> {
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs16', 21)" onmouseover="showTip(event, 'fs16', 21)" class="f">withChannelOR</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 22)" onmouseover="showTip(event, 'fs9', 22)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 23)" onmouseover="showTip(event, 'fs17', 23)" class="f">withTextChannel</span> <span onmouseout="hideTip(event, 'fs18', 24)" onmouseover="showTip(event, 'fs18', 24)" class="t">FileMode</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs19', 25)" onmouseover="showTip(event, 'fs19', 25)" class="p">Open</span> <span onmouseout="hideTip(event, 'fs20', 26)" onmouseover="showTip(event, 'fs20', 26)" class="t">FileAccess</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs21', 27)" onmouseover="showTip(event, 'fs21', 27)" class="p">Read</span> 
+        <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs16', 28)" onmouseover="showTip(event, 'fs16', 28)" class="f">withChannelOR</span> <span onmouseout="hideTip(event, 'fs15', 29)" onmouseover="showTip(event, 'fs15', 29)" class="i">file</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs22', 30)" onmouseover="showTip(event, 'fs22', 30)" class="i">channel</span> <span class="k">-&gt;</span> 
+                <span onmouseout="hideTip(event, 'fs23', 31)" onmouseover="showTip(event, 'fs23', 31)" class="t">IO</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs24', 32)" onmouseover="showTip(event, 'fs24', 32)" class="t">Loops</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 33)" onmouseover="showTip(event, 'fs25', 33)" class="f">untilM</span> (<span onmouseout="hideTip(event, 'fs26', 34)" onmouseover="showTip(event, 'fs26', 34)" class="t">TextChannel</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs27', 35)" onmouseover="showTip(event, 'fs27', 35)" class="f">isEOS</span> <span onmouseout="hideTip(event, 'fs22', 36)" onmouseover="showTip(event, 'fs22', 36)" class="i">channel</span>) (<span onmouseout="hideTip(event, 'fs26', 37)" onmouseover="showTip(event, 'fs26', 37)" class="t">TextChannel</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs28', 38)" onmouseover="showTip(event, 'fs28', 38)" class="f">getLine</span> <span onmouseout="hideTip(event, 'fs22', 39)" onmouseover="showTip(event, 'fs22', 39)" class="i">channel</span>))
+    }
+</code></pre>
+<p>It is recommended that you use that the <code>withChannel</code> functions provided so that the channel will be automatically cleaned up after its use rather than explicitly opening and closing channels manually.</p>
+<p>You can find more about channels on the <a href="channels.html">channels page</a>.</p>
 
 <div class="tip" id="fs1">namespace NovelFS</div>
 <div class="tip" id="fs2">namespace NovelFS.NovelIO</div>
@@ -67,6 +78,21 @@
 <div class="tip" id="fs11">val io : IO.IOBuilder<br /><br />Full name: NovelFS.NovelIO.IOBuilders.io</div>
 <div class="tip" id="fs12">val lines : seq&lt;IO&lt;string&gt;&gt;</div>
 <div class="tip" id="fs13">val readLines : filename:Filename -&gt; IO&lt;seq&lt;IO&lt;string&gt;&gt;&gt;<br /><br />Full name: NovelFS.NovelIO.File.readLines</div>
+<div class="tip" id="fs14">val readLines : file:Filename -&gt; IO&lt;seq&lt;string&gt;&gt;<br /><br />Full name: Files.readLines</div>
+<div class="tip" id="fs15">val file : Filename</div>
+<div class="tip" id="fs16">val withChannelOR : (Filename -&gt; (TChannel -&gt; IO&lt;seq&lt;string&gt;&gt;) -&gt; IO&lt;seq&lt;string&gt;&gt;)</div>
+<div class="tip" id="fs17">val withTextChannel : mode:FileMode -&gt; access:FileAccess -&gt; fName:Filename -&gt; fChannel:(TChannel -&gt; IO&lt;&#39;a&gt;) -&gt; IO&lt;&#39;a&gt;<br /><br />Full name: NovelFS.NovelIO.File.withTextChannel</div>
+<div class="tip" id="fs18">type FileMode =<br />&#160;&#160;| CreateNew<br />&#160;&#160;| Create<br />&#160;&#160;| Open<br />&#160;&#160;| OpenOrCreate<br />&#160;&#160;| Truncate<br />&#160;&#160;| Append<br /><br />Full name: NovelFS.NovelIO.FileMode</div>
+<div class="tip" id="fs19">union case FileMode.Open: FileMode</div>
+<div class="tip" id="fs20">type FileAccess =<br />&#160;&#160;| Read<br />&#160;&#160;| Write<br />&#160;&#160;| ReadWrite<br /><br />Full name: NovelFS.NovelIO.FileAccess</div>
+<div class="tip" id="fs21">union case FileAccess.Read: FileAccess</div>
+<div class="tip" id="fs22">val channel : TChannel</div>
+<div class="tip" id="fs23">Multiple items<br />module IO<br /><br />from NovelFS.NovelIO<br /><br />--------------------<br />type IO&lt;&#39;a&gt; =<br />&#160;&#160;private | Return of &#39;a<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;| Delay of (unit -&gt; &#39;a)<br /><br />Full name: NovelFS.NovelIO.IO&lt;_&gt;</div>
+<div class="tip" id="fs24">module Loops<br /><br />from NovelFS.NovelIO.IO</div>
+<div class="tip" id="fs25">val untilM : pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;seq&lt;&#39;a&gt;&gt;<br /><br />Full name: NovelFS.NovelIO.IO.Loops.untilM</div>
+<div class="tip" id="fs26">module TextChannel<br /><br />from NovelFS.NovelIO</div>
+<div class="tip" id="fs27">val isEOS : channel:TChannel -&gt; IO&lt;bool&gt;<br /><br />Full name: NovelFS.NovelIO.TextChannel.isEOS</div>
+<div class="tip" id="fs28">val getLine : channel:TChannel -&gt; IO&lt;string&gt;<br /><br />Full name: NovelFS.NovelIO.TextChannel.getLine</div>
 
         </div>
         <div class="span3">
@@ -85,7 +111,7 @@
             <li><a href="/NovelIO/oopintro.html">From an OOP Perspective</a></li>
             <li><a href="/NovelIO/files.html">Working with Files</a></li>
             <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
-
+            <li><a href="/NovelIO/channels.html">Channels</a></li>
             <li class="nav-header">Documentation</li>
             <li><a href="/NovelIO/reference/index.html">API Reference</a></li>
           </ul>

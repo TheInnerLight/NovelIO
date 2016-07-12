@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>TCP - NovelIO</title>
+    <title>BinaryChannel - NovelIO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Phil Curzon"/>
@@ -35,12 +35,12 @@
 
 
 
-<h1>TCP</h1>
+<h1>BinaryChannel</h1>
 <p>
   <span>Namespace: NovelFS.NovelIO</span><br />
 </p>
 <div class="xmldoc">
-<p>Provides functions relating to TCP connections</p>
+<p>Operations on binary channels</p>
 
 </div>
 
@@ -55,59 +55,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '104', 104)" onmouseover="showTip(event, '104', 104)">
-            acceptConnection serv f
+          <code onmouseout="hideTip(event, '1', 1)" onmouseover="showTip(event, '1', 1)">
+            close channel
           </code>
-          <div class="tip" id="104">
-            <strong>Signature:</strong> serv:TCPServer -&gt; f:(TCPConnectedSocket -&gt; IO&lt;&#39;?7287&gt;) -&gt; IO&lt;&#39;?7287&gt;<br />
-                          <strong>Type parameters:</strong> '?7287          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/TCP.fs#L63-63" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Accept a connection from the supplied TCP server and handle it with the supplied function</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '105', 105)" onmouseover="showTip(event, '105', 105)">
-            acceptFork serv f
-          </code>
-          <div class="tip" id="105">
-            <strong>Signature:</strong> serv:TCPServer -&gt; f:(TCPConnectedSocket -&gt; IO&lt;&#39;?7289&gt;) -&gt; IO&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7289          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/TCP.fs#L66-66" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Accept a connection from the supplied TCP server and handle it with the supplied function on a different thread</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '106', 106)" onmouseover="showTip(event, '106', 106)">
-            closeConnection socket
-          </code>
-          <div class="tip" id="106">
-            <strong>Signature:</strong> socket:TCPConnectedSocket -&gt; IO&lt;unit&gt;<br />
+          <div class="tip" id="1">
+            <strong>Signature:</strong> channel:BChannel -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/TCP.fs#L60-60" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Channels.fs#L115-115" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Close a connected socket</p>
+          <p>An action that closes a binary channel</p>
 
 
         </td>
@@ -115,19 +75,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '107', 107)" onmouseover="showTip(event, '107', 107)">
-            connectSocket ip port
+          <code onmouseout="hideTip(event, '2', 2)" onmouseover="showTip(event, '2', 2)">
+            isReady channel
           </code>
-          <div class="tip" id="107">
-            <strong>Signature:</strong> ip:IPAddress -&gt; port:int -&gt; IO&lt;TCPConnectedSocket&gt;<br />
+          <div class="tip" id="2">
+            <strong>Signature:</strong> channel:BChannel -&gt; IO&lt;bool&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/TCP.fs#L69-69" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Channels.fs#L118-118" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Create a TCP connection to the supplied IP and specified port</p>
+          <p>An action that determines if the binary channel has data available</p>
 
 
         </td>
@@ -135,19 +95,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '108', 108)" onmouseover="showTip(event, '108', 108)">
-            createServer ip port
+          <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
+            readBytes channel maxCount
           </code>
-          <div class="tip" id="108">
-            <strong>Signature:</strong> ip:IPAddress -&gt; port:int -&gt; IO&lt;TCPServer&gt;<br />
+          <div class="tip" id="3">
+            <strong>Signature:</strong> channel:BChannel -&gt; maxCount:int -&gt; IO&lt;byte []&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/TCP.fs#L54-54" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Channels.fs#L128-128" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Create a TCP server at the specfied IP on the specified port</p>
+          <p>An action that reads up to a specified number of bytes from a channel and returns the result as a byte array</p>
 
 
         </td>
@@ -155,19 +115,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '109', 109)" onmouseover="showTip(event, '109', 109)">
-            createServerOnFreePort ip
+          <code onmouseout="hideTip(event, '4', 4)" onmouseover="showTip(event, '4', 4)">
+            readFixedBytes channel count
           </code>
-          <div class="tip" id="109">
-            <strong>Signature:</strong> ip:IPAddress -&gt; IO&lt;TCPServer&gt;<br />
+          <div class="tip" id="4">
+            <strong>Signature:</strong> channel:BChannel -&gt; count:int -&gt; IO&lt;byte [] option&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/TCP.fs#L57-57" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Channels.fs#L132-132" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Create a TCP server at the specfied IP</p>
+          <p>An action that attempts to read a fixed number of bytes from a channel and returns Some(byte array) if it succeeds or None if it can't satisfy the request.</p>
 
 
         </td>
@@ -175,19 +135,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '110', 110)" onmouseover="showTip(event, '110', 110)">
-            getServerPort server
+          <code onmouseout="hideTip(event, '5', 5)" onmouseover="showTip(event, '5', 5)">
+            setAbsPosition channel pos
           </code>
-          <div class="tip" id="110">
-            <strong>Signature:</strong> server:TCPServer -&gt; IO&lt;int&gt;<br />
+          <div class="tip" id="5">
+            <strong>Signature:</strong> channel:BChannel -&gt; pos:int64 -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/TCP.fs#L72-72" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Channels.fs#L139-139" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Retrieves the port the server is listening on</p>
+          <p>An action that sets the position of the binary channel to the supplied absolute position</p>
 
 
         </td>
@@ -195,19 +155,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '111', 111)" onmouseover="showTip(event, '111', 111)">
-            socketToTextChannel tcpSocket
+          <code onmouseout="hideTip(event, '6', 6)" onmouseover="showTip(event, '6', 6)">
+            writeBytes channel bytes
           </code>
-          <div class="tip" id="111">
-            <strong>Signature:</strong> tcpSocket:TCPConnectedSocket -&gt; IO&lt;TChannel&gt;<br />
+          <div class="tip" id="6">
+            <strong>Signature:</strong> channel:BChannel -&gt; bytes:byte [] -&gt; IO&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/TCP.fs#L78-78" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Channels.fs#L142-142" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Create a channel from a connected socket</p>
+          <p>An action that writes a supplied array of bytes to the binary channel</p>
 
 
         </td>
