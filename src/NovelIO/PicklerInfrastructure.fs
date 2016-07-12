@@ -49,62 +49,70 @@ module internal PickleConvertors =
         |true, BigEndian |false, LittleEndian -> Array.rev arr
         |_ -> arr
 
+    let inline arrSub start count arr = Array.sub arr start count 
+
     /// Convert a chunk of a byte array into an bool with exception checking
     let convToBool pos array =
         let unchecked pos arr = System.BitConverter.ToBoolean(arr, pos)
         checkConversionException (unchecked pos) pos array
 
+    let inline convTo f endianness pos (array : byte[]) : 'a =
+        let unchecked pos arr = f(flipForEndianness endianness (arrSub pos sizeof<'a> arr), 0)
+        checkConversionException (unchecked pos) pos array
+
     /// Convert a chunk of a byte array into an int16 with exception checking
-    let convToInt16 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToInt16(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+    let convToInt16 endianness pos array = convTo (System.BitConverter.ToInt16) endianness pos array
+
+    /// Convert a chunk of a byte array into an uint16 with exception checking
+    let convToUInt16 endianness pos array = convTo (System.BitConverter.ToUInt16) endianness pos array
 
     /// Convert a chunk of a byte array into an int32 with exception checking
-    let convToInt32 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToInt32(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+    let convToInt32 endianness pos array = convTo (System.BitConverter.ToInt32) endianness pos array
+
+    /// Convert a chunk of a byte array into an uint32 with exception checking
+    let convToUInt32 endianness pos array = convTo (System.BitConverter.ToUInt32) endianness pos array
 
     /// Convert a chunk of a byte array into an int64 with exception checking
-    let convToInt64 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToInt64(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+    let convToInt64 endianness pos array = convTo (System.BitConverter.ToInt64) endianness pos array
+
+    /// Convert a chunk of a byte array into an uint64 with exception checking
+    let convToUInt64 endianness pos array = convTo (System.BitConverter.ToUInt64) endianness pos array
 
     /// Convert a chunk of a byte array into an float32 with exception checking
-    let convToFloat32 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToSingle(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+    let convToFloat32 endianness pos array = convTo (System.BitConverter.ToSingle) endianness pos array
 
     /// Convert a chunk of a byte array into an float64 with exception checking
-    let convToFloat64 endianness pos array = 
-        let unchecked pos arr = System.BitConverter.ToDouble(arr, pos)
-        checkConversionException (unchecked pos << flipForEndianness endianness) pos array
+    let convToFloat64 endianness pos array = convTo (System.BitConverter.ToDouble) endianness pos array
 
     /// Flips an array to produce a list in the opposite order
     let arrayFlipToList a =  Array.fold(fun lst it -> it :: lst) [] a
 
     /// Converts a bool to a byte list in reverse order
-    let convFromBool (b : bool) = 
-        System.BitConverter.GetBytes b 
+    let convFromBool (b : bool) = System.BitConverter.GetBytes b 
 
     /// Converts an int16 to a byte list in reverse order
-    let convFromInt16 endianness (i16 : int16) = 
-        flipForEndianness endianness <| System.BitConverter.GetBytes i16
+    let convFromInt16 endianness (i16 : int16) = flipForEndianness endianness <| System.BitConverter.GetBytes i16
+
+    /// Converts an uint16 to a byte list in reverse order
+    let convFromUInt16 endianness (i16 : uint16) = flipForEndianness endianness <| System.BitConverter.GetBytes i16
 
     /// Converts an int32 to a byte list in reverse order
-    let convFromInt32 endianness (i32 : int32) = 
-        flipForEndianness endianness <| System.BitConverter.GetBytes i32
+    let convFromInt32 endianness (i32 : int32) = flipForEndianness endianness <| System.BitConverter.GetBytes i32
+
+    /// Converts an uint32 to a byte list in reverse order
+    let convFromUInt32 endianness (i32 : uint32) = flipForEndianness endianness <| System.BitConverter.GetBytes i32
 
     /// Converts an int64 to a byte list in reverse order
-    let convFromInt64 endianness (i64 : int64) = 
-        flipForEndianness endianness <| System.BitConverter.GetBytes i64
+    let convFromInt64 endianness (i64 : int64) = flipForEndianness endianness <| System.BitConverter.GetBytes i64
+
+    /// Converts an uint64 to a byte list in reverse order
+    let convFromUInt64 endianness (i64 : uint64) = flipForEndianness endianness <| System.BitConverter.GetBytes i64
 
     /// Converts an float32 to a byte list in reverse order
-    let convFromFloat32 endianness (f32 : float32) = 
-        flipForEndianness endianness <| System.BitConverter.GetBytes f32
+    let convFromFloat32 endianness (f32 : float32) = flipForEndianness endianness <| System.BitConverter.GetBytes f32
 
     /// Converts an float64 to a byte list in reverse order  
-    let convFromFloat64 endianness (f64 : float) = 
-        flipForEndianness endianness <| System.BitConverter.GetBytes f64
+    let convFromFloat64 endianness (f64 : float) = flipForEndianness endianness <| System.BitConverter.GetBytes f64
 
     /// Encoding conversion functions
     module Encodings =

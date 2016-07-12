@@ -23,117 +23,31 @@ open System.Net
 type IO<'a> = 
     private 
     |Return of 'a
-    |Delay of (unit -> IO<'a>)
-
-/// Side effecting helper functions - this is where ugly things happen
-module internal SideEffectingIO =
-    /// Hidden helper functions
-    module private Helpers =
-        /// Writes a a string to the console with a supplied function
-        let hPutStrF f handle =
-            match handle.TextWriter with
-            |Some txtWrtr ->
-                f txtWrtr
-                txtWrtr.Flush()
-            |None -> raise HandleDoesNotSupportWritingException
-    /// Accept a socket from a TCP Server
-    let acceptSocketFromServer serv =
-        {TCPConnectedSocket = serv.TCPListener.AcceptSocket()}
-    /// Connect a TCP Socket to a specified ip and port
-    let connectTCPSocket (ip : IPAddress) (port : int) =
-        let sock = new Sockets.Socket(Sockets.SocketType.Stream, Sockets.ProtocolType.Tcp)
-        sock.Connect(ip, port)
-        {TCPConnectedSocket = sock}
-    /// Close a socket
-    let closeSocket sock =
-        sock.TCPConnectedSocket.Disconnect false
-    /// Close a binary handle
-    let bhClose handle =
-        match handle.BinaryReader with
-        |Some binRdr -> binRdr.Close()
-        |None -> ()
-        match handle.BinaryReader with
-        |Some binWtr -> binWtr.Close()
-        |None -> ()
-    /// Close a handle
-    let hClose handle =
-        match handle.TextReader with
-        |Some txtRdr -> txtRdr.Close()
-        |None -> ()
-        match handle.TextWriter with
-        |Some txtWtr -> txtWtr.Close()
-        |None -> ()
-    /// Gets a line from a handle
-    let hGetLine handle =
-        match handle.TextReader with
-        |Some txtRdr -> txtRdr.ReadLine()
-        |None -> raise HandleDoesNotSupportReadingException
-    /// Writes a string to a handle
-    let hPutStr (str : string) handle =
-        Helpers.hPutStrF (fun txtWrtr -> txtWrtr.Write str) handle
-    /// Writes a string line to a handle
-    let hPutStrLn (str : string) handle =
-        Helpers.hPutStrF (fun txtWrtr -> txtWrtr.WriteLine str) handle
-    /// Determines whether a supplied handle is ready to be read from
-    let isHandleReadyToRead handle = 
-        match handle.TextReader with
-        |Some txtRdr -> txtRdr.Peek() = -1
-        |None -> raise HandleDoesNotSupportReadingException
-    /// Create a file handle for a supplied file name, file mode and file access
-    let openFileHandle (fName : Filename) mode access =
-        let crTxtRdr (fStream : FileStream) = new StreamReader(fStream) :> TextReader
-        let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream) :> TextWriter
-        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
-        let (reader, writer) =
-            match access with
-            |NovelFS.NovelIO.FileAccess.Read -> Some <| crTxtRdr fStream, None
-            |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
-            |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crTxtWrtr fStream
-        {TextReader = reader; TextWriter = writer}
-    /// Create a binary file handle for a supplied file name, file mode and file access
-    let openBinaryFileHandle (fName : Filename) mode access =
-        let crBinRdr (fStream : FileStream) = new BinaryReader(fStream)
-        let crBinWrtr (fStream : FileStream) = new BinaryWriter(fStream)
-        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
-        let (reader, writer) =
-            match access with
-            |NovelFS.NovelIO.FileAccess.Read -> Some <| crBinRdr fStream, None
-            |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crBinRdr fStream, Some <| crBinWrtr fStream
-            |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crBinWrtr fStream
-        {BinaryReader = reader; BinaryWriter = writer}
-
-    /// Sets the absolute position of the binary handle
-    let bhSetAbsPosition pos bHandle =
-        match bHandle.BinaryReader with
-        |Some br -> br.BaseStream.Position <- pos
-        |_ -> ()
-        match bHandle.BinaryWriter with
-        |Some bw -> bw.BaseStream.Position <- pos
-        |_ -> ()
-
-    /// Start a TCP server on a supplied ip address and port
-    let startTCPServer ip port =
-        let listener = Sockets.TcpListener(ip, port)
-        listener.Start()
-        {TCPListener = listener}
+    |Delay of (unit -> 'a)
 
 /// Pure IO Functions
 module IO =
+    // ------- RUN ------- //
+
+    /// Runs the IO actions and evaluates the result
+    let run io =
+        match io with
+        |Return a -> a            
+        |Delay (a) -> a()
+
+    // ------- MONAD ------- //
+
     /// Return a value as an IO action
     let return' x = Return x
     /// Creates an IO action from an effectful computation, this simply takes a side effecting function and brings it into IO
-    let fromEffectful f = Delay (return' << f)
+    let fromEffectful f = Delay (f)
     /// Monadic bind for IO action, this is used to combine and sequence IO actions
-    let rec bind x f =
+    let bind x f =
         match x with
         |Return a -> f a
-        |Delay (g) -> Delay (fun _ -> bind (g ()) f)
-
-    let private using (x : #System.IDisposable) f : IO<'b> =
-        try
-            f x
-        finally
-            x.Dispose()
+        |Delay (g) -> Delay (fun _ -> run << f <| g())
+    /// Removes a level of IO structure
+    let join x = bind x id
 
     /// Computation Expression builder for IO actions
     type IOBuilder() =
@@ -144,7 +58,7 @@ module IO =
         /// Monadic bind for IO action, this is used to combine and sequence IO action
         member this.Bind (x : IO<'a>, f : 'a -> IO<'b>) = bind x f
         /// Delays a function of type unit -> IO<'a> as an IO<'a>
-        member this.Delay f : IO<'a> = Delay f
+        member this.Delay f : IO<'a> = f()
         /// Combine an IO action of type unit an IO action of type 'a into a combined IO action of type 'a
         member this.Combine(f1, f2) =
             bind f1 (fun () -> f2)
@@ -156,67 +70,69 @@ module IO =
             |false -> this.Zero()
             |true -> bind (body) (fun () -> this.While(guard, body))
 
+    // For use within this module, later we need to define this again in an auto-open module
     let private io = IOBuilder()
-    /// Monadic bind operator for IO actions
-    let (>>=) x f = bind x f
-    /// Left to right Kleisli composition of IO actions, allows composition of binding functions
-    let (>=>) f g x = f x >>= g
-    /// Right to left Kleisli composition of IO actions, allows composition of binding functions
-    let (<=<) f g x = flip (>=>) f g x
+
+    // ------- FUNCTOR ------- //
+
     /// Takes a function which transforms a value to another value and an IO action which produces 
     /// the first value, producing a new IO action which produces the second value
-    let map f x = x >>= (return' << f)
-    /// Map operator for IO actions
-    let (<!>) f x = map f x
+    let map f x = bind x (return' << f)
+
+    // ------- APPLICATIVE ------- //
+
     /// Takes an IO action which produces a function that maps from a value to another value and an IO action
     /// which produces the first value, producing a new IO action which produces the second value.  This is like 
     /// map but the mapping function is contained within IO.
     let apply (f : IO<'a -> 'b>) (x : IO<'a>) =
-        f >>= (fun fe -> map fe x)
-    /// Apply operator for IO actions
-    let (<*>) (f : IO<'a -> 'b>) (x : IO<'a>) = apply f x
-    /// Removes a level of IO structure
-    let join x = x >>= id
+        bind f (fun fe -> map fe x)
+
+    /// Lift a value.
+    let pure' x = Return x
+
+    // ------- OPERATORS ------- //
+
+    module Operators =
+        /// Apply operator for IO actions
+        let inline (<*>) (f : IO<'a -> 'b>) (x : IO<'a>) = apply f x
+        /// Sequence actions, discarding the value of the first argument.
+        let inline ( *> ) u v = return' (const' id) <*> u <*> v
+        /// Sequence actions, discarding the value of the second argument.
+        let inline ( <* ) u v = return' const' <*> u <*> v
+        /// Monadic bind operator for IO actions
+        let inline (>>=) x f = bind x f
+        /// Left to right Kleisli composition of IO actions, allows composition of binding functions
+        let inline (>=>) f g x = f x >>= g
+        /// Right to left Kleisli composition of IO actions, allows composition of binding functions
+        let inline (<=<) f g x = flip (>=>) f g x
+        /// Map operator for IO actions
+        let inline (<!>) f x = map f x
+
+    open Operators
+
     /// Takes a function which transforms two values in another value and two IO actions which produce the first two
     /// values, producing a new IO action which produces the result of the function application
     let lift2 f x1 x2 = f <!> x1 <*> x2
 
     // ----- GENERAL ----- //
-          
-    /// An action that closes a binary handle  
-    let bhClose handle = fromEffectful (fun _ -> SideEffectingIO.bhClose handle)
-
-    /// An action that sets the position of the binary handle to the supplied absolute position
-    let bhSetAbsPosition bHandle pos = fromEffectful (fun _ -> SideEffectingIO.bhSetAbsPosition pos bHandle)
-
-    /// An action that closes a handle
-    let hClose handle = fromEffectful (fun _ -> SideEffectingIO.hClose handle)
-
-    /// An action that reads a line from the file or channel
-    let hGetLine handle = fromEffectful (fun _ -> SideEffectingIO.hGetLine handle)
-
-    /// An action that determines if the handle has data available
-    let hIsReady handle = fromEffectful (fun _ -> SideEffectingIO.isHandleReadyToRead handle)
-
-    /// An action that writes a line to the final or channel
-    let hPutStrLn handle str = fromEffectful (fun _ -> SideEffectingIO.hPutStrLn str handle)
 
     /// An action that writes a line to console
     let putStrLn (str : string) = fromEffectful (fun _ -> System.Console.WriteLine str)
 
-    // ------- RUN ------- //
-
-    /// Runs the IO actions and evaluates the result
-    let run io =
-        let rec runRec (io : IO<'a>) =
-            match io with
-            |Return a -> a            
-            |Delay (a) -> runRec <| a()
-        runRec io
+    /// Allows you to supply an effect which acquires acquires a resource, an effect which releases that research and an action to perform during the resource's lifetime
+    let bracket act fClnUp fBind =
+        io {
+            let! a = act
+            return! fromEffectful (fun _ ->
+                try 
+                    run <| fBind a
+                finally
+                    ignore << run <| fClnUp a)
+        }
 
     /// Runs the IO actions and evaluates the result, handling success or failure using IOResult
     let runGuarded io =
-        // run recursively and handle exceptions in IO
+        // run recursively and channel exceptions in IO
         InternalIOHelper.withExceptionCheck (run) io
 
     /// Sparks off a new thread to run the IO action passed as the first argument
@@ -264,7 +180,7 @@ module IO =
     let repeatM mFunc n  =
         replicateM mFunc n >>= (return' << ignore)
 
-    /// IOBuilder extensions so that traverseM_ can be used to define For
+    /// IOBuilder extensions so that iterM can be used to define For
     type IOBuilder with
         /// Definition of for loops within IO computation expressions
         member this.For (sequence : seq<_>, body) =
@@ -300,6 +216,9 @@ module IO =
                 |> Seq.takeWhile (fun _ -> run pAct)
                 |> List.ofSeq
                 |> Seq.ofList)
+
+        /// Execute an action repeatedly until the given boolean IO action returns true
+        let untilM (pAct : IO<bool>) (f : IO<'a>) = whileM (not <!> pAct) f
 
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
@@ -344,12 +263,11 @@ module IO =
             member __.Value = value
 
         /// Executes the given IO actions in parallel
-        let par (ios : IO<_> list)  =
+        let par (ios : IO<'a> list)  =
             fromEffectful (fun _ ->
                 ios 
-                |> Seq.map (fun io -> async {return run io})
-                |> Async.Parallel
-                |> Async.RunSynchronously
+                |> Array.ofList
+                |> Array.Parallel.map (run)
                 |> List.ofArray)
 
         /// Executes the given IO actions in parallel and ignores the result
@@ -376,28 +294,6 @@ module IO =
                     None
                 with 
                 | :? SuccessException<'b> as ex -> Some <| ex.Value)
-
-/// Console functions
-module Console =
-    /// An action that reads a key from the console
-    let readKey = IO.fromEffectful (fun () -> System.Console.ReadKey())
-    /// Ac action that reads a line from the console
-    let readLine = IO.fromEffectful (fun () -> System.Console.ReadLine())
-
-/// Threading functions
-module Thread =
-    /// An action that causes the current thread to sleep for a supplied number of milliseconds
-    let sleep (ms : int) = IO.fromEffectful (fun _ -> System.Threading.Thread.Sleep(ms))
-
-    /// An action that causes the current thread to yield execution to another thread
-    let yld = IO.fromEffectful (fun _ -> ignore <| System.Threading.Thread.Yield())
-
-/// Provides purely functional Date/Time functions
-module DateTime =
-    /// An aciton that gets the current local time
-    let localNow = IO.fromEffectful (fun () -> System.DateTime.Now)
-    /// An aciton that gets the current UTC time
-    let utcNow = IO.fromEffectful (fun () -> System.DateTime.UtcNow)
 
 /// Module to provide the definition of the io computation expression
 [<AutoOpen>]

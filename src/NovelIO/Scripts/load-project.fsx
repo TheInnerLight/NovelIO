@@ -1,8 +1,15 @@
 // Warning: generated file; your changes could be lost when a new file is generated.
 #I __SOURCE_DIRECTORY__
 #load @"load-references.fsx"
-#load @"..\BinaryParser.fs"
-      @"..\Definitions.fs"
-      @"..\IOFormats.fs"
+#load @"..\Prelude.fs"
+      @"..\Helper.fs"
+      @"..\Encoding.fs"
       @"..\IO.fs"
+      @"..\Actions.fs"
+      @"..\Channels.fs"
+      @"..\PicklerInfrastructure.fs"
+      @"..\BinaryPickler.fs"
       @"..\File.fs"
+      @"..\TCP.fs"
+      @"..\Random.fs"
+      @"..\MemoryBuffer.fs"

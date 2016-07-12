@@ -27,7 +27,7 @@ type ``TCP Integration Tests``() =
         let port = IO.run <| io{
             let! server = TCP.createServerOnFreePort (IPAddress.Any)
             let! port = TCP.getServerPort server
-            do! IO.forkIO <| TCP.acceptConnection server // fork the client acceptance to new thread so we can return the port immediately
+            do! TCP.acceptFork server (fun _ -> IO.return' ()) // fork the client acceptance to new thread so we can return the port immediately
             return port
           }
         use client = new System.Net.Sockets.TcpClient()
@@ -40,7 +40,7 @@ type ``TCP Integration Tests``() =
         IO.run <| io{
             let! server = TCP.createServerOnFreePort (IPAddress.Any)
             let! port = TCP.getServerPort server
-            do! IO.forkIO <| TCP.acceptConnection server // fork the client acceptance to new thread so we can return the port immediately
+            do! TCP.acceptFork server (fun _ -> IO.return' ()) // fork the client acceptance to new thread so we can return the port immediately
             let! sock = TCP.connectSocket (IPAddress.Loopback) port
             return ()
           }

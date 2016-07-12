@@ -40,3 +40,25 @@ io {
    let! lines = File.readLines fName
    return lines
 }
+
+(**
+## File Channels
+
+If you need more fine-grained control over File IO, the way to achieve this is using Channels.  Text and Binary Channels (`TChannels` and `BChannels`) support explicit reading and writing of their corresponding datatype.
+
+*)
+
+let readLines file = 
+    io {
+        let withChannelOR = File.withTextChannel FileMode.Open FileAccess.Read 
+        return! withChannelOR file (fun channel -> 
+                IO.Loops.untilM (TextChannel.isEOS channel) (TextChannel.getLine channel))
+    }
+
+(**
+
+It is recommended that you use that the `withChannel` functions provided so that the channel will be automatically cleaned up after its use rather than explicitly opening and closing channels manually.
+
+You can find more about channels on the [channels page](channels.html). 
+
+*)

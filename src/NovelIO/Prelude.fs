@@ -19,11 +19,11 @@ namespace NovelFS.NovelIO
 open System.IO
 open System.Net
 
-/// Exception that occurs when attempting to write to a Handle that does not support writing
-exception HandleDoesNotSupportWritingException
+/// Exception that occurs when attempting to write to a Channel that does not support writing
+exception ChannelDoesNotSupportWritingException
 
-/// Exception that occurs when attempt to read from a Handle that does not support reading
-exception HandleDoesNotSupportReadingException
+/// Exception that occurs when attempt to read from a Channel that does not support reading
+exception ChannelDoesNotSupportReadingException
 
 /// Represents the result of an IO operation
 type IOResult<'a> =
@@ -47,10 +47,10 @@ and IOErrorResult =
     |UnauthourisedAccess of System.UnauthorizedAccessException
     /// IO failure due a stream being closed
     |StreamClosed of System.ObjectDisposedException
-    /// IO failure due to the supplied handle not supporting reading
-    |HandleDoesNotSupportReading
-    /// IO failure due to the supplied handle not supporting writing
-    |HandleDoesNotSupportWriting
+    /// IO failure due to the supplied channel not supporting reading
+    |ChannelDoesNotSupportReading
+    /// IO failure due to the supplied channel not supporting writing
+    |ChannelDoesNotSupportWriting
     /// IO failure due to trying to read past the end of the stream
     |PastEndOfStream of EndOfStreamException
     /// Incorrect format
@@ -91,13 +91,17 @@ module PathDiscriminators =
 /// General functions of wide applicability
 [<AutoOpen>]
 module General =
-    /// Helper function that takes two arguments and throws away the second
-    let const' x _ = x
+    /// Helper function that takes two arguments and throws away the second, returning the first
+    let inline const' x _ = x
     /// When supplied with a function f, returns a new function that accepts the first and second arguments in the opposite order
-    let flip f a b = f b a
+    let inline flip f a b = f b a
     /// Curried function for prepending to list, equivalent to x :: ys
-    let listCons x ys = x :: ys
-
+    let inline listCons x ys = x :: ys
+    /// Converts an uncurried function to a curried function.
+    let inline curry f a b = f(a, b)
+    /// Converts a curried function to a function on pairs.
+    let inline uncurry f (a, b) = f a b 
+        
 /// Specifies how the operating system should open a file
 [<RequireQualifiedAccess>]
 type FileMode =
@@ -124,11 +128,11 @@ type FileAccess =
     /// Read and write access to a file
     |ReadWrite
 
-/// A Handle that may support text being read from it and written to it
-type Handle = private {TextReader : TextReader option; TextWriter : TextWriter option}
+/// A channel that may support text being read from it and written to it
+type TChannel = private {TextReader : StreamReader option; TextWriter : StreamWriter option}
 
-/// A Binary Handle that may support binary data being read from it or written to it
-type BinaryHandle = private {BinaryReader : BinaryReader option; BinaryWriter : BinaryWriter option}
+/// A channel that may support binary data being read from it or written to it
+type BChannel = private {BinaryReader : BinaryReader option; BinaryWriter : BinaryWriter option}
 
 /// A TCP Server
 type TCPServer = private {TCPListener : Sockets.TcpListener}

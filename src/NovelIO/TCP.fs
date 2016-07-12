@@ -24,22 +24,49 @@ module Network =
     /// Type abbreviation for System.Net.IPAddress
     type IPAddress = System.Net.IPAddress
 
+
+    
+
 /// Provides functions relating to TCP connections
 module TCP =
-    /// Create a TCP server at the specfied IP on the specified port
-    let createServer ip port = IO.fromEffectful (fun () -> SideEffectingIO.startTCPServer ip port)
-
-    /// Create a TCP server at the specfied IP
-    let createServerOnFreePort ip = IO.fromEffectful (fun () -> SideEffectingIO.startTCPServer ip 0)
+    module private SideEffecting =
+        /// Accept a socket from a TCP Server
+        let acceptSocketFromServer serv =
+            {TCPConnectedSocket = serv.TCPListener.AcceptSocket()}
+        /// Connect a TCP Socket to a specified ip and port
+        let connectTCPSocket (ip : IPAddress) (port : int) =
+            let sock = new Sockets.Socket(Sockets.SocketType.Stream, Sockets.ProtocolType.Tcp)
+            sock.Connect(ip, port)
+            {TCPConnectedSocket = sock}
+        /// Close a socket
+        let closeSocket sock =
+            sock.TCPConnectedSocket.Disconnect false
+        /// Start a TCP server on a supplied ip address and port
+        let startTCPServer ip port =
+            let listener = Sockets.TcpListener(ip, port)
+            listener.Start()
+            {TCPListener = listener}
 
     /// Accept a connection from the supplied TCP server
-    let acceptConnection serv = IO.fromEffectful (fun () -> SideEffectingIO.acceptSocketFromServer serv)
+    let private acceptConn serv = IO.fromEffectful (fun () -> SideEffecting.acceptSocketFromServer serv)
+
+    /// Create a TCP server at the specfied IP on the specified port
+    let createServer ip port = IO.fromEffectful (fun () -> SideEffecting.startTCPServer ip port)
+
+    /// Create a TCP server at the specfied IP
+    let createServerOnFreePort ip = IO.fromEffectful (fun () -> SideEffecting.startTCPServer ip 0)
 
     /// Close a connected socket
-    let closeConnection socket = IO.fromEffectful (fun () -> SideEffectingIO.closeSocket socket)
+    let closeConnection socket = IO.fromEffectful (fun () -> SideEffecting.closeSocket socket)
+
+    /// Accept a connection from the supplied TCP server and handle it with the supplied function 
+    let acceptConnection serv f = IO.bracket (acceptConn serv) (closeConnection) (f)
+
+    /// Accept a connection from the supplied TCP server and handle it with the supplied function on a different thread
+    let acceptFork serv f = IO.forkIO <| acceptConnection serv f
 
     /// Create a TCP connection to the supplied IP and specified port
-    let connectSocket ip port = IO.fromEffectful (fun () -> SideEffectingIO.connectTCPSocket ip port)
+    let connectSocket ip port = IO.fromEffectful (fun () -> SideEffecting.connectTCPSocket ip port)
 
     /// Retrieves the port the server is listening on
     let getServerPort server = 
@@ -47,10 +74,10 @@ module TCP =
             let ipend = server.TCPListener.Server.LocalEndPoint :?> System.Net.IPEndPoint
             ipend.Port)
 
-    /// Create a handle from a connected socket
-    let socketToHandle tcpSocket =
+    /// Create a channel from a connected socket
+    let socketToTextChannel tcpSocket =
         IO.return' 
-            {TextReader = new StreamReader(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) :> TextReader |> Some;
-             TextWriter = new StreamWriter(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) :> TextWriter |> Some}
+            {TextReader = new StreamReader(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some;
+             TextWriter = new StreamWriter(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some}
 
 

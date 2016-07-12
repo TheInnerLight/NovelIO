@@ -154,21 +154,79 @@ let utf8PU = BinaryPickler.utf8PU
 
 (**
 
+## Encoding Discriminated Unions (the `alt` combinator)
+
+Consider a simple data type:
+
+*)
+
+type Shape =
+    |Circle of float
+    |Rectangle of float * float
+
+let shapePU =
+    // create a pickler for the circle and recangle case, wrap takes a method of constructing and deconstructing each case
+    let circlePU = BinaryPickler.wrap (Circle, function Circle r -> r) BinaryPickler.floatPU
+    let rectanglePU = BinaryPickler.wrap (Rectangle, function Rectangle (w, h) -> w, h) (BinaryPickler.tuple2 BinaryPickler.floatPU BinaryPickler.floatPU)
+    // a tag map : 0 -> circle, 1 -> rectangle defining which PU to use for which tag
+    let altMap = Map.ofList [(0, circlePU); (1, rectanglePU)]
+    // use the alt combinator and the deconstruction of Shape to the tags defined above
+    BinaryPickler.alt (function | Circle _ -> 0 | Rectangle _ -> 1) altMap
+
+(**
+
+The `alt` combinator is the key to this process.  It accepts a function that deconstructs a data type into a simple numeric tag and a `Map` which defines the PU to use internally for each of the cases.
+
+## Encoding Recursive Values
+
+Since F# is an eagerly evaluated language, we cannot define recursive values as they would never resolve.  To avoid this problem, a `RecursivePU` constructor is provided to allow the recursive definition of the PU to be deferred until required.
+
+A good example of a suitable data type is provided in the paper:
+
+*)
+
+type Bookmark =
+    |URL of string
+    |Folder of string * Bookmark list
+
+(**
+
+We can define a PU for this type by using a mutally recusive value and a function in combination with the `RecursivePU` constructor.
+
+*)
+
+
+let rec bookmarkPU = RecursivePU bookmarkPURec
+and private bookmarkPURec() =
+    // define a PU for the URL case, this is just a UTF-8 PU with a way of constructing and deconstructing a Bookmark
+    let urlPU = BinaryPickler.wrap (URL, function URL x -> x) BinaryPickler.utf8PU
+    // a pickler for the folder case is a tuple2 PU with a UTF-8 PU for the name and a list pickler of bookmarkPU's and a way of constructing
+    // and deconstructing the Bookmark
+    let folderPU = BinaryPickler.wrap (Folder, function Folder (st, bms) -> st, bms) (BinaryPickler.tuple2 BinaryPickler.utf8PU (BinaryPickler.list bookmarkPU))
+    // define that tag 0 means urlPU and tag 1 means folderPU
+    let m = Map.ofList [(0, urlPU);(1, folderPU)]
+    // define that URL should mean use tag 0 and Folder should mean use tag 1
+    m |> BinaryPickler.alt (function | URL _ -> 0 | Folder _ -> 1)
+
+(**
+
+This approach permits the pickling/unpickling of potentially very complex data types with very little development work required.
+
 ## Incremental Pickling
 
 In many cases, especially when dealing with large binary files, it could be desirable to not have to convert back and forth between extremely large byte arrays, indeed this approach might not be viable due to available memory.
 
 In this case, we can use incremental pickling to read/write as part of the pickling process.  Unlike the simple conversion process shown above, this action is effectful so is encapsulated within `IO`.
 
-This process is quite simple, instead of using the `pickle` and `unpickle` functions, we use the `pickleIncr` and `unpickleIncr` functions.  These simply take the additional argument of a `BinaryHandle` upon which they will act.
+This process is quite simple, instead of using the `pickle` and `unpickle` functions, we use the `pickleIncr` and `unpickleIncr` functions.  These simply take the additional argument of a `BChannel` upon which they will act.
 
 Example of incremental unpickling:
 
 *)
 
 io {
-    let! handle = File.openBinaryHandle FileMode.Open FileAccess.Read (File.assumeValidFilename "test.txt")
-    return! BinaryPickler.unpickleIncr complexPickler handle
+    let! channel = File.openBinaryChannel FileMode.Open FileAccess.Read (File.assumeValidFilename "test.txt")
+    return! BinaryPickler.unpickleIncr complexPickler channel
 }
 
 (**
@@ -178,7 +236,7 @@ Example of incremental pickling:
 *)
 
 io {
-    let! handle = File.openBinaryHandle FileMode.Create FileAccess.Write (File.assumeValidFilename "test.txt")
+    let! channel = File.openBinaryChannel FileMode.Create FileAccess.Write (File.assumeValidFilename "test.txt")
     let data = [("A", 7.5, 16); ("B", 7.5, 1701)]
-    return! BinaryPickler.pickleIncr complexPickler handle data
+    return! BinaryPickler.pickleIncr complexPickler channel data
 }

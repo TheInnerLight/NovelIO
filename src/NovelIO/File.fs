@@ -31,6 +31,30 @@ module private SideEffectingFileIO =
         (toFileInfo file).Length
         |> LanguagePrimitives.Int64WithMeasure<Bytes>
 
+    /// Create a file channel for a supplied file name, file mode and file access
+    let openTextFileChannel (fName : Filename) mode access =
+        let crTxtRdr (fStream : FileStream) = new StreamReader(fStream)
+        let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream)
+        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
+        let (reader, writer) =
+            match access with
+            |NovelFS.NovelIO.FileAccess.Read -> Some <| crTxtRdr fStream, None
+            |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
+            |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crTxtWrtr fStream
+        {TextReader = reader; TextWriter = writer}
+
+    /// Create a binary file channel for a supplied file name, file mode and file access
+    let openBinaryFileChannel (fName : Filename) mode access =
+        let crBinRdr (fStream : FileStream) = new BinaryReader(fStream)
+        let crBinWrtr (fStream : FileStream) = new BinaryWriter(fStream)
+        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
+        let (reader, writer) =
+            match access with
+            |NovelFS.NovelIO.FileAccess.Read -> Some <| crBinRdr fStream, None
+            |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crBinRdr fStream, Some <| crBinWrtr fStream
+            |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crBinWrtr fStream
+        {BinaryReader = reader; BinaryWriter = writer}
+
 /// Provides functions relating to the creating, copying, deleting, moving, opening and reading of files
 module File =
     /// Turns a string into a filename by assuming the supplied string is a valid filename.  
@@ -92,13 +116,21 @@ module File =
     let move sourceFile destFile =
         IO.fromEffectful (fun _ -> File.Move(getPathString sourceFile, getPathString destFile))
 
-    /// Opens a handle to the specified file using the supplied file mode
-    let openBinaryHandle mode access (fName : Filename) =
-        IO.fromEffectful (fun _ -> SideEffectingIO.openBinaryFileHandle fName mode access)
+    /// Opens a channel to the specified file using the supplied file mode
+    let openBinaryChannel mode access (fName : Filename) =
+        IO.fromEffectful (fun _ -> SideEffectingFileIO.openBinaryFileChannel fName mode access)
 
-    /// Opens a handle to the specified file using the supplied file mode
-    let openFileHandle mode access (fName : Filename) =
-        IO.fromEffectful (fun _ -> SideEffectingIO.openFileHandle fName mode access)
+    /// Opens a channel to the specified file using the supplied file mode and performs the supplied computation fChannel with the channel before cleaning it up.
+    let withBinaryChannel mode access (fName : Filename) fChannel =
+        IO.bracket (openBinaryChannel mode access fName) (BinaryChannel.close) fChannel
+
+    /// Opens a channel to the specified file using the supplied file mode
+    let openTextChannel mode access (fName : Filename) =
+        IO.fromEffectful (fun _ -> SideEffectingFileIO.openTextFileChannel fName mode access)
+
+    /// Opens a channel to the specified file using the supplied file mode and performs the supplied computation fChannel with the channel before cleaning it up.
+    let withTextChannel mode access (fName : Filename) fChannel =
+        IO.bracket (openTextChannel mode access fName) (TextChannel.close) fChannel
 
     /// Reads all the bytes from a specified file as an array
     let readAllBytes filename = 

@@ -1,3 +1,10 @@
+#### 0.3.0-alpha - 12/07/2016
+Added support for recursive PUs
+Renamed Handles to Channels - part of wider API improvements
+Added modules containing operations on each Channel type
+Made a seperate operators module so that it can be opened independently
+Misc performance improvements
+
 #### 0.2.0-alpha - 12/06/2016
 Added char PUs for fixed length string encodings
 Redesigned the naming structure of big endian / little endian PUs to make them easier to work with
