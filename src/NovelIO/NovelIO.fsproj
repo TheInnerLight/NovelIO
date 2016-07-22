@@ -62,6 +62,7 @@
     <Compile Include="TCP.fs" />
     <Compile Include="Random.fs" />
     <Compile Include="MemoryBuffer.fs" />
+    <Compile Include="FileSystemWatcher.fs" />
     <None Include="Scripts\load-references.fsx" />
     <None Include="Scripts\load-project.fsx" />
     <None Include="Scripts\load-references-debug.fsx" />
