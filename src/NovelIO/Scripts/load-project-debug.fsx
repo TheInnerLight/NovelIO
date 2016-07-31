@@ -13,3 +13,4 @@
       "../TCP.fs"
       "../Random.fs"
       "../MemoryBuffer.fs"
+      "../FileSystemWatcher.fs"
