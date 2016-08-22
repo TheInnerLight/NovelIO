@@ -295,6 +295,14 @@ module IO =
                 with 
                 | :? SuccessException<'b> as ex -> Some <| ex.Value)
 
+        /// mapConcurrently is similar to mapM but where each of the IO actions in the sequence are performed in parallel
+        let mapConcurrently f seq =
+            fromEffectful (fun _ ->
+                seq 
+                |> Array.ofSeq 
+                |> Array.Parallel.map (run << (flip bind) f)
+                |> Seq.ofArray)
+
 /// Module to provide the definition of the io computation expression
 [<AutoOpen>]
 module IOBuilders =
