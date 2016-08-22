@@ -21,7 +21,7 @@ open System.IO
 /// Side effecting File IO functions used to implement the pure versions
 module private SideEffectingFileIO =
     /// Gets the bare string from a filename
-    let toFileInfo (filename : Filename) = FileInfo(filename.PathString)
+    let toFileInfo (filename : FilePath) = FileInfo(filename.PathString)
 
     /// Returns true if the file is readonly, false otherwise
     let isFileReadOnly file = (toFileInfo file).IsReadOnly
@@ -32,7 +32,7 @@ module private SideEffectingFileIO =
         |> LanguagePrimitives.Int64WithMeasure<Bytes>
 
     /// Create a file channel for a supplied file name, file mode and file access
-    let openTextFileChannel (fName : Filename) mode access =
+    let openTextFileChannel (fName : FilePath) mode access =
         let crTxtRdr (fStream : FileStream) = new StreamReader(fStream)
         let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream)
         let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
@@ -44,7 +44,7 @@ module private SideEffectingFileIO =
         {TextReader = reader; TextWriter = writer}
 
     /// Create a binary file channel for a supplied file name, file mode and file access
-    let openBinaryFileChannel (fName : Filename) mode access =
+    let openBinaryFileChannel (fName : FilePath) mode access =
         let crBinRdr (fStream : FileStream) = new BinaryReader(fStream)
         let crBinWrtr (fStream : FileStream) = new BinaryWriter(fStream)
         let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
@@ -61,11 +61,11 @@ module File =
     /// Throws an ArgumentException if the supplied string is, in fact, not valid.
     let assumeValidFilename path =
         match path with
-        |ValidFilename fname -> fname
-        |InvalidFilename -> invalidArg "path" "Assumption of valid path was not correct."
+        |ValidFilePath fname -> fname
+        |InvalidFilePath -> invalidArg "path" "Assumption of valid path was not correct."
 
     /// Gets the bare string from a filename
-    let getPathString (filename : Filename) = filename.PathString
+    let getPathString (filename : FilePath) = filename.PathString
 
     /// Appends lines to a file, and then closes the file. If the specified file does not exist, this function creates a 
     /// file, writes the specified lines to the file and then closes the file.
@@ -117,19 +117,19 @@ module File =
         IO.fromEffectful (fun _ -> File.Move(getPathString sourceFile, getPathString destFile))
 
     /// Opens a channel to the specified file using the supplied file mode
-    let openBinaryChannel mode access (fName : Filename) =
+    let openBinaryChannel mode access (fName : FilePath) =
         IO.fromEffectful (fun _ -> SideEffectingFileIO.openBinaryFileChannel fName mode access)
 
     /// Opens a channel to the specified file using the supplied file mode and performs the supplied computation fChannel with the channel before cleaning it up.
-    let withBinaryChannel mode access (fName : Filename) fChannel =
+    let withBinaryChannel mode access (fName : FilePath) fChannel =
         IO.bracket (openBinaryChannel mode access fName) (BinaryChannel.close) fChannel
 
     /// Opens a channel to the specified file using the supplied file mode
-    let openTextChannel mode access (fName : Filename) =
+    let openTextChannel mode access (fName : FilePath) =
         IO.fromEffectful (fun _ -> SideEffectingFileIO.openTextFileChannel fName mode access)
 
     /// Opens a channel to the specified file using the supplied file mode and performs the supplied computation fChannel with the channel before cleaning it up.
-    let withTextChannel mode access (fName : Filename) fChannel =
+    let withTextChannel mode access (fName : FilePath) fChannel =
         IO.bracket (openTextChannel mode access fName) (TextChannel.close) fChannel
 
     /// Reads all the bytes from a specified file as an array
@@ -181,5 +181,5 @@ module File =
         IO.fromEffectful (fun _ -> SideEffectingFileIO.fileSize filename)
 
     /// Creates a new file, writes the specified lines to the file and then closes the file. 
-    let writeLines (lines : seq<string>) (filename : Filename)  =
+    let writeLines (lines : seq<string>) (filename : FilePath)  =
         IO.fromEffectful (fun _ -> File.WriteAllLines(filename.PathString, lines))

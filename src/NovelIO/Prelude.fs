@@ -61,32 +61,34 @@ and IOErrorResult =
 /// Units of bytes
 [<Measure>] type Bytes
 
-/// Represents a filename of a valid format
-type Filename =
-    private |Filename of string
-
+/// Represents a filename in a valid format
+type FilePath private (fName : string) =
+    let fInfo = System.IO.FileInfo(fName)
     /// The raw string representation of the filename
-    member this.PathString = match this with Filename str -> str
-
-    /// Attempts to create a valid filename from a string, returning Some Filename if successful or None otherwise
-    static member TryCreateFromString (path : string) =
-        match path.IndexOfAny(Path.GetInvalidFileNameChars()) = -1 with
-        |true -> Some <| Filename(path)
-        |false -> None
+    member this.PathString = fName
 
     /// Attempts to create a valid filename from a string, returning a Filename if successful or throwing an exception otherwise
     static member CreateFromString path =
-        match Filename.TryCreateFromString path with
-        |Some fname -> fname
-        |None -> invalidArg "path" "Path Invalid"
+        Some <| FilePath path
+
+    /// Attempts to create a valid filename from a string, returning Some Filename if successful or None otherwise
+    static member TryCreateFromString (path : string) =
+        try
+            FilePath.CreateFromString path
+        with
+            | :? System.Security.SecurityException -> None
+            | :? System.ArgumentException -> None
+            | :? System.UnauthorizedAccessException -> None
+            | :? System.IO.PathTooLongException -> None
+            | :? System.NotSupportedException -> None
 
 /// Provides patterns for matching against valid and invalid file names
 [<AutoOpen>]
 module PathDiscriminators =
-    let (|ValidFilename|InvalidFilename|) (path : string) =
-        match Filename.TryCreateFromString path with
-        |Some fname -> ValidFilename fname
-        |None -> InvalidFilename
+    let (|ValidFilePath|InvalidFilePath|) (path : string) =
+        match FilePath.TryCreateFromString path with
+        |Some fname -> ValidFilePath fname
+        |None -> InvalidFilePath
 
 /// General functions of wide applicability
 [<AutoOpen>]

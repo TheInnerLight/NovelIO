@@ -47,16 +47,16 @@ type ``File Unit Tests``() =
     static member ``ValidFilename path disciminator matches for a valid file path``() =
         let fnameStr = System.IO.Path.GetRandomFileName()
         match fnameStr with
-        |ValidFilename fname -> true
-        |InvalidFilename -> failwith "path was expected not be invalid"
+        |ValidFilePath fname -> true
+        |InvalidFilePath -> failwith "path was expected not be invalid"
 
     [<Property>]
     static member ``InvalidFilename path disciminator matches for a invalid file path``() =
         let invStr = string << Array.head <| System.IO.Path.GetInvalidFileNameChars()
         let fnameStr = System.IO.Path.GetRandomFileName() + invStr
         match fnameStr with
-        |ValidFilename fname -> failwith "path was invalid"
-        |InvalidFilename -> true
+        |ValidFilePath fname -> failwith "path was invalid"
+        |InvalidFilePath -> true
 
     [<Property>]
     static member ``Function: getPathString returns contained path string``() =
