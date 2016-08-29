@@ -35,25 +35,18 @@ module private SideEffectingFileIO =
     let openTextFileChannel (fName : FilePath) mode access =
         let crTxtRdr (fStream : FileStream) = new StreamReader(fStream)
         let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream)
-        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
+        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access, FileShare.Read, 4096, true)
         let (reader, writer) =
             match access with
             |NovelFS.NovelIO.FileAccess.Read -> Some <| crTxtRdr fStream, None
             |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
             |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crTxtWrtr fStream
-        {TextReader = reader; TextWriter = writer}
+        {TextReader = reader; TextWriter = writer; IOMode = Optimise}
 
     /// Create a binary file channel for a supplied file name, file mode and file access
     let openBinaryFileChannel (fName : FilePath) mode access =
-        let crBinRdr (fStream : FileStream) = new BinaryReader(fStream)
-        let crBinWrtr (fStream : FileStream) = new BinaryWriter(fStream)
         let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
-        let (reader, writer) =
-            match access with
-            |NovelFS.NovelIO.FileAccess.Read -> Some <| crBinRdr fStream, None
-            |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crBinRdr fStream, Some <| crBinWrtr fStream
-            |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crBinWrtr fStream
-        {BinaryReader = reader; BinaryWriter = writer}
+        {IOStream = fStream; IOMode = Optimise; EOS = false}
 
 /// Provides functions relating to the creating, copying, deleting, moving, opening and reading of files
 module File =
@@ -143,14 +136,6 @@ module File =
     /// Reads all the lines from a file in the supplied encoding.
     let readAllLinesIn encoding filename = 
         IO.fromEffectful (fun _ -> List.ofArray <| File.ReadAllLines (getPathString filename, Encoding.createDotNetEncoding encoding))
-
-    /// Reads the lines from a file where each line can be read lazily.
-    let readLines filename = 
-        IO.fromEffectful (fun _ -> Seq.map (IO.return') (File.ReadLines <| getPathString filename))
-
-    /// Reads lines from a file in the supplied encoding where each line can be read lazily.
-    let readLinesIn encoding filename =
-        IO.fromEffectful (fun _ -> Seq.map (IO.return') (File.ReadLines (getPathString filename, Encoding.createDotNetEncoding encoding)))
 
     /// Sets the date / time at which the specified file was created
     let setCreationTime datetime filename = 

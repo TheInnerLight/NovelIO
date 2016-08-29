@@ -23,29 +23,48 @@ open System.Net
 type IO<'a> = 
     private 
     |Return of 'a
-    |Delay of (unit -> 'a)
+    |SyncIO of (unit -> IO<'a> )
+    |AsyncIO of (Async<IO<'a>>)
 
 /// Pure IO Functions
 module IO =
     // ------- RUN ------- //
 
-    /// Runs the IO actions and evaluates the result
-    let run io =
+    let rec private runIO io =
         match io with
-        |Return a -> a            
-        |Delay (a) -> a()
+        |Return a -> a         
+        |SyncIO (f) -> runIO <| f()
+        |AsyncIO a -> runIO << Async.RunSynchronously <| a
+
+    let rec private runAsyncIO io =
+        match io with
+        |Return a -> async.Return a
+        |SyncIO f -> runAsyncIO <| f()
+        |AsyncIO a -> async.Bind (a, runAsyncIO)
+
+    /// Runs the IO actions and evaluates the result
+    let run io = runIO io
 
     // ------- MONAD ------- //
 
     /// Return a value as an IO action
     let return' x = Return x
+
     /// Creates an IO action from an effectful computation, this simply takes a side effecting function and brings it into IO
-    let fromEffectful f = Delay (f)
+    let fromEffectful f = SyncIO (fun () -> return' <| f())
+
     /// Monadic bind for IO action, this is used to combine and sequence IO actions
     let bind x f =
-        match x with
-        |Return a -> f a
-        |Delay (g) -> Delay (fun _ -> run << f <| g())
+        let rec bindRec x' =
+            match x' with
+            |Return a -> f a
+            |SyncIO (g) -> SyncIO (fun () ->  bindRec <| g())
+            |AsyncIO (a) -> AsyncIO (async.Bind(a, async.Return << bindRec))
+        bindRec x
+
+    /// Lift an async computation into IO
+    let liftAsync a = AsyncIO <| async.Bind(a, async.Return << Return)
+            
     /// Removes a level of IO structure
     let join x = bind x id
 
@@ -87,7 +106,7 @@ module IO =
     let apply (f : IO<'a -> 'b>) (x : IO<'a>) =
         bind f (fun fe -> map fe x)
 
-    /// Lift a value.
+    /// Lift a value into IO.  Equivalent to return.
     let pure' x = Return x
 
     // ------- OPERATORS ------- //
@@ -135,9 +154,20 @@ module IO =
         // run recursively and channel exceptions in IO
         InternalIOHelper.withExceptionCheck (run) io
 
-    /// Sparks off a new thread to run the IO action passed as the first argument
-    let forkIO io = 
-        fromEffectful (fun _ -> System.Threading.Tasks.Task.Factory.StartNew(fun () -> run io) |> ignore)
+    /// Allows a supplied IO action to be executed on the thread pool, returning a task from which you can
+    /// observe the result
+    let forkTask<'a> (io : IO<'a>) =
+        fromEffectful (fun _ -> 
+            match io with
+            |Return a -> System.Threading.Tasks.Task.FromResult(a)
+            |SyncIO act -> System.Threading.Tasks.Task.Run(fun _ -> run io)
+            |AsyncIO aIO -> Async.StartAsTask <| runAsyncIO io)
+
+    /// Allows a supplied IO action to be executed on the thread pool
+    let forkIO<'a> (io : IO<'a>) = map (ignore) (forkTask io)
+
+    /// Allows the awaiting of a result from a forked Task
+    let awaitTask task = liftAsync <| Async.AwaitTask task
 
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
     let mapM mFunc sequ =
@@ -169,16 +199,13 @@ module IO =
         Seq.foldBack (f') sequ return' acc
 
     /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
-    let sequence seq =
-        mapM id seq
+    let sequence seq = mapM id seq
 
     /// Performs the action mFunc n times, gathering the results.
-    let replicateM mFunc n =
-        sequence (Seq.init n (fun _ -> mFunc))
+    let replicateM mFunc n = sequence (Seq.init n (const' mFunc))
 
     /// As replicateM but ignores the results
-    let repeatM mFunc n  =
-        replicateM mFunc n >>= (return' << ignore)
+    let repeatM mFunc n  = replicateM mFunc n >>= (return' << ignore)
 
     /// IOBuilder extensions so that iterM can be used to define For
     type IOBuilder with
@@ -192,30 +219,45 @@ module IO =
     module Loops =
         /// Take elements repeatedly while a condition is met
         let takeWhileM p xs =
-            fromEffectful  (fun _ ->
-                xs 
-                |> Seq.takeWhile p
-                |> Seq.map (run)
-                |> List.ofSeq
-                |> Seq.ofList)
+            let rec takeWhileMRec p xs =
+                io {
+                    match xs with
+                    |[] -> return []
+                    |x::xs ->
+                        let! q = p x
+                        match q with
+                        |true -> return! (takeWhileMRec p xs) >>= (fun xs' -> return' (x::xs'))
+                        |false -> return [] 
+                }
+            takeWhileMRec p xs
 
         /// Drop elements repeatedly while a condition is met
         let skipWhileM p xs =
-            fromEffectful (fun _ ->
-                xs 
-                |> Seq.skipWhile p
-                |> Seq.map (run)
-                |> List.ofSeq
-                |> Seq.ofList)
+            let rec skipWhileMRec p xs =
+                io {
+                    match xs with
+                    |[] -> return []
+                    |x::xs ->
+                        let! q = p x
+                        match q with
+                        |true -> return! skipWhileMRec p xs
+                        |false -> return x::xs
+                }
+            skipWhileMRec p xs
 
         /// Execute an action repeatedly as long as the given boolean IO action returns true
         let whileM (pAct : IO<bool>) (f : IO<'a>) =
-            fromEffectful (fun _ ->
-                Seq.initInfinite (fun _ -> f)
-                |> Seq.map (run)
-                |> Seq.takeWhile (fun _ -> run pAct)
-                |> List.ofSeq
-                |> Seq.ofList)
+            let rec whileMRec() =
+                io {
+                    let! p = pAct
+                    match p with
+                    |true -> 
+                        let! x = f
+                        let! xs = whileMRec()
+                        return x::xs
+                    |false -> return [] 
+                }
+            whileMRec()
 
         /// Execute an action repeatedly until the given boolean IO action returns true
         let untilM (pAct : IO<bool>) (f : IO<'a>) = whileM (not <!> pAct) f
@@ -223,12 +265,17 @@ module IO =
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
         let whileSome act binder =
-            fromEffectful (fun _ ->
-                Seq.initInfinite (fun _ -> run act)
-                |> Seq.takeWhile (Option.isSome)
-                |> Seq.map (run << binder << Option.get)
-                |> List.ofSeq
-                |> Seq.ofList)
+            let rec whileSomeRec() =
+                io {
+                    let! p = act
+                    match p with
+                    |Some x -> 
+                        let! x' = binder x
+                        let! xs = whileSomeRec()
+                        return x'::xs
+                    |None -> return [] 
+                }
+            whileSomeRec()
 
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =
@@ -245,12 +292,19 @@ module IO =
         /// Repeatedly evaluates the second argument while the value satisfies the given predicate, and returns a list of all
         /// values that satisfied the predicate.  Discards the final one (which failed the predicate).
         let unfoldWhileM p (f : IO<'a>) =
-            fromEffectful (fun _ ->
-                Seq.initInfinite (fun _ -> f)
-                |> Seq.map (run)
-                |> Seq.takeWhile p
-                |> List.ofSeq
-                |> Seq.ofList)
+            let rec unfoldWhileMRec() =
+                io {
+                    let! x = f
+                    match p x with
+                    |true -> 
+                        let! xs = unfoldWhileMRec()
+                        return x::xs
+                    |false -> return [] 
+                }
+            unfoldWhileMRec()
+
+        /// Does the action f forever
+        let forever f = iterateWhile (const' true) f
 
     // ------ Parallel ------ //
 
@@ -264,44 +318,23 @@ module IO =
 
         /// Executes the given IO actions in parallel
         let par (ios : IO<'a> list)  =
-            fromEffectful (fun _ ->
-                ios 
+            let allIOTasks =
+                ios
                 |> Array.ofList
-                |> Array.Parallel.map (run)
-                |> List.ofArray)
+                |> Array.map (forkTask)
+                |> sequence
+                |> map (System.Threading.Tasks.Task.WhenAll)
+            map (List.ofArray) (allIOTasks >>= awaitTask)
 
         /// Executes the given IO actions in parallel and ignores the result
         let par_ (ios : IO<_> list)  =
             map (ignore) (par ios)
-  
-        /// Executes the list of computations in parallel, returning the result of the first thread that completes with Some x, if any. 
-        let parFirst (ios : IO<'a option> list) =
-            let raiseExn (e : #exn) = Async.FromContinuations(fun (_,econt,_) -> econt e)
-            let wrap task =
-                async {
-                    let! res = task
-                    match res with
-                    | None -> return None
-                    | Some r -> return! raiseExn <| SuccessException r
-                }
-            fromEffectful (fun _ ->
-                try
-                    ios
-                    |> Seq.map (fun io -> wrap <| async {return run io})
-                    |> Async.Parallel
-                    |> Async.Ignore
-                    |> Async.RunSynchronously
-                    None
-                with 
-                | :? SuccessException<'b> as ex -> Some <| ex.Value)
 
         /// mapConcurrently is similar to mapM but where each of the IO actions in the sequence are performed in parallel
-        let mapConcurrently f seq =
-            fromEffectful (fun _ ->
-                seq 
-                |> Array.ofSeq 
-                |> Array.Parallel.map (run << (flip bind) f)
-                |> Seq.ofArray)
+        let mapConcurrently (f : 'a -> IO<'b>) sequ =
+            List.map f sequ
+            |> List.ofSeq
+            |> par
 
 /// Module to provide the definition of the io computation expression
 [<AutoOpen>]

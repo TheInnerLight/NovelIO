@@ -130,11 +130,26 @@ type FileAccess =
     /// Read and write access to a file
     |ReadWrite
 
+type ChannelIOMode =
+    |Synchronous
+    |Optimise
+    |Asynchronous
+
 /// A channel that may support text being read from it and written to it
-type TChannel = private {TextReader : StreamReader option; TextWriter : StreamWriter option}
+type TChannel = 
+    private {
+        TextReader : StreamReader option; 
+        TextWriter : StreamWriter option;
+        IOMode : ChannelIOMode
+        }
 
 /// A channel that may support binary data being read from it or written to it
-type BChannel = private {BinaryReader : BinaryReader option; BinaryWriter : BinaryWriter option}
+type BChannel = 
+    private {
+        IOStream : System.IO.Stream; 
+        IOMode : ChannelIOMode;
+        mutable EOS :  bool
+        }
 
 /// A TCP Server
 type TCPServer = private {TCPListener : Sockets.TcpListener}

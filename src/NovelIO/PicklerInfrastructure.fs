@@ -23,8 +23,8 @@ exception PicklingExceededArrayLengthException of int * int
 
 type private BinaryUnpicklerState = {Raw : byte array; Position : int; Endianness : Endianness}
 type private BinaryPicklerState = {Raw : byte list; Endianness : Endianness}
-type private IncrBinaryUnpicklerState = {Reader : System.IO.BinaryReader}
-type private IncrBinaryPicklerState = {Writer : System.IO.BinaryWriter}
+type private IncrBinaryUnpicklerState = {Reader : BChannel}
+type private IncrBinaryPicklerState = {Writer : BChannel}
 
 type private BUnpickleState =
     |UnpickleComplete of BinaryUnpicklerState

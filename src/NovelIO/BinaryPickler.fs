@@ -56,7 +56,7 @@ module BinaryPickler =
         match st with
         |PickleComplete ps -> PickleComplete {ps with Raw = (PickleConvertors.arrayFlipToList << f <| b) @ ps.Raw}
         |PickleIncremental ips -> 
-            ips.Writer.Write (f b)
+            BinaryChannel.SideEffecting.write (f b) ips.Writer
             st
     /// Helper function that chooses between complete or incremental unpickling and accepts an arbitrary data-size
     let private unpickleHelperSized size f st =
@@ -66,7 +66,7 @@ module BinaryPickler =
             let result = f pos (ps.Raw)
             result, UnpickleComplete {ps with Position = pos + size}
         |UnpickleIncremental ips ->
-            let result = f 0 (ips.Reader.ReadBytes size)
+            let result = f 0 (BinaryChannel.SideEffecting.readExactly size ips.Reader)
             result, st
 
     /// Helper function that chooses between complete or incremental unpickling and gets the size from the size of the data type
@@ -464,22 +464,22 @@ module BinaryPickler =
 
     /// Uses the supplied pickler/unpickler pair (PU) to unpickle from the supplied binary channel incrementally
     let unpickleIncr pu binaryChannel =
-        match binaryChannel.BinaryReader with
-        |Some binReader -> 
-            let incrUnpickler = UnpickleIncremental {Reader = binReader}
+        match binaryChannel.IOStream.CanRead with
+        |true -> 
+            let incrUnpickler = UnpickleIncremental {Reader = binaryChannel}
             IO.fromEffectful (fun _ -> fst <| runUnpickle (incrUnpickler) pu)
-        |None -> raise ChannelDoesNotSupportReadingException
+        |false -> raise ChannelDoesNotSupportReadingException
 
     /// Uses the supplied pickler/unpickler pair (PU) to pickle the supplied data to the supplied binary channel incrementally
     let pickleIncr pu binaryChannel value =
-        match binaryChannel.BinaryWriter with
-        |Some binWriter -> 
-            let incrPickler = PickleIncremental {Writer = binWriter}
+        match binaryChannel.IOStream.CanWrite with
+        |true -> 
+            let incrPickler = PickleIncremental {Writer = binaryChannel}
             IO.fromEffectful (fun _ -> 
                 match (runPickle (value, incrPickler) pu) with 
-                |PickleIncremental ps -> binWriter.Flush()
+                |PickleIncremental ps -> binaryChannel.IOStream.Flush()
                 |_ -> invalidOp "A non-incremental binary pickler state was returned from an initially incremental pickler")
-        |None -> raise ChannelDoesNotSupportReadingException
+        |false -> raise ChannelDoesNotSupportReadingException
 
 
     
