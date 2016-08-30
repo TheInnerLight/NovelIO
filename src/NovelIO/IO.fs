@@ -33,8 +33,8 @@ module IO =
     let rec private runIO io =
         match io with
         |Return a -> a         
-        |SyncIO (f) -> runIO <| f()
-        |AsyncIO a -> runIO << Async.RunSynchronously <| a
+        |SyncIO (f) -> runIO (f())
+        |AsyncIO a -> runIO (Async.RunSynchronously a)
 
     let rec private runAsyncIO io =
         match io with
@@ -247,17 +247,16 @@ module IO =
 
         /// Execute an action repeatedly as long as the given boolean IO action returns true
         let whileM (pAct : IO<bool>) (f : IO<'a>) =
-            let rec whileMRec() =
+            let rec whileMRec acc =
                 io {
                     let! p = pAct
                     match p with
                     |true -> 
                         let! x = f
-                        let! xs = whileMRec()
-                        return x::xs
-                    |false -> return [] 
+                        return! whileMRec (x::acc)
+                    |false -> return acc
                 }
-            whileMRec()
+            whileMRec []
 
         /// Execute an action repeatedly until the given boolean IO action returns true
         let untilM (pAct : IO<bool>) (f : IO<'a>) = whileM (not <!> pAct) f
@@ -265,17 +264,16 @@ module IO =
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
         let whileSome act binder =
-            let rec whileSomeRec() =
+            let rec whileSomeRec acc =
                 io {
                     let! p = act
                     match p with
                     |Some x -> 
                         let! x' = binder x
-                        let! xs = whileSomeRec()
-                        return x'::xs
-                    |None -> return [] 
+                        return! whileSomeRec (x' :: acc)
+                    |None -> return acc
                 }
-            whileSomeRec()
+            whileSomeRec []
 
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =
