@@ -47,11 +47,15 @@ module TextChannel =
             |Some txtRdr -> async { return! Async.AwaitTask <| txtRdr.ReadLineAsync()}
             |None -> raise ChannelDoesNotSupportReadingException
         /// Writes a string to a text channel
-        let putStr (str : string) channel =
-            putStrF (fun txtWrtr -> txtWrtr.Write str) channel
+        let write (str : string) channel =
+            match channel.TextWriter with
+            |Some txtWrtr -> txtWrtr.Write(str)
+            |None -> raise ChannelDoesNotSupportWritingException
         /// Writes a string line to a text channel
-        let putStrLn (str : string) channel =
-            putStrF (fun txtWrtr -> txtWrtr.WriteLine str) channel
+        let writeLine (str : string) channel =
+            match channel.TextWriter with
+            |Some txtWrtr -> txtWrtr.WriteLine(str)
+            |None -> raise ChannelDoesNotSupportWritingException
         /// Determines whether a supplied text channel is ready to be read from
         let isChannelReadyToRead channel = 
             match channel.TextReader with
@@ -82,7 +86,7 @@ module TextChannel =
     let isReady channel = IO.fromEffectful (fun _ -> SideEffecting.isChannelReadyToRead channel)
 
     /// An action that writes a line to the text channel
-    let putStrLn channel str = IO.fromEffectful (fun _ -> SideEffecting.putStrLn str channel)
+    let putStrLn channel str = IO.fromEffectful (fun _ -> SideEffecting.writeLine str channel)
 
 /// Operations on binary channels
 module BinaryChannel =

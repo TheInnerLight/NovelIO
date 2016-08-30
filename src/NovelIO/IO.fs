@@ -290,16 +290,14 @@ module IO =
         /// Repeatedly evaluates the second argument while the value satisfies the given predicate, and returns a list of all
         /// values that satisfied the predicate.  Discards the final one (which failed the predicate).
         let unfoldWhileM p (f : IO<'a>) =
-            let rec unfoldWhileMRec() =
+            let rec unfoldWhileMRec acc =
                 io {
                     let! x = f
                     match p x with
-                    |true -> 
-                        let! xs = unfoldWhileMRec()
-                        return x::xs
-                    |false -> return [] 
+                    |true -> return! unfoldWhileMRec (x::acc)
+                    |false -> return acc
                 }
-            unfoldWhileMRec()
+            unfoldWhileMRec []
 
         /// Does the action f forever
         let forever f = iterateWhile (const' true) f
