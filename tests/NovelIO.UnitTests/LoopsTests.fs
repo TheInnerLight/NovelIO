@@ -47,6 +47,20 @@ type ``IO Loops Tests``() =
         !bCount = count && res = List.init count (const' 0)
 
     [<Property>]
+    static member ``iterWhileM with mutable counters that count up to 'count' both equal count`` (count : PositiveInt) =
+        let count = count.Get
+        let bCount = ref 0
+        let execCount = ref 0
+        let continueUntil = IO.fromEffectful (fun _ -> 
+            if !bCount < count then
+                incr bCount
+                true
+            else false)
+        let incrIO = IO.fromEffectful (fun _ -> incr execCount)
+        let res = IO.Loops.iterWhileM continueUntil incrIO |> IO.run
+        !bCount = count && !execCount = count
+
+    [<Property>]
     static member ``untilM with mutable counter that counts up to 'count' and returns zero creates zeros of length 'count'`` (count : PositiveInt) =
         let count = count.Get
         let bCount = ref 0
@@ -59,6 +73,20 @@ type ``IO Loops Tests``() =
         let zeroIO = IO.fromEffectful (fun _ -> 0)
         let res = IO.Loops.untilM continueUntil zeroIO |> IO.run
         !bCount = count && res = List.init count (const' 0)
+
+    [<Property>]
+    static member ``iterUntilM with mutable counters that count up to 'count' both equal count`` (count : PositiveInt) =
+        let count = count.Get
+        let bCount = ref 0
+        let execCount = ref 0
+        let continueUntil = IO.fromEffectful (fun _ -> 
+            if !bCount < count then
+                incr bCount
+                false
+            else true)
+        let incrIO = IO.fromEffectful (fun _ -> incr execCount)
+        let res = IO.Loops.iterUntilM continueUntil incrIO |> IO.run
+        !bCount = count && !execCount = count
 
     [<Property>]
     static member ``whileSome with mutable counter that counts up to 'count' and returns Some i creates list of 1..count'`` (count : PositiveInt) =

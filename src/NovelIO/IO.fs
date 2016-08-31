@@ -150,9 +150,9 @@ module IO =
     let bracket act fClnUp fBind =
         io {
             let! a = act
-            return! fromEffectful (fun _ ->
+            return! SyncIO (fun _ ->
                 try 
-                    run <| fBind a
+                    fBind a
                 finally
                     ignore << run <| fClnUp a)
         }
@@ -180,37 +180,43 @@ module IO =
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
     let mapM mFunc sequ =
         let consF x ys = lift2 (listCons) (mFunc x) ys
-        Seq.foldBack (consF) sequ (return' [])
-        |> map (Seq.ofList)
+        List.foldBack (consF) sequ (return' [])
 
     /// Map each element of a list to a monadic action of options, evaluate these actions from left to right and collect the results which are 'Some' as a sequence.
     let chooseM mFunc sequ =
         let consF = function
             |Some v -> listCons (v)
             |None -> id
-        Seq.foldBack (fun x -> lift2 consF (mFunc x)) sequ (return' [])
-        |> map (Seq.ofList)
+        List.foldBack (lift2 consF << mFunc) sequ (return' [])
 
     /// Filters a sequence based upon a monadic predicate, collecting the results as a sequence
     let filterM pred sequ =
-        Seq.foldBack (fun x -> lift2 (fun flg -> if flg then (listCons x) else id) (pred x)) sequ (return' [])
-        |> map (Seq.ofList)
+        List.foldBack (fun x -> lift2 (fun flg -> if flg then (listCons x) else id) (pred x)) sequ (return' [])
 
-    /// As mapM but ignores the result.
-    let iterM mFunc sequ =
-        mapM (mFunc) sequ
-        |> map (ignore)
+    /// Map each element of a list to a monadic action, evaluate these actions from left to right and ignore the results.
+    let iterM (mFunc : 'a -> IO<'b>) (sequ : seq<'a>) =
+        SyncIO (fun _ ->
+            use enmr = sequ.GetEnumerator()
+            let rec iterMRec() =
+                io {
+                    match enmr.MoveNext() with
+                    |true -> 
+                        let! res = mFunc (enmr.Current)
+                        return! iterMRec()
+                    |false -> return ()
+                }
+            iterMRec())
 
     /// Analogous to fold, except that the results are encapsulated within IO
     let foldM accFunc acc sequ =
         let f' x k z = accFunc z x >>= k
-        Seq.foldBack (f') sequ return' acc
+        List.foldBack (f') sequ return' acc
 
     /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
     let sequence seq = mapM id seq
 
     /// Performs the action mFunc n times, gathering the results.
-    let replicateM mFunc n = sequence (Seq.init n (const' mFunc))
+    let replicateM mFunc n = sequence (List.init n (const' mFunc))
 
     /// As replicateM but ignores the results
     let repeatM mFunc n  = replicateM mFunc n >>= (return' << ignore)
@@ -303,9 +309,13 @@ module IO =
 
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =
-            match p v with
-            |true -> return' v
-            |false -> f v >>= iterateUntilM p f
+            io {
+                match p v with
+                |true -> return v
+                |false ->
+                    let! v' = f v 
+                    return! iterateUntilM p f v'
+            }
 
         /// Execute an action repeatedly until its result satisfies a predicate and return that result (discarding all others).
         let iterateUntil p x = x >>= iterateUntilM p (const' x)
@@ -345,6 +355,7 @@ module IO =
                 ios
                 |> Array.ofList
                 |> Array.map (forkTask)
+                |> List.ofArray
                 |> sequence
                 |> map (System.Threading.Tasks.Task.WhenAll)
             map (List.ofArray) (allIOTasks >>= awaitTask)
@@ -356,7 +367,6 @@ module IO =
         /// mapConcurrently is similar to mapM but where each of the IO actions in the sequence are performed in parallel
         let mapConcurrently (f : 'a -> IO<'b>) sequ =
             List.map f sequ
-            |> List.ofSeq
             |> par
 
 /// Module to provide the definition of the io computation expression

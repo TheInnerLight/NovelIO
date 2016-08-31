@@ -90,3 +90,33 @@ type ``IO Unit Tests``() =
         let nothing = IO.fromEffectful (fun _ -> ())
         IO.bracket create (fun _ -> closed) (fun _ -> nothing) |> IO.run
         called = true
+
+    [<Property>]
+    static member ``bracket calls inner action`` () =
+        let create = IO.return' ()
+        let mutable called = false
+        let closed = IO.fromEffectful (fun _ -> ())
+        let act = IO.fromEffectful (fun _ -> called <- true)
+        IO.bracket create (fun _ -> closed) (fun _ -> act) |> IO.run
+        called = true
+
+    [<Property(MaxTest=1)>]
+    static member ``iterM over sequence of 0..1e6 value and incr action produces 1e6 value`` () =
+        let mutable x = ref 0
+        let action = IO.fromEffectful (fun _ -> incr x)
+        let ios = Seq.init (1000000) id
+        let iterm = IO.iterM (const' action) ios
+        IO.run iterm
+        !x = 1000000
+
+    [<Property(MaxTest=1)>]
+    static member ``for over sequence of 0..1e6 value and incr action produces 1e6 value`` () =
+        let mutable x = ref 0
+        let action = IO.fromEffectful (fun _ -> incr x)
+        io {
+            for x in [1..1000000] do
+                do! action
+        } |> IO.run
+        !x = 1000000
+
+
