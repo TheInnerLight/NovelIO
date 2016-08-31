@@ -30,11 +30,11 @@ type IO<'a> =
 module IO =
     // ------- RUN ------- //
 
-    let rec private runIO io =
+    let rec private runUntilAsync io =
         match io with
-        |Return a -> a         
-        |SyncIO (f) -> runIO (f())
-        |AsyncIO a -> runIO (Async.RunSynchronously a)
+        |Return a -> async.Return <| Return a
+        |SyncIO f -> runUntilAsync (f())
+        |AsyncIO a -> a
 
     let rec private runAsyncIO io =
         match io with
@@ -42,8 +42,16 @@ module IO =
         |SyncIO f -> runAsyncIO <| f()
         |AsyncIO a -> async.Bind (a, runAsyncIO)
 
+    let rec private  runRec (io : IO<'a>) : Async<'a> =
+        async{
+            let! io' = runUntilAsync io
+            match io' with
+            |Return res -> return res
+            |_ -> return! runRec io'
+        }
+
     /// Runs the IO actions and evaluates the result
-    let run io = runIO io
+    let run io = runRec io |> Async.RunSynchronously
 
     // ------- MONAD ------- //
 
@@ -256,10 +264,27 @@ module IO =
                         return! whileMRec (x::acc)
                     |false -> return acc
                 }
-            whileMRec []
+            whileMRec [] 
+            |> map (List.rev)
+
+        /// Execute an action repeatedly as long as the given boolean IO action returns true
+        let iterWhileM (pAct : IO<bool>) (f : IO<'a>) =
+            let rec whileMRec() =
+                io {
+                    let! p = pAct
+                    match p with
+                    |true -> 
+                        let! x = f
+                        return! whileMRec()
+                    |false -> return ()
+                }
+            whileMRec ()
 
         /// Execute an action repeatedly until the given boolean IO action returns true
         let untilM (pAct : IO<bool>) (f : IO<'a>) = whileM (not <!> pAct) f
+
+        /// Execute an action repeatedly until the given boolean IO action returns true
+        let iterUntilM (pAct : IO<bool>) (f : IO<'a>) = iterWhileM (not <!> pAct) f
 
         /// As long as the supplied "Maybe" expression returns "Some _", each element will be bound using the value contained in the 'Some'.
         /// Results are collected into a sequence.
@@ -274,6 +299,7 @@ module IO =
                     |None -> return acc
                 }
             whileSomeRec []
+            |> map (List.rev)
 
         /// Yields the result of applying f until p holds.
         let rec iterateUntilM p f v =
@@ -298,6 +324,7 @@ module IO =
                     |false -> return acc
                 }
             unfoldWhileMRec []
+            |> map (List.rev)
 
         /// Does the action f forever
         let forever f = iterateWhile (const' true) f
