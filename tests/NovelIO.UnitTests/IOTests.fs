@@ -33,8 +33,8 @@ type ``IO Unit Tests``() =
         IO.run <| IO.fromEffectful (fun _ -> testData) = testData
 
     [<Property>]
-    static member ``mapM matches results of map when run on pure binding function`` (testData : int list) =
-        let test = IO.mapM (IO.return' << ((+)1)) testData
+    static member ``traverse matches results of map when run on pure binding function`` (testData : int list) =
+        let test = IO.traverse (IO.return' << ((+)1)) testData
         let result = List.ofSeq <| IO.run test
         let mappedTestData = List.map ((+) 1) testData
         result = mappedTestData
@@ -64,9 +64,9 @@ type ``IO Unit Tests``() =
         result = filteredTestData
 
     [<Property>]
-    static member ``mapM does not create side effects until run`` (testData : obj list) =
+    static member ``traverse does not create side effects until run`` (testData : obj list) =
         let createTestFail = IO.fromEffectful (fun _ -> failwith "Side effect created")
-        let test = IO.mapM (fun _ -> createTestFail) testData
+        let test = IO.traverse (fun _ -> createTestFail) testData
         true
 
     [<Property>]

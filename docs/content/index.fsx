@@ -16,16 +16,20 @@ Much like in Haskell, we introduce the `IO<'a>` type which represents some actio
 * An IO action that prints the string "Hello World" to the screen has type `IO<unit>`.
 * An IO action that gets a line of text from the Console has type `IO<string>`.
 * An IO action that opens a TCP connection has type `IO<TCPConnectedSocket>`.
+* An IO action that launches some missiles has type `IO<unit>`
 
-The IO action can equally represent a sequence of actions:
+The IO action can equally represent an arbitrary sequence of actions:
 
 * An IO action that requests a Name, then that person's Date of Birth from a service might have type `IO<string, DateTime>`
+* An IO action that returns a potentially unknown number of lines from a file might have type `IO<string list>`
+
+Indeed an entire web server could be represented as a single value of type `IO<unit>`.
 
 Values of type `IO<'a>` are distinct from traditional values in that they do not represent the result of some side effect, they rather represent an action (or sequence of actions) that can be `run` to produce a particular result.
 
 ## Running IO Actions
 
-`IO<'a>` Actions can be `run` using the `IO.run` function.  This results in all of the side-effects being evaluated, resulting in something of type `'a`.
+`IO<'a>` Actions can be `run` using the `IO.run` function.  This results in all of the side-effects being evaluated and the generation of a result of type `'a`.
 
 These values can then be re-used and run again to evaluate the side-effects once more.
 
@@ -49,7 +53,7 @@ printfn "%s" (IO.run exmpl2)
 
 (**
 
-If we run these examples, we can note the different behaviour.
+Take careful note of the different behaviour.
 
 In the first example `exmpl` represents the result of the user input from the console, we perform that side effect only once and print the same value to the console twice.
 
@@ -59,23 +63,69 @@ In the second example `exmpl2` represents the action of reading user input from 
 
 It is possible (albeit certainly not recommended!) to call `IO.run` on every small block of IO code.  It is also possible to call `IO.run` only once, in the main function, for an entire program: it is then possible to visualise the running of a program as the only effectful part of otherwise pure, referentially transparent code.
 
-## Sequencing IO Actions
+## Compositionality
 
-It is possible to sequence I/O operations using the `io` computation expression (very similar to the do notation found in Haskell).
+One of the key attractions of this representation of IO is that we can design IO actions and then compose them together to build new and more complex IO actions.
+
+Let's assume for a moment that we wish to read two lines from the console and return them as a tuple.  That can be achieved as follows:
 
 *)
 
-io {
-    let! l1 = Console.readLine
-    let! l2 = Console.readLine
-    let! l3 = Console.readLine
-    do! IO.putStrLn <| sprintf "You entered: %A" [l1; l2; l3]
-} |> IO.run
+let readTwoLines = 
+    io {
+        let! line1 = Console.readLine
+        let! line2 = Console.readLine
+        return line1, line2
+    }
 
 (**
-Here we simply read three lines from the console and print the result back to the console as a list.
 
-Needless to say, highly complex actions can be built up in this way.  For example, running a webserver could be represented as a single `IO` action.
+`let!` is used to request the result of an IO action when the enclosing action is run. 
+
+Notice that we have taken two primitive IO actions of type `IO<string>` and used them to construct a new IO action of type `IO<string*string>`
+
+Likewise, if we wished to write two lines to the console, we could construct an action like this:
+
+*)
+
+let writeTwoLines line1 line2 = 
+    io {
+        do! Console.writeLine line1
+        do! Console.writeLine line2
+    }
+
+(**
+
+`do!` is used to evaluate an IO action of type `unit` when the enclosing action is run.
+
+In this case, we have taken two IO actions of type `IO<unit>` and created a new action of type `IO<unit>`.
+
+## Loops
+
+A common task during I/O operations is to perform some action until a condition is met.  There are a variety of combinators to help with this sort of task:
+
+Let's assume we wish to print the numbers 1..10 to the console.  One way of doing this would be:
+
+*)
+
+let print1To10 = 
+    IO.iterM (fun i -> Console.writeLine <| string i) [1..10] // The lambda here could be replaced by (Console.writeLine << string)
+
+(**
+
+The `iterM` function is used to define `for` loops in the IO monad.  The below code is completely equivalent to the above:
+
+*)
+
+let print1To10For = 
+    io {
+        for i in [1..10] do
+            do! Console.writeLine <| string i
+    }
+
+(**
+
+It is possible to sequence I/O operations using the `io` computation expression.
 
 ## Parallel IO
 
@@ -98,14 +148,15 @@ This describes a program that gets a line from the console and a line from a spe
 
 It's very likely that the set of functions included in this library will not cover every possible IO action we might ever wish to perform.  In this case, we can use the `IO.fromEffectful` to take a non-referentially transparent function and bring it within IO.
 
-If we decide to create an action that exits the program, this could be accomplished as follows:
+Here is an example of creating a simple IO action that increments a reference variable.
 
 *)
 
-let exit = IO.fromEffectful (fun _ -> System.Environment.Exit 0)
+let num = ref 0
+let incrIO = IO.fromEffectful (fun _ -> incr num)
 
 (**
 
-This should allow us to construct arbitrary programs entirely within IO.
+This allows us to construct arbitrary programs entirely within IO.
 
 *)

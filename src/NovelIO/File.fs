@@ -41,12 +41,12 @@ module private SideEffectingFileIO =
             |NovelFS.NovelIO.FileAccess.Read -> Some <| crTxtRdr fStream, None
             |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
             |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crTxtWrtr fStream
-        {TextReader = reader; TextWriter = writer; IOMode = Optimise}
+        {TextReader = reader; TextWriter = writer; IOMode = ChannelIOMode.Synchronous}
 
     /// Create a binary file channel for a supplied file name, file mode and file access
     let openBinaryFileChannel (fName : FilePath) mode access =
         let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
-        {IOStream = fStream; IOMode = Optimise; EOS = false}
+        {IOStream = fStream; IOMode = ChannelIOMode.Optimise; EOS = false}
 
 /// Provides functions relating to the creating, copying, deleting, moving, opening and reading of files
 module File =

@@ -56,6 +56,11 @@ module TextChannel =
             match channel.TextWriter with
             |Some txtWrtr -> txtWrtr.WriteLine(str)
             |None -> raise ChannelDoesNotSupportWritingException
+        /// Writes a string line to a text channel asynchronously
+        let writeLineAsync (str : string) channel =
+            match channel.TextWriter with
+            |Some txtWrtr -> txtWrtr.WriteLineAsync(str) |> Async.AwaitTask
+            |None -> raise ChannelDoesNotSupportWritingException
         /// Determines whether a supplied text channel is ready to be read from
         let isChannelReadyToRead channel = 
             match channel.TextReader with
@@ -73,7 +78,7 @@ module TextChannel =
     /// An action that reads a line from the text channel
     let getLine (channel : TChannel) = 
         match channel.IOMode with
-        |Synchronous -> IO.fromEffectful (fun _ -> SideEffecting.getLine channel)
+        |ChannelIOMode.Synchronous -> IO.fromEffectful (fun _ -> SideEffecting.getLine channel)
         |_ -> IO.liftAsync <| SideEffecting.getLineAsync channel
 
     /// An action that determines if the text channel is at the end of the stream.  This a synonym for isEOF
@@ -86,7 +91,10 @@ module TextChannel =
     let isReady channel = IO.fromEffectful (fun _ -> SideEffecting.isChannelReadyToRead channel)
 
     /// An action that writes a line to the text channel
-    let putStrLn channel str = IO.fromEffectful (fun _ -> SideEffecting.writeLine str channel)
+    let putStrLn (channel : TChannel) str =
+        match channel.IOMode with
+        |ChannelIOMode.Synchronous -> IO.fromEffectful (fun _ -> SideEffecting.writeLine str channel)
+        |_ -> IO.liftAsync <| SideEffecting.writeLineAsync str channel
 
 /// Operations on binary channels
 module BinaryChannel =
@@ -151,7 +159,7 @@ module BinaryChannel =
     /// Higher order function for performing channel actions synchrously or asynchronously
     let private syncOrAsync syncFunc asyncA count channel =
         match channel.IOMode with
-        |Synchronous | Optimise when count < 1024 -> IO.fromEffectful syncFunc
+        |ChannelIOMode.Synchronous | ChannelIOMode.Optimise when count < 1024 -> IO.fromEffectful syncFunc
         |_ -> IO.liftAsync asyncA
 
     /// Provides a general approach for reading partial byte arrays from a channel

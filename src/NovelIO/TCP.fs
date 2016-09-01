@@ -81,12 +81,12 @@ module TCP =
         IO.fromEffectful (fun _ ->
             {TextReader = new StreamReader(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some;
              TextWriter = new StreamWriter(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some;
-             IOMode = Asynchronous})
+             IOMode = ChannelIOMode.Asynchronous})
 
     /// Create a binary channel from a connect socket
     let socketToBinaryChannel tcpSocket =
         IO.fromEffectful (fun _ ->
             let nStream = new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)
-            {IOStream = nStream; IOMode = Asynchronous; EOS = false})
+            {IOStream = nStream; IOMode = ChannelIOMode.Asynchronous; EOS = false})
 
 

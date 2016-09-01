@@ -150,9 +150,9 @@ module IO =
     let bracket act fClnUp fBind =
         io {
             let! a = act
-            return! SyncIO (fun _ ->
+            return! fromEffectful (fun _ ->
                 try 
-                    fBind a
+                    run <| fBind a
                 finally
                     ignore << run <| fClnUp a)
         }
@@ -178,9 +178,9 @@ module IO =
     let awaitTask task = liftAsync <| Async.AwaitTask task
 
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
-    let mapM mFunc sequ =
+    let traverse mFunc lst =
         let consF x ys = lift2 (listCons) (mFunc x) ys
-        List.foldBack (consF) sequ (return' [])
+        List.foldBack (consF) lst (return' [])
 
     /// Map each element of a list to a monadic action of options, evaluate these actions from left to right and collect the results which are 'Some' as a sequence.
     let chooseM mFunc sequ =
@@ -212,8 +212,8 @@ module IO =
         let f' x k z = accFunc z x >>= k
         List.foldBack (f') sequ return' acc
 
-    /// Evaluate each action in the sequence from left to right and collect the results as a sequence.
-    let sequence seq = mapM id seq
+    /// Evaluate each action in the list from left to right and collect the results as a list.
+    let sequence seq = traverse id seq
 
     /// Performs the action mFunc n times, gathering the results.
     let replicateM mFunc n = sequence (List.init n (const' mFunc))
@@ -343,11 +343,6 @@ module IO =
 
     /// Parallel IO combinators
     module Parallel =
-
-        /// A helper type for ending computations when success occurs
-        type private SuccessException<'a> (value : 'a) =
-            inherit System.Exception()
-            member __.Value = value
 
         /// Executes the given IO actions in parallel
         let par (ios : IO<'a> list)  =

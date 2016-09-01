@@ -130,9 +130,14 @@ type FileAccess =
     /// Read and write access to a file
     |ReadWrite
 
+/// Defines the IO mode of a channel
+[<RequireQualifiedAccess>]
 type ChannelIOMode =
+    /// Use sychronous (blocking) IO
     |Synchronous
+    /// Choose between sychronous or asynchronous IO depending on what is likely to perform best
     |Optimise
+    /// Use asychronous IO
     |Asynchronous
 
 /// A channel that may support text being read from it and written to it

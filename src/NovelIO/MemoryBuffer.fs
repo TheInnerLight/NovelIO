@@ -34,13 +34,13 @@ module MemoryBuffer =
         IO.fromEffectful (fun _ ->
             {TextReader = new StreamReader(buffer.MemStream) |> Some;
              TextWriter = new StreamWriter(buffer.MemStream) |> Some;
-             IOMode = Synchronous})
+             IOMode = ChannelIOMode.Synchronous})
 
      /// Create a binary channel from a memory buffer
     let bufferToBinaryChannel buffer =
         IO.fromEffectful (fun _ ->
             {IOStream = buffer.MemStream;
-             IOMode = Synchronous;
+             IOMode = ChannelIOMode.Synchronous;
              EOS = false})
     
 
