@@ -140,6 +140,10 @@ type ChannelIOMode =
     /// Use asychronous IO
     |Asynchronous
 
+/// A set of options for opening a file
+type FileOpenOptions =
+    {FileMode : FileMode; FileAccess : FileAccess; IOMode : ChannelIOMode}
+
 /// A channel that may support text being read from it and written to it
 type TChannel = 
     private {

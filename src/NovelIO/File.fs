@@ -50,6 +50,27 @@ module private SideEffectingFileIO =
 
 /// Provides functions relating to the creating, copying, deleting, moving, opening and reading of files
 module File =
+    /// Options for opening a file
+    module Open =
+        /// A default set of options for reading a file
+        let defaultRead = {
+            FileMode = NovelFS.NovelIO.FileMode.Open; 
+            FileAccess = NovelFS.NovelIO.FileAccess.Read; 
+            IOMode = ChannelIOMode.Optimise
+            }
+        /// A default set of options for reading and writing a file
+        let defaultReadWrite = {
+            FileMode = NovelFS.NovelIO.FileMode.Create; 
+            FileAccess = NovelFS.NovelIO.FileAccess.ReadWrite; 
+            IOMode = ChannelIOMode.Optimise
+            }
+        /// A default set of options for writing a file
+        let defaultWrite = {
+            FileMode = NovelFS.NovelIO.FileMode.Create; 
+            FileAccess = NovelFS.NovelIO.FileAccess.Write; 
+            IOMode = ChannelIOMode.Optimise
+            }
+
     /// Turns a string into a filename by assuming the supplied string is a valid filename.  
     /// Throws an ArgumentException if the supplied string is, in fact, not valid.
     let assumeValidFilename path =
@@ -110,20 +131,20 @@ module File =
         IO.fromEffectful (fun _ -> File.Move(getPathString sourceFile, getPathString destFile))
 
     /// Opens a channel to the specified file using the supplied file mode
-    let openBinaryChannel mode access (fName : FilePath) =
-        IO.fromEffectful (fun _ -> SideEffectingFileIO.openBinaryFileChannel fName mode access)
+    let openBinaryChannel options (fName : FilePath) =
+        IO.fromEffectful (fun _ -> SideEffectingFileIO.openBinaryFileChannel fName options.FileMode options.FileAccess)
 
     /// Opens a channel to the specified file using the supplied file mode and performs the supplied computation fChannel with the channel before cleaning it up.
-    let withBinaryChannel mode access (fName : FilePath) fChannel =
-        IO.bracket (openBinaryChannel mode access fName) (BinaryChannel.close) fChannel
+    let withBinaryChannel options (fName : FilePath) fChannel =
+        IO.bracket (openBinaryChannel options fName) (BinaryChannel.close) fChannel
 
     /// Opens a channel to the specified file using the supplied file mode
-    let openTextChannel mode access (fName : FilePath) =
-        IO.fromEffectful (fun _ -> SideEffectingFileIO.openTextFileChannel fName mode access)
+    let openTextChannel options (fName : FilePath) =
+        IO.fromEffectful (fun _ -> SideEffectingFileIO.openTextFileChannel fName options.FileMode options.FileAccess)
 
     /// Opens a channel to the specified file using the supplied file mode and performs the supplied computation fChannel with the channel before cleaning it up.
-    let withTextChannel mode access (fName : FilePath) fChannel =
-        IO.bracket (openTextChannel mode access fName) (TextChannel.close) fChannel
+    let withTextChannel options (fName : FilePath) fChannel =
+        IO.bracket (openTextChannel options fName) (TextChannel.close) fChannel
 
     /// Reads all the bytes from a specified file as an array
     let readAllBytes filename = 
