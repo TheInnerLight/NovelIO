@@ -60,7 +60,7 @@ module File =
             }
         /// A default set of options for reading and writing a file
         let defaultReadWrite = {
-            FileMode = NovelFS.NovelIO.FileMode.Create; 
+            FileMode = NovelFS.NovelIO.FileMode.OpenOrCreate; 
             FileAccess = NovelFS.NovelIO.FileAccess.ReadWrite; 
             IOMode = ChannelIOMode.Optimise
             }
@@ -71,40 +71,42 @@ module File =
             IOMode = ChannelIOMode.Optimise
             }
 
-    /// Turns a string into a filename by assuming the supplied string is a valid filename.  
-    /// Throws an ArgumentException if the supplied string is, in fact, not valid.
-    let assumeValidFilename path =
-        match path with
-        |ValidFilePath fname -> fname
-        |InvalidFilePath -> invalidArg "path" "Assumption of valid path was not correct."
+    /// Operations on File Paths
+    module Path =
+        /// Turns a string into a file path by assuming the supplied string is a valid file path.  
+        /// Throws an ArgumentException if the supplied string is, in fact, not valid.
+        let fromValid path =
+            match path with
+            |ValidFilePath fname -> fname
+            |InvalidFilePath -> invalidArg "path" "Assumption of valid path was not correct."
 
-    /// Gets the bare string from a filename
-    let getPathString (filename : FilePath) = filename.PathString
+        /// Gets the bare string from a filename
+        let pathString (filename : FilePath) = filename.PathString
 
     /// Appends lines to a file, and then closes the file. If the specified file does not exist, this function creates a 
     /// file, writes the specified lines to the file and then closes the file.
     let appendLines (lines : seq<string>) filename =
-        IO.fromEffectful (fun _ -> File.AppendAllLines(getPathString filename, lines))
+        IO.fromEffectful (fun _ -> File.AppendAllLines(Path.pathString filename, lines))
 
     /// Copies an existing file to a location specified.  Overwriting is not allowed
     let copy sourceFile destFile =
-        IO.fromEffectful (fun _ -> File.Copy(getPathString sourceFile, getPathString destFile))
+        IO.fromEffectful (fun _ -> File.Copy(Path.pathString sourceFile, Path.pathString destFile))
 
     /// Determines the creation date / time of the specified file
     let creationTime filename = 
-        IO.fromEffectful (fun _ -> File.GetCreationTime <| getPathString filename)
+        IO.fromEffectful (fun _ -> File.GetCreationTime <| Path.pathString filename)
 
     /// Determines the UTC creation date / time of the specified file
     let creationTimeUTC filename = 
-        IO.fromEffectful (fun _ -> File.GetCreationTimeUtc <| getPathString filename)
+        IO.fromEffectful (fun _ -> File.GetCreationTimeUtc <| Path.pathString filename)
 
     /// Deletes the specified file
     let delete filename =
-        IO.fromEffectful (fun _ -> File.Delete <| getPathString filename)
+        IO.fromEffectful (fun _ -> File.Delete <| Path.pathString filename)
 
     /// Determines whether or not the specified file exists
     let exists filename = 
-        IO.fromEffectful (fun _ -> File.Exists <| getPathString filename)
+        IO.fromEffectful (fun _ -> File.Exists <| Path.pathString filename)
 
     /// Determines whether or not the specified file is readonly
     let isReadOnly filename =
@@ -112,23 +114,23 @@ module File =
 
     /// Determines the date / time at which the specified file was last accessed
     let lastAccessTime filename = 
-        IO.fromEffectful (fun _ -> File.GetLastAccessTime <| getPathString filename)
+        IO.fromEffectful (fun _ -> File.GetLastAccessTime <| Path.pathString filename)
 
     /// Determines the UTC date / time at which the specified file was last accessed
     let lastAccessTimeUTC filename = 
-        IO.fromEffectful (fun _ -> File.GetLastAccessTimeUtc <| getPathString filename)
+        IO.fromEffectful (fun _ -> File.GetLastAccessTimeUtc <| Path.pathString filename)
 
     /// Determines the date / time at which the specified file was last written
     let lastWriteTime filename = 
-        IO.fromEffectful (fun _ -> File.GetLastWriteTime <| getPathString filename)
+        IO.fromEffectful (fun _ -> File.GetLastWriteTime <| Path.pathString filename)
 
     /// Determines the UTC date / time at which the specified file was last written
     let lastWriteTimeUTC filename = 
-        IO.fromEffectful (fun _ -> File.GetLastWriteTimeUtc <| getPathString filename)
+        IO.fromEffectful (fun _ -> File.GetLastWriteTimeUtc <| Path.pathString filename)
 
     /// Moves an existing file to a location specified.  Overwriting is not allowed
     let move sourceFile destFile =
-        IO.fromEffectful (fun _ -> File.Move(getPathString sourceFile, getPathString destFile))
+        IO.fromEffectful (fun _ -> File.Move(Path.pathString sourceFile, Path.pathString destFile))
 
     /// Opens a channel to the specified file using the supplied file mode
     let openBinaryChannel options (fName : FilePath) =
@@ -148,39 +150,39 @@ module File =
 
     /// Reads all the bytes from a specified file as an array
     let readAllBytes filename = 
-        IO.fromEffectful(fun _ -> File.ReadAllBytes <| getPathString filename)
+        IO.fromEffectful(fun _ -> File.ReadAllBytes <| Path.pathString filename)
 
     /// Reads all the lines from a file.
     let readAllLines filename = 
-        IO.fromEffectful (fun _ -> List.ofArray << File.ReadAllLines <| getPathString filename)
+        IO.fromEffectful (fun _ -> List.ofArray << File.ReadAllLines <| Path.pathString filename)
 
     /// Reads all the lines from a file in the supplied encoding.
     let readAllLinesIn encoding filename = 
-        IO.fromEffectful (fun _ -> List.ofArray <| File.ReadAllLines (getPathString filename, Encoding.createDotNetEncoding encoding))
+        IO.fromEffectful (fun _ -> List.ofArray <| File.ReadAllLines (Path.pathString filename, Encoding.createDotNetEncoding encoding))
 
     /// Sets the date / time at which the specified file was created
     let setCreationTime datetime filename = 
-        IO.fromEffectful (fun _ -> File.SetCreationTime(getPathString filename, datetime))
+        IO.fromEffectful (fun _ -> File.SetCreationTime(Path.pathString filename, datetime))
 
     /// Sets the UTC date / time at which the specified file was created
     let setCreationTimeUTC datetime filename = 
-        IO.fromEffectful (fun _ -> File.SetCreationTimeUtc(getPathString filename, datetime))
+        IO.fromEffectful (fun _ -> File.SetCreationTimeUtc(Path.pathString filename, datetime))
 
     /// Sets the date / time at which the specified file was last accessed
     let setLastAccessTime datetime filename = 
-        IO.fromEffectful (fun _ -> File.SetLastAccessTime(getPathString filename, datetime))
+        IO.fromEffectful (fun _ -> File.SetLastAccessTime(Path.pathString filename, datetime))
 
     /// Sets the UTC date / time at which the specified file was last accessed
     let setLastAccessTimeUTC datetime filename = 
-        IO.fromEffectful (fun _ -> File.SetLastAccessTimeUtc(getPathString filename, datetime))
+        IO.fromEffectful (fun _ -> File.SetLastAccessTimeUtc(Path.pathString filename, datetime))
 
     /// Sets the date / time at which the specified file was last written
     let setLastWriteTime datetime filename = 
-        IO.fromEffectful (fun _ -> File.SetLastWriteTime(getPathString filename, datetime))
+        IO.fromEffectful (fun _ -> File.SetLastWriteTime(Path.pathString filename, datetime))
 
     /// Sets the UTC date / time at which the specified file was last written
     let setLastWriteTimeUTC datetime filename = 
-        IO.fromEffectful (fun _ -> File.SetLastWriteTimeUtc(getPathString filename, datetime))
+        IO.fromEffectful (fun _ -> File.SetLastWriteTimeUtc(Path.pathString filename, datetime))
 
     /// Determines the size of the specified file in bytes
     let size filename =

@@ -27,7 +27,7 @@ type ``File Integration Tests``() =
     static member ``Read All Bytes from file`` (bytes : byte[]) =
         let fnameStr = "readbytestest.tst"
         System.IO.File.WriteAllBytes(fnameStr, bytes)
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.readAllBytes fname = bytes
 
     [<Property>]
@@ -38,7 +38,7 @@ type ``File Integration Tests``() =
             |> Array.collect (fun str -> str.Get.Split('\r','\n'))
             |> List.ofArray 
         System.IO.File.WriteAllLines(fnameStr, lstStrs)
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         let lineIO =
             io {
                 return! File.readAllLines fname

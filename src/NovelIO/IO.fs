@@ -359,7 +359,7 @@ module IO =
         let par_ (ios : IO<_> list)  =
             map (ignore) (par ios)
 
-        /// mapConcurrently is similar to mapM but where each of the IO actions in the sequence are performed in parallel
+        /// mapConcurrently is similar to traverse but where each of the IO actions in the sequence are performed in parallel
         let mapConcurrently (f : 'a -> IO<'b>) sequ =
             List.map f sequ
             |> par

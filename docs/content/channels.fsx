@@ -35,15 +35,14 @@ An example is the `File.withTextChannel` function:
 
 *)
 
-io {
-    let withChannelOR = File.withTextChannel FileMode.Open FileAccess.Read 
-    return withChannelOR (File.assumeValidFilename "test.txt") (fun channel -> 
-            io {
-                let! l1 = TextChannel.getLine channel
-                let! l2 = TextChannel.getLine channel
-                return l1, l2
-            })
-}
+
+File.withTextChannel File.Open.defaultRead (File.Path.fromValid "test.txt") (fun channel ->
+    io {
+        let! l1 = TextChannel.getLine channel
+        let! l2 = TextChannel.getLine channel
+        return l1, l2
+    })
+
 
 (**
 

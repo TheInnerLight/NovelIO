@@ -78,8 +78,8 @@ module TextChannel =
     /// An action that reads a line from the text channel
     let getLine (channel : TChannel) = 
         match channel.IOMode with
-        |ChannelIOMode.Synchronous -> IO.fromEffectful (fun _ -> SideEffecting.getLine channel)
-        |_ -> IO.liftAsync <| SideEffecting.getLineAsync channel
+        |ChannelIOMode.Asynchronous -> IO.liftAsync <| SideEffecting.getLineAsync channel
+        |_ -> IO.fromEffectful (fun _ -> SideEffecting.getLine channel)
 
     /// An action that determines if the text channel is at the end of the stream.  This a synonym for isEOF
     let isEOS channel = IO.fromEffectful (fun _ -> SideEffecting.isChannelAtEndOfStream channel)
@@ -93,8 +93,8 @@ module TextChannel =
     /// An action that writes a line to the text channel
     let putStrLn (channel : TChannel) str =
         match channel.IOMode with
-        |ChannelIOMode.Synchronous -> IO.fromEffectful (fun _ -> SideEffecting.writeLine str channel)
-        |_ -> IO.liftAsync <| SideEffecting.writeLineAsync str channel
+        |ChannelIOMode.Asynchronous -> IO.liftAsync <| SideEffecting.writeLineAsync str channel
+        |_ -> IO.fromEffectful (fun _ -> SideEffecting.writeLine str channel)
 
 /// Operations on binary channels
 module BinaryChannel =

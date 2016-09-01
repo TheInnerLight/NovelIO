@@ -19,14 +19,14 @@ The first method of creating `Filepath`s is to use active patterns on a string, 
 *)
 
 match "test.txt" with
-|ValidFilename fName -> Some fName // do something with the valid filename
-|InvalidFilename -> None // handle the invalid filename case
+|ValidFilePath fName -> Some fName // do something with the valid filename
+|InvalidFilePath -> None // handle the invalid filename case
 
 (**
 If we know that a conversion to a `Filepath` is definitely going to be succesful, we can instead use `File.assumeValidFilename`
 *)
 
-let fName = File.assumeValidFilename "test.txt"
+let fName = File.Path.fromValid "test.txt"
 
 (**
 Should we be mistaken about the supplied string being a valid filename, an `ArgumentException` will be thrown.
@@ -37,23 +37,21 @@ The `File` modules contains functions very similar to `System.IO.File` defined i
 *)
 
 io {
-   let! lines = File.readLines fName
+   let! lines = File.readAllLines fName
    return lines
 }
 
 (**
+
 ## File Channels
 
 If you need more fine-grained control over File IO, the way to achieve this is using Channels.  Text and Binary Channels (`TChannels` and `BChannels`) support explicit reading and writing of their corresponding datatype.
 
 *)
 
-let readLines file = 
-    io {
-        let withChannelOR = File.withTextChannel FileMode.Open FileAccess.Read 
-        return! withChannelOR file (fun channel -> 
-                IO.Loops.untilM (TextChannel.isEOS channel) (TextChannel.getLine channel))
-    }
+let readFileUntilEnd path =
+    File.withTextChannel File.Open.defaultRead path (fun channel ->
+        IO.Loops.untilM (TextChannel.isEOF channel) (TextChannel.getLine channel))
 
 (**
 

@@ -5,6 +5,8 @@
 #r "NovelIO/NovelIO.dll"
 open NovelFS.NovelIO
 
+let someAction = IO.return' ()
+
 (**
 Introduction
 ======================
@@ -125,18 +127,61 @@ let print1To10For =
 
 (**
 
-It is possible to sequence I/O operations using the `io` computation expression.
+A common task in File IO is performing a loop to retrieve lines from a file until you reach the end of the file.  
 
-## Parallel IO
+In this case, we can't use a simple `for` loop as we did previously because the logic for checking the loop end condition is also side effecting!  Fortunately, we have another function for this occassion:
 
-IO actions can also be performed in parallel using the `IO.parallel` combinators.  This gives us very explicit, fine-grained, control over what actions should take place in parallel.
+*)
+
+
+let readFileUntilEnd path =
+    File.withTextChannel File.Open.defaultRead path (fun channel ->
+        IO.Loops.untilM (TextChannel.isEOF channel) (TextChannel.getLine channel))
+
+(**
+
+The `withTextChannel` encapsulates the lifetime of the text channel, accepting as an argument a function where we make use of the channel.
+
+In this function, we use the `untilM` combinator, its first argument is an `IO<bool>` condition and its second is an action to perform while the condition is `false`.
+
+It runs a `list` of all the results we generated from the action argument while the condition was `false`.
+
+## Parallel and Asychronous IO
+
+### Forking IO actions
+
+If you wish to perform some IO on another thread then `forkIO` is the function of choice.  It simply performs the work on the .NET thread pool and doesn't ever return a result.
+
+*)
+
+io {
+    do! IO.forkIO someAction
+}
+
+(**
+
+If you wished to perform a task and then retrieve the results later, you would need to use `forkTask` and `awaitTask`.
+
+*)
+
+io {
+    let! task = IO.forkTask <| IO.replicateM Random.nextIO 100 // create a task that generates some random numbers on the thread pool
+    let! results = IO.awaitTask task // await the completion of the task (await Task waits asychronously, it will not block threads)
+    return results
+}
+
+(**
+
+### Parallel actions
+
+Entire lists of IO actions can be performed in parallel using the `IO.parallel` combinators.  This gives us very explicit, fine-grained, control over what actions should take place in parallel.
 
 In order to execute items in parallel, we can simply build a list of the IO actions we wish to perform and use the `par` combinator.  For example:
 *)
 
 io {
-    let fName = File.assumeValidFilename "file.txt"
-    let! channel = File.openTextChannel FileMode.Open FileAccess.Read fName
+    let fName = File.Path.fromValid "file.txt"
+    let! channel = File.openTextChannel File.Open.defaultRead fName
     return IO.Parallel.par [Console.readLine; TextChannel.getLine channel]
 } |> IO.run
 
