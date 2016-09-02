@@ -274,15 +274,15 @@ module IO =
             |> map (List.rev)
 
         /// Execute an action repeatedly as long as the given boolean IO action returns true
-        let iterWhileM (pAct : IO<bool>) (f : IO<'a>) =
+        let iterWhileM (pAct : IO<bool>) (act : IO<'a>) =
             let rec whileMRec() =
-                io {
-                    let! p = pAct
+                io { // check the predicate action
+                    let! p = pAct 
                     match p with
-                    |true -> 
-                        let! x = f
+                    |true -> // unwrap the current action value then recurse
+                        let! x = act
                         return! whileMRec()
-                    |false -> return ()
+                    |false -> return () // finished
                 }
             whileMRec ()
 
@@ -342,10 +342,20 @@ module IO =
     // ------ Parallel ------ //
 
     /// Parallel IO combinators
+    [<RequireQualifiedAccess>]
     module Parallel =
+        /// Executes the given IO actions in parallel and ignores the result.
+        let iterSequence (ios : IO<_> list)  =
+            let allIOTasks = 
+                ios
+                |> Array.ofList
+                |> Array.map (forkIO)
+                |> List.ofArray
+                |> sequence
+            allIOTasks >>= (return' << ignore)
 
-        /// Executes the given IO actions in parallel
-        let par (ios : IO<'a> list)  =
+        /// Executes the given IO actions in parallel.
+        let sequence (ios : IO<'a> list)  =
             let allIOTasks =
                 ios
                 |> Array.ofList
@@ -355,14 +365,10 @@ module IO =
                 |> map (System.Threading.Tasks.Task.WhenAll)
             map (List.ofArray) (allIOTasks >>= awaitTask)
 
-        /// Executes the given IO actions in parallel and ignores the result
-        let par_ (ios : IO<_> list)  =
-            map (ignore) (par ios)
-
-        /// mapConcurrently is similar to traverse but where each of the IO actions in the sequence are performed in parallel
-        let mapConcurrently (f : 'a -> IO<'b>) sequ =
+        /// Map each element in a list to a monadic action and then run all of those monadic actions in parallel.
+        let traverse (f : 'a -> IO<'b>) sequ =
             List.map f sequ
-            |> par
+            |> sequence
 
 /// Module to provide the definition of the io computation expression
 [<AutoOpen>]

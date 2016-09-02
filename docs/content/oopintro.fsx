@@ -25,17 +25,21 @@ type IResourceSupplier =
 
 You can then pass the `IResourceSupplier` implementation to its consumers.
 
-Imagine we wished to add one to every number retrieved by our resource supplier, we might do this:
+Imagine we wished to add one to every number retrieved by our resource supplier so we decide to use a constructor injected dependency.
 
 *)
 
-let addOneToListFromSupplier (supplier : IResourceSupplier) = List.map ((+) 1) (supplier.GetList())
+type Adder(supplier : IResourceSupplier) =
+    member this.AddOne = List.map ((+) 1) (supplier.GetList())
+
 
 (**
 
-Of course, this still requires a trivial implementation that depends upon `IResourceSupplier`.
+This class is now pretty easy to test, we just use a custom `IResourceSupplier` implementation and we can test the logic that the `Adder` class performs in isolation of its dependency.
 
-The same thing can be achieved in IO via lifting a general function into io.
+Of course, we've had to add quite a bit of boilerplate to actually get to this point.  
+
+Exactly the same results can be achieved in IO by lifting a pure function into IO.
 
 *)
 
@@ -45,7 +49,9 @@ let addOneToIOList lstIO = IO.map (addOneToList) lstIO // this function takes th
 
 (**
 
-We have gained the same testability advantage as the OO dependency inversion with less boilerplate required to produce it.
+`IO.map` can take any function of the form `'a -> 'b` and return an `IO<'a> -> IO<'b>`, allowing our previously pure function to easily operate within IO.
+
+We have gained the same testability advantage as the OO dependency inversion example with less boilerplate required to actually realise it.
 
 We can also see through the type system which function performs IO and which does not.  That's a massive win for both readability and maintenance!
 
