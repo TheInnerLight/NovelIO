@@ -54,20 +54,23 @@ module File =
     module Open =
         /// A default set of options for reading a file
         let defaultRead = {
-            FileMode = NovelFS.NovelIO.FileMode.Open; 
-            FileAccess = NovelFS.NovelIO.FileAccess.Read; 
+            FileMode = NovelFS.NovelIO.FileMode.Open;
+            FileAccess = NovelFS.NovelIO.FileAccess.Read;
+            FileShare = NovelFS.NovelIO.FileShare.Read;
             IOMode = ChannelIOMode.Optimise
             }
         /// A default set of options for reading and writing a file
         let defaultReadWrite = {
-            FileMode = NovelFS.NovelIO.FileMode.OpenOrCreate; 
-            FileAccess = NovelFS.NovelIO.FileAccess.ReadWrite; 
+            FileMode = NovelFS.NovelIO.FileMode.OpenOrCreate;
+            FileAccess = NovelFS.NovelIO.FileAccess.ReadWrite;
+            FileShare = NovelFS.NovelIO.FileShare.Read;
             IOMode = ChannelIOMode.Optimise
             }
         /// A default set of options for writing a file
         let defaultWrite = {
-            FileMode = NovelFS.NovelIO.FileMode.Create; 
-            FileAccess = NovelFS.NovelIO.FileAccess.Write; 
+            FileMode = NovelFS.NovelIO.FileMode.Create;
+            FileAccess = NovelFS.NovelIO.FileAccess.Write;
+            FileShare = NovelFS.NovelIO.FileShare.Read;
             IOMode = ChannelIOMode.Optimise
             }
 

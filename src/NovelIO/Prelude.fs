@@ -104,31 +104,17 @@ module General =
     /// Converts a curried function to a function on pairs.
     let inline uncurry f (a, b) = f a b 
         
-/// Specifies how the operating system should open a file
+/// Type abbreviation for System.IO.FileMode
 [<RequireQualifiedAccess>]
-type FileMode =
-    /// Specifies that a new file should be created.  If the file already exists, an IOException will be thrown.
-    |CreateNew
-    /// Specifies that a new file should be created.  If the file already exists, it will be overwritten.
-    |Create
-    /// Specifies that an existing file should be opened.
-    |Open
-    /// Specifies that an existing file should be opened.  If the file does not exist, it will be created.
-    |OpenOrCreate
-    /// Specifies that an existing file should be opened but that, once opened, it should be truncated to zero bytes.
-    |Truncate
-    /// Specifies that an existing file should be opened and the end of the file sought.  If the file does not exist, it will be created.
-    |Append
+type FileMode = System.IO.FileMode
 
-/// Defines the type of access to a file
+/// Type abbreviation for System.IO.FileAccess
 [<RequireQualifiedAccess>]
-type FileAccess =
-    /// Read access to a file
-    |Read
-    /// Write access to a file
-    |Write
-    /// Read and write access to a file
-    |ReadWrite
+type FileAccess = System.IO.FileAccess
+
+/// Type abbreviation for System.IO.FileShare
+[<RequireQualifiedAccess>]
+type FileShare = System.IO.FileShare
 
 /// Defines the IO mode of a channel
 [<RequireQualifiedAccess>]
@@ -142,7 +128,7 @@ type ChannelIOMode =
 
 /// A set of options for opening a file
 type FileOpenOptions =
-    {FileMode : FileMode; FileAccess : FileAccess; IOMode : ChannelIOMode}
+    {FileMode : FileMode; FileAccess : FileAccess; FileShare: FileShare; IOMode : ChannelIOMode}
 
 /// A channel that may support text being read from it and written to it
 type TChannel = 
