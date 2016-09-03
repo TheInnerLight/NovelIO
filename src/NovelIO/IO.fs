@@ -143,9 +143,6 @@ module IO =
 
     // ----- GENERAL ----- //
 
-    /// An action that writes a line to console
-    let putStrLn (str : string) = fromEffectful (fun _ -> System.Console.WriteLine str)
-
     /// Allows you to supply an effect which acquires acquires a resource, an effect which releases that research and an action to perform during the resource's lifetime
     let bracket act fClnUp fBind =
         io {
@@ -202,7 +199,7 @@ module IO =
                     match enmr.MoveNext() with
                     |true -> 
                         let! res = mFunc (enmr.Current)
-                        return! iterMRec()
+                        return! iterMRec() //must use return! (not do!) for tail call
                     |false -> return ()
                 }
             iterMRec())

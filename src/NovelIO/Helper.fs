@@ -20,33 +20,9 @@ open System.IO
 
 module internal InternalIOHelper =
     /// Helper function to catch IO exceptions and structure the success/failure
-    let withExceptionCheck f a =
+    let withExceptionCheck f a : Result<_,_> =
         try 
-            f a |> IOSuccess
+            Choice1Of2 <| f a 
         with
-            | ChannelDoesNotSupportReadingException -> ChannelDoesNotSupportReading |> IOError
-            | ChannelDoesNotSupportWritingException -> ChannelDoesNotSupportWriting |> IOError
-            | :? EndOfStreamException as eose -> PastEndOfStream eose |> IOError
-            | :? System.ObjectDisposedException as ode -> StreamClosed ode |> IOError
-            | :? FileNotFoundException as fnfe -> FileNotFound fnfe |> IOError
-            | :? PathTooLongException as ptle -> PathTooLong ptle |> IOError
-            | :? System.UnauthorizedAccessException as uaex -> UnauthourisedAccess uaex |> IOError
-            | :? IOException as ioex -> Other ioex |> IOError
-
-    /// Converts a NovelIO file mode to a System.IO.FileMode
-    let fileModeToSystemIOFileMode (fm : NovelFS.NovelIO.FileMode) =
-        match fm with
-        |NovelFS.NovelIO.FileMode.CreateNew -> System.IO.FileMode.CreateNew
-        |NovelFS.NovelIO.FileMode.Create -> System.IO.FileMode.Create
-        |NovelFS.NovelIO.FileMode.Open -> System.IO.FileMode.Open
-        |NovelFS.NovelIO.FileMode.OpenOrCreate -> System.IO.FileMode.OpenOrCreate
-        |NovelFS.NovelIO.FileMode.Truncate -> System.IO.FileMode.Truncate
-        |NovelFS.NovelIO.FileMode.Append -> System.IO.FileMode.Append
-
-    /// Converts a NovelIO file mode to a System.IO.FileMode
-    let fileAccessToSystemIOFileAccess (fa : NovelFS.NovelIO.FileAccess) =
-        match fa with
-        |NovelFS.NovelIO.FileAccess.Read -> System.IO.FileAccess.Read
-        |NovelFS.NovelIO.FileAccess.Write -> System.IO.FileAccess.Write
-        |NovelFS.NovelIO.FileAccess.ReadWrite -> System.IO.FileAccess.ReadWrite
+            | exn -> Choice2Of2 exn
 

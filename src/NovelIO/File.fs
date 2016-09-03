@@ -35,7 +35,7 @@ module private SideEffectingFileIO =
     let openTextFileChannel (fName : FilePath) mode access =
         let crTxtRdr (fStream : FileStream) = new StreamReader(fStream)
         let crTxtWrtr (fStream : FileStream) = new StreamWriter(fStream)
-        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access, FileShare.Read, 4096, true)
+        let fStream = new FileStream(fName.PathString, mode, access, FileShare.Read, 4096, true)
         let (reader, writer) =
             match access with
             |NovelFS.NovelIO.FileAccess.Read -> Some <| crTxtRdr fStream, None
@@ -45,7 +45,7 @@ module private SideEffectingFileIO =
 
     /// Create a binary file channel for a supplied file name, file mode and file access
     let openBinaryFileChannel (fName : FilePath) mode access =
-        let fStream = new FileStream(fName.PathString, InternalIOHelper.fileModeToSystemIOFileMode mode, InternalIOHelper.fileAccessToSystemIOFileAccess access)
+        let fStream = new FileStream(fName.PathString, mode, access)
         {IOStream = fStream; IOMode = ChannelIOMode.Optimise; EOS = false}
 
 /// Provides functions relating to the creating, copying, deleting, moving, opening and reading of files
