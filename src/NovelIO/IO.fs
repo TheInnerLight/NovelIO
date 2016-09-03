@@ -123,9 +123,9 @@ module IO =
         /// Apply operator for IO actions
         let inline (<*>) (f : IO<'a -> 'b>) (x : IO<'a>) = apply f x
         /// Sequence actions, discarding the value of the first argument.
-        let inline ( *> ) u v = return' (const' id) <*> u <*> v
+        let inline ( >>. ) u v = return' (const' id) <*> u <*> v
         /// Sequence actions, discarding the value of the second argument.
-        let inline ( <* ) u v = return' const' <*> u <*> v
+        let inline ( .>> ) u v = return' const' <*> u <*> v
         /// Monadic bind operator for IO actions
         let inline (>>=) x f = bind x f
         /// Left to right Kleisli composition of IO actions, allows composition of binding functions

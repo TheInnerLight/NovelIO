@@ -23,7 +23,7 @@ open FsCheck.Xunit
 
 type ``IO Operator Tests``() =
     [<Property>]
-    static member ``*> operator does action on left, then action on right and returns result of action on right`` () =
+    static member ``>>. operator does action on left, then action on right and returns result of action on right`` () =
         let x = ref 0
         let addAction = IO.fromEffectful (fun _ -> 
             x := !x + 3
@@ -31,12 +31,12 @@ type ``IO Operator Tests``() =
         let multAction = IO.fromEffectful (fun _ -> 
             x := !x * 3
             1)
-        let act = addAction *> multAction
+        let act = addAction >>. multAction
         let result = IO.run act
         result = 1 && !x = 9 // 9 confirms the order since 0 + 3 * 3 = 9 but 0 * 3 + 3 = 3
 
     [<Property>]
-    static member ``<* operator does action on left, then action on right and returns result of action on left`` () =
+    static member ``.>> operator does action on left, then action on right and returns result of action on left`` () =
         let x = ref 0
         let addAction = IO.fromEffectful (fun _ -> 
             x := !x + 3
@@ -44,10 +44,18 @@ type ``IO Operator Tests``() =
         let multAction = IO.fromEffectful (fun _ -> 
             x := !x * 3
             1)
-        let act = addAction <* multAction
+        let act = addAction .>> multAction
         let result = IO.run act
         result = 10 && !x = 9 // 9 confirms the order since 0 + 3 * 3 = 9 but 0 * 3 + 3 = 3
 
-        
+    [<Property>]
+    static member ``<!> operator for (+) on IO int returns same as addition`` (num : int) =
+         let additionIO = ((+) 5) <!> (IO.return' num)
+         IO.run additionIO = num + 5
+
+    [<Property>]
+    static member ``<*> operator for (+) on IO int returns same as addition`` (num1 : int, num2 : int) =
+         let additionIO = (+) <!> (IO.return' num1) <*> (IO.return' num2)
+         IO.run additionIO = num1 + num2
 
 
