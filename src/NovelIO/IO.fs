@@ -154,11 +154,6 @@ module IO =
                     ignore << run <| fClnUp a)
         }
 
-    /// Runs the IO actions and evaluates the result, handling success or failure using IOResult
-    let runGuarded io =
-        // run recursively and channel exceptions in IO
-        InternalIOHelper.withExceptionCheck (run) io
-
     /// Allows a supplied IO action to be executed on the thread pool, returning a task from which you can
     /// observe the result
     let forkTask<'a> (io : IO<'a>) =
