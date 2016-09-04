@@ -43,9 +43,11 @@ Exactly the same results can be achieved in IO by lifting a pure function into I
 
 *)
 
-let addOneToList lst = List.map ((+) 1) lst // this function works on any old list, making it trivial to test
+// this pure function works on a standard lists, its trivial to unit test
+let addOneToList lst = List.map ((+) 1) lst 
 
-let addOneToIOList lstIO = IO.map (addOneToList) lstIO // this function takes the above function and makes it operate on lists in IO.
+// this function is just the above function made to operate on lists in IO using map.
+let addOneToIOList lstIO = IO.map (addOneToList) lstIO 
 
 (**
 

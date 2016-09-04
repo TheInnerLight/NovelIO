@@ -116,7 +116,8 @@ Let's assume we wish to print the numbers 1..10 to the console.  One way of doin
 *)
 
 let print1To10 = 
-    IO.iterM (fun i -> Console.writeLine <| string i) [1..10] // The lambda here could be replaced by (Console.writeLine << string)
+    IO.iterM (fun i -> Console.writeLine <| string i) [1..10]
+    // The lambda in the above could be replaced by (Console.writeLine << string)
 
 (**
 
@@ -170,8 +171,10 @@ If you wished to perform a task and then retrieve the results later, you would n
 *)
 
 io {
-    let! task = IO.forkTask <| IO.replicateM Random.nextIO 100 // create a task that generates some random numbers on the thread pool
-    let! results = IO.awaitTask task // await the completion of the task (await Task waits asychronously, it will not block threads)
+    // create a task that generates some random numbers on the thread pool
+    let! task = IO.forkTask <| IO.replicateM Random.nextIO 100
+    // await the completion of the task (await Task waits asychronously, it will not block threads)
+    let! results = IO.awaitTask task
     return results
 }
 
