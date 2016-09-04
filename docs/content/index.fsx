@@ -11,7 +11,9 @@ let someAction = IO.return' ()
 Introduction
 ======================
 
-NovelIO is a library designed to bring the explicit safety and robustness of Haskell's IO monad to the .NET framework. The result is a purely functional approach to describing I/O operations whereby the application of functions does not perform side-effecting computations but rather constructs a data type representing a sequence of actions that can later be executed.
+NovelIO is a library designed to bring the explicit safety and robustness that comes with describing effects in the type system to the .NET framework. The result is a purely functional approach to describing I/O operations whereby functions do not perform side-effects but rather construct values that represent a sequence of effects that can later be executed.
+
+The primary goal of this library is to help developers to design more maintainable and testable code by making it easier to reason about when I/O operations occur.
 
 Much like in Haskell, we introduce the `IO<'a>` type which represents some action that, when performed successfully, returns some result `'a.`  Here are some examples:
 
@@ -25,9 +27,11 @@ The IO action can equally represent an arbitrary sequence of actions:
 * An IO action that requests a Name, then that person's Date of Birth from a service might have type `IO<string, DateTime>`
 * An IO action that returns a potentially unknown number of lines from a file might have type `IO<string list>`
 
-Indeed an entire web server could be represented as a single value of type `IO<unit>`.
+Indeed an entire web server could be represented as a single value of type `IO<unit>`!
 
-Values of type `IO<'a>` are distinct from traditional values in that they do not represent the result of some side effect, they rather represent an action (or sequence of actions) that can be `run` to produce a particular result.
+The key distinction between this representation of effects and the side-effects found in imperative programming is that values of type `IO<'a>` do not represent the result of some side effect, they actually represent the action/effect that can be `run` to produce a particular result.
+
+The idea of actions being values rather than functions is extremely powerful, it allows us to begin with a small set of orthogonal primitive actions that can be passed around and composed, using combinator functions, to build up to advanced behaviours quickly, easily and safely!
 
 ## Running IO Actions
 
