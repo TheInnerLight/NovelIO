@@ -11,7 +11,8 @@ let someAction = IO.return' ()
 Introduction
 ======================
 
-NovelIO is a library designed to bring the explicit safety and robustness that comes with describing effects in the type system to the .NET framework. The result is a purely functional approach to describing I/O operations whereby functions do not perform side-effects but rather construct values that represent a sequence of effects that can later be executed.
+NovelIO is a library designed to bring the explicit safety and robustness that comes with describing effects in the type system to the .NET framework.
+The result is a purely functional approach to describing I/O operations whereby functions do not perform side-effects but rather construct values that represent a sequence of effects that can later be executed.
 
 The primary goal of this library is to help developers to design more maintainable and testable code by making it easier to reason about when I/O operations occur.
 
@@ -178,15 +179,20 @@ io {
 
 ### Parallel actions
 
-Entire lists of IO actions can be performed in parallel using the `IO.parallel` combinators.  This gives us very explicit, fine-grained, control over what actions should take place in parallel.
+Entire lists of IO actions can be performed in parallel using the functions in the `IO.Parallel` module.  This gives us very explicit, fine-grained, control over what actions should take place in parallel.
 
-In order to execute items in parallel, we can simply build a list of the IO actions we wish to perform and use the `par` combinator.  For example:
+In order to execute items in parallel, we can simply build a list of the IO actions we wish to perform and use the `IO.Parallel.sequence` combinator.  
+
+> **Aside:** You may notice that `IO.Parallel.sequence` has exactly the same type signature as the `IO.sequence` function.
+These two functions are fundamentally very similar, the only difference is that `IO.sequence` joins a list of actions sequentially and `IO.Parallel.sequence` joins a list of actions in parallel.
+
+For example:
 *)
 
 io {
     let fName = File.Path.fromValid "file.txt"
     let! channel = File.openTextChannel File.Open.defaultRead fName
-    return IO.Parallel.par [Console.readLine; TextChannel.getLine channel]
+    return IO.Parallel.sequence [Console.readLine; TextChannel.getLine channel]
 } |> IO.run
 
 (**
