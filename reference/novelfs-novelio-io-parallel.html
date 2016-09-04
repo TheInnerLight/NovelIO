@@ -56,19 +56,39 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '91', 91)" onmouseover="showTip(event, '91', 91)">
-            par ios
+          <code onmouseout="hideTip(event, '97', 97)" onmouseover="showTip(event, '97', 97)">
+            iterSequence(ios)
           </code>
-          <div class="tip" id="91">
+          <div class="tip" id="97">
+            <strong>Signature:</strong> ios:IO&lt;&#39;?7452&gt; list -&gt; IO&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7452          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L340-340" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Executes the given IO actions in parallel and ignores the result.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '98', 98)" onmouseover="showTip(event, '98', 98)">
+            sequence(ios)
+          </code>
+          <div class="tip" id="98">
             <strong>Signature:</strong> ios:IO&lt;&#39;a&gt; list -&gt; IO&lt;&#39;a list&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L266-266" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L350-350" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Executes the given IO actions in parallel</p>
+          <p>Executes the given IO actions in parallel.</p>
 
 
         </td>
@@ -76,39 +96,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '92', 92)" onmouseover="showTip(event, '92', 92)">
-            par_ ios
+          <code onmouseout="hideTip(event, '99', 99)" onmouseover="showTip(event, '99', 99)">
+            traverse(f sequ)
           </code>
-          <div class="tip" id="92">
-            <strong>Signature:</strong> ios:IO&lt;&#39;?7469&gt; list -&gt; IO&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7469          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L274-274" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Executes the given IO actions in parallel and ignores the result</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '93', 93)" onmouseover="showTip(event, '93', 93)">
-            parFirst ios
-          </code>
-          <div class="tip" id="93">
-            <strong>Signature:</strong> ios:IO&lt;&#39;a option&gt; list -&gt; IO&lt;&#39;b option&gt;<br />
+          <div class="tip" id="99">
+            <strong>Signature:</strong> f:(&#39;a -&gt; IO&lt;&#39;b&gt;) -&gt; sequ:&#39;a list -&gt; IO&lt;&#39;b list&gt;<br />
                           <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L278-278" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L361-361" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Executes the list of computations in parallel, returning the result of the first thread that completes with Some x, if any.</p>
+          <p>Map each element in a list to a monadic action and then run all of those monadic actions in parallel.</p>
 
 
         </td>
@@ -135,6 +135,7 @@
             <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
             <li><a href="/NovelIO/channels.html">Channels</a></li>
             <li class="nav-header">Documentation</li>
+            <li><a href="/NovelIO/operators.html">Operator Reference</a></li>
             <li><a href="/NovelIO/reference/index.html">API Reference</a></li>
           </ul>
         </div>

@@ -55,20 +55,39 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '99', 99)" onmouseover="showTip(event, '99', 99)">
-            ( |ValidFilename|InvalidFilename| ) path
+          <code onmouseout="hideTip(event, '105', 105)" onmouseover="showTip(event, '105', 105)">
+            ( |Ok|Error| ) result
           </code>
-          <div class="tip" id="99">
-            <strong>Signature:</strong> path:string -&gt; Choice&lt;Filename,unit&gt;<br />
-                      </div>
+          <div class="tip" id="105">
+            <strong>Signature:</strong> result:Choice&lt;&#39;?7294,&#39;?7295&gt; -&gt; Choice&lt;&#39;?7294,&#39;?7295&gt;<br />
+                          <strong>Type parameters:</strong> '?7294, '?7295          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L86-86" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L63-63" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>|ValidFilename|InvalidFilename|</code></p>
+              <p>CompiledName: <code>|Ok|Error|</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '106', 106)" onmouseover="showTip(event, '106', 106)">
+            ( |ValidFilePath|InvalidFilePath| ) path
+          </code>
+          <div class="tip" id="106">
+            <strong>Signature:</strong> path:string -&gt; Choice&lt;FilePath,unit&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/Prelude.fs#L58-58" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>|ValidFilePath|InvalidFilePath|</code></p>
         </td>
       </tr>
     </tbody>
@@ -93,6 +112,7 @@
             <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
             <li><a href="/NovelIO/channels.html">Channels</a></li>
             <li class="nav-header">Documentation</li>
+            <li><a href="/NovelIO/operators.html">Operator Reference</a></li>
             <li><a href="/NovelIO/reference/index.html">API Reference</a></li>
           </ul>
         </div>

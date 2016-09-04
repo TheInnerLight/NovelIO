@@ -46,35 +46,30 @@
 <h3><a name="Using-the-bracket-pattern" class="anchor" href="#Using-the-bracket-pattern">Using the bracket pattern</a></h3>
 <p>In general, you don't need to worry about using 'bracket' explictly.  Functions are created for different resources to avoid you having to fill out all of <code>bracket</code>'s arguments manually.</p>
 <p>An example is the <code>File.withTextChannel</code> function:</p>
-<pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="i">io</span> {
-    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="f">withChannelOR</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 6)" onmouseover="showTip(event, 'fs6', 6)" class="f">withTextChannel</span> <span onmouseout="hideTip(event, 'fs7', 7)" onmouseover="showTip(event, 'fs7', 7)" class="t">FileMode</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs8', 8)" onmouseover="showTip(event, 'fs8', 8)" class="p">Open</span> <span onmouseout="hideTip(event, 'fs9', 9)" onmouseover="showTip(event, 'fs9', 9)" class="t">FileAccess</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 10)" onmouseover="showTip(event, 'fs10', 10)" class="p">Read</span> 
-    <span class="k">return</span> <span onmouseout="hideTip(event, 'fs4', 11)" onmouseover="showTip(event, 'fs4', 11)" class="f">withChannelOR</span> (<span onmouseout="hideTip(event, 'fs5', 12)" onmouseover="showTip(event, 'fs5', 12)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 13)" onmouseover="showTip(event, 'fs11', 13)" class="f">assumeValidFilename</span> <span class="s">&quot;test.txt&quot;</span>) (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs12', 14)" onmouseover="showTip(event, 'fs12', 14)" class="i">channel</span> <span class="k">-&gt;</span> 
-            <span onmouseout="hideTip(event, 'fs3', 15)" onmouseover="showTip(event, 'fs3', 15)" class="i">io</span> {
-                <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs13', 16)" onmouseover="showTip(event, 'fs13', 16)" class="i">l1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs14', 17)" onmouseover="showTip(event, 'fs14', 17)" class="t">TextChannel</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs15', 18)" onmouseover="showTip(event, 'fs15', 18)" class="f">getLine</span> <span onmouseout="hideTip(event, 'fs12', 19)" onmouseover="showTip(event, 'fs12', 19)" class="i">channel</span>
-                <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs16', 20)" onmouseover="showTip(event, 'fs16', 20)" class="i">l2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="t">TextChannel</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="f">getLine</span> <span onmouseout="hideTip(event, 'fs12', 23)" onmouseover="showTip(event, 'fs12', 23)" class="i">channel</span>
-                <span class="k">return</span> <span onmouseout="hideTip(event, 'fs13', 24)" onmouseover="showTip(event, 'fs13', 24)" class="i">l1</span>, <span onmouseout="hideTip(event, 'fs16', 25)" onmouseover="showTip(event, 'fs16', 25)" class="i">l2</span>
-            })
-}
+<pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="f">withTextChannel</span> <span onmouseout="hideTip(event, 'fs3', 5)" onmouseover="showTip(event, 'fs3', 5)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="t">Open</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="i">defaultRead</span> (<span onmouseout="hideTip(event, 'fs3', 8)" onmouseover="showTip(event, 'fs3', 8)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 9)" onmouseover="showTip(event, 'fs7', 9)" class="t">Path</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs8', 10)" onmouseover="showTip(event, 'fs8', 10)" class="f">fromValid</span> <span class="s">&quot;test.txt&quot;</span>) (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs9', 11)" onmouseover="showTip(event, 'fs9', 11)" class="i">channel</span> <span class="k">-&gt;</span>
+    <span onmouseout="hideTip(event, 'fs10', 12)" onmouseover="showTip(event, 'fs10', 12)" class="i">io</span> {
+        <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs11', 13)" onmouseover="showTip(event, 'fs11', 13)" class="i">l1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs12', 14)" onmouseover="showTip(event, 'fs12', 14)" class="t">TextChannel</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 15)" onmouseover="showTip(event, 'fs13', 15)" class="f">getLine</span> <span onmouseout="hideTip(event, 'fs9', 16)" onmouseover="showTip(event, 'fs9', 16)" class="i">channel</span>
+        <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs14', 17)" onmouseover="showTip(event, 'fs14', 17)" class="i">l2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs12', 18)" onmouseover="showTip(event, 'fs12', 18)" class="t">TextChannel</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 19)" onmouseover="showTip(event, 'fs13', 19)" class="f">getLine</span> <span onmouseout="hideTip(event, 'fs9', 20)" onmouseover="showTip(event, 'fs9', 20)" class="i">channel</span>
+        <span class="k">return</span> <span onmouseout="hideTip(event, 'fs11', 21)" onmouseover="showTip(event, 'fs11', 21)" class="i">l1</span>, <span onmouseout="hideTip(event, 'fs14', 22)" onmouseover="showTip(event, 'fs14', 22)" class="i">l2</span>
+    })
 </code></pre>
 <p>By using the <code>withTextChannel</code> function, we can supply an argument of the form <code>TChannel -&gt; IO&lt;'a&gt;</code> which determines what to do with the channel during its entire lifetime.  This is equivalent to just the final argument of <code>bracket</code> where the two preceeding arguments are filled in for us.</p>
 <p><code>with_</code> functions are provided throughout the library for other types of channels and resources but they follow the same pattern as described here.</p>
 
 <div class="tip" id="fs1">namespace NovelFS</div>
 <div class="tip" id="fs2">namespace NovelFS.NovelIO</div>
-<div class="tip" id="fs3">val io : IO.IOBuilder<br /><br />Full name: NovelFS.NovelIO.IOBuilders.io</div>
-<div class="tip" id="fs4">val withChannelOR : (Filename -&gt; (TChannel -&gt; IO&lt;string * string&gt;) -&gt; IO&lt;string * string&gt;)</div>
-<div class="tip" id="fs5">module File<br /><br />from NovelFS.NovelIO</div>
-<div class="tip" id="fs6">val withTextChannel : mode:FileMode -&gt; access:FileAccess -&gt; fName:Filename -&gt; fChannel:(TChannel -&gt; IO&lt;&#39;a&gt;) -&gt; IO&lt;&#39;a&gt;<br /><br />Full name: NovelFS.NovelIO.File.withTextChannel</div>
-<div class="tip" id="fs7">type FileMode =<br />&#160;&#160;| CreateNew<br />&#160;&#160;| Create<br />&#160;&#160;| Open<br />&#160;&#160;| OpenOrCreate<br />&#160;&#160;| Truncate<br />&#160;&#160;| Append<br /><br />Full name: NovelFS.NovelIO.FileMode</div>
-<div class="tip" id="fs8">union case FileMode.Open: FileMode</div>
-<div class="tip" id="fs9">type FileAccess =<br />&#160;&#160;| Read<br />&#160;&#160;| Write<br />&#160;&#160;| ReadWrite<br /><br />Full name: NovelFS.NovelIO.FileAccess</div>
-<div class="tip" id="fs10">union case FileAccess.Read: FileAccess</div>
-<div class="tip" id="fs11">val assumeValidFilename : path:string -&gt; Filename<br /><br />Full name: NovelFS.NovelIO.File.assumeValidFilename</div>
-<div class="tip" id="fs12">val channel : TChannel</div>
-<div class="tip" id="fs13">val l1 : string</div>
-<div class="tip" id="fs14">module TextChannel<br /><br />from NovelFS.NovelIO</div>
-<div class="tip" id="fs15">val getLine : channel:TChannel -&gt; IO&lt;string&gt;<br /><br />Full name: NovelFS.NovelIO.TextChannel.getLine</div>
-<div class="tip" id="fs16">val l2 : string</div>
+<div class="tip" id="fs3">module File<br /><br />from NovelFS.NovelIO</div>
+<div class="tip" id="fs4">val withTextChannel : options:FileOpenOptions -&gt; fName:FilePath -&gt; fChannel:(TChannel -&gt; IO&lt;&#39;a&gt;) -&gt; IO&lt;&#39;a&gt;<br /><br />Full name: NovelFS.NovelIO.File.withTextChannel</div>
+<div class="tip" id="fs5">module Open<br /><br />from NovelFS.NovelIO.File</div>
+<div class="tip" id="fs6">val defaultRead : FileOpenOptions<br /><br />Full name: NovelFS.NovelIO.File.Open.defaultRead</div>
+<div class="tip" id="fs7">module Path<br /><br />from NovelFS.NovelIO.File</div>
+<div class="tip" id="fs8">val fromValid : path:string -&gt; FilePath<br /><br />Full name: NovelFS.NovelIO.File.Path.fromValid</div>
+<div class="tip" id="fs9">val channel : TChannel</div>
+<div class="tip" id="fs10">val io : IO.IOBuilder<br /><br />Full name: NovelFS.NovelIO.IOBuilders.io</div>
+<div class="tip" id="fs11">val l1 : string</div>
+<div class="tip" id="fs12">module TextChannel<br /><br />from NovelFS.NovelIO</div>
+<div class="tip" id="fs13">val getLine : channel:TChannel -&gt; IO&lt;string&gt;<br /><br />Full name: NovelFS.NovelIO.TextChannel.getLine</div>
+<div class="tip" id="fs14">val l2 : string</div>
 
         </div>
         <div class="span3">
@@ -95,6 +90,7 @@
             <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
             <li><a href="/NovelIO/channels.html">Channels</a></li>
             <li class="nav-header">Documentation</li>
+            <li><a href="/NovelIO/operators.html">Operator Reference</a></li>
             <li><a href="/NovelIO/reference/index.html">API Reference</a></li>
           </ul>
         </div>

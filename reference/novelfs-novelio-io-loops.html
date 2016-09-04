@@ -56,15 +56,35 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '75', 75)" onmouseover="showTip(event, '75', 75)">
-            iterateUntil p x
+          <code onmouseout="hideTip(event, '78', 78)" onmouseover="showTip(event, '78', 78)">
+            forever f
           </code>
-          <div class="tip" id="75">
-            <strong>Signature:</strong> p:(&#39;?7456 -&gt; bool) -&gt; x:IO&lt;&#39;?7456&gt; -&gt; IO&lt;&#39;?7456&gt;<br />
-                          <strong>Type parameters:</strong> '?7456          </div>
+          <div class="tip" id="78">
+            <strong>Signature:</strong> f:IO&lt;&#39;?7449&gt; -&gt; IO&lt;&#39;?7449&gt;<br />
+                          <strong>Type parameters:</strong> '?7449          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L240-240" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L332-332" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Does the action f forever</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '79', 79)" onmouseover="showTip(event, '79', 79)">
+            iterateUntil p x
+          </code>
+          <div class="tip" id="79">
+            <strong>Signature:</strong> p:(&#39;?7443 -&gt; bool) -&gt; x:IO&lt;&#39;?7443&gt; -&gt; IO&lt;&#39;?7443&gt;<br />
+                          <strong>Type parameters:</strong> '?7443          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L313-313" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -76,15 +96,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '76', 76)" onmouseover="showTip(event, '76', 76)">
+          <code onmouseout="hideTip(event, '80', 80)" onmouseover="showTip(event, '80', 80)">
             iterateUntilM p f v
           </code>
-          <div class="tip" id="76">
-            <strong>Signature:</strong> p:(&#39;?7454 -&gt; bool) -&gt; f:(&#39;?7454 -&gt; IO&lt;&#39;?7454&gt;) -&gt; v:&#39;?7454 -&gt; IO&lt;&#39;?7454&gt;<br />
-                          <strong>Type parameters:</strong> '?7454          </div>
+          <div class="tip" id="80">
+            <strong>Signature:</strong> p:(&#39;?7441 -&gt; bool) -&gt; f:(&#39;?7441 -&gt; IO&lt;&#39;?7441&gt;) -&gt; v:&#39;?7441 -&gt; IO&lt;&#39;?7441&gt;<br />
+                          <strong>Type parameters:</strong> '?7441          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L234-234" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L303-303" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -96,15 +116,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '77', 77)" onmouseover="showTip(event, '77', 77)">
+          <code onmouseout="hideTip(event, '81', 81)" onmouseover="showTip(event, '81', 81)">
             iterateWhile p x
           </code>
-          <div class="tip" id="77">
-            <strong>Signature:</strong> p:(&#39;?7458 -&gt; bool) -&gt; x:IO&lt;&#39;?7458&gt; -&gt; IO&lt;&#39;?7458&gt;<br />
-                          <strong>Type parameters:</strong> '?7458          </div>
+          <div class="tip" id="81">
+            <strong>Signature:</strong> p:(&#39;?7445 -&gt; bool) -&gt; x:IO&lt;&#39;?7445&gt; -&gt; IO&lt;&#39;?7445&gt;<br />
+                          <strong>Type parameters:</strong> '?7445          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L243-243" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L316-316" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -116,15 +136,55 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '78', 78)" onmouseover="showTip(event, '78', 78)">
-            skipWhileM p xs
+          <code onmouseout="hideTip(event, '82', 82)" onmouseover="showTip(event, '82', 82)">
+            iterUntilM pAct f
           </code>
-          <div class="tip" id="78">
-            <strong>Signature:</strong> p:(IO&lt;&#39;?7445&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7445&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7445&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7445          </div>
+          <div class="tip" id="82">
+            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L203-203" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L285-285" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Execute an action repeatedly until the given boolean IO action returns true</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '83', 83)" onmouseover="showTip(event, '83', 83)">
+            iterWhileM pAct act
+          </code>
+          <div class="tip" id="83">
+            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; act:IO&lt;&#39;a&gt; -&gt; IO&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L269-269" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Execute an action repeatedly as long as the given boolean IO action returns true</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '84', 84)" onmouseover="showTip(event, '84', 84)">
+            skipWhileM p xs
+          </code>
+          <div class="tip" id="84">
+            <strong>Signature:</strong> p:(&#39;?7428 -&gt; IO&lt;bool&gt;) -&gt; xs:&#39;?7428 list -&gt; IO&lt;&#39;?7428 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7428          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L241-241" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -136,15 +196,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '79', 79)" onmouseover="showTip(event, '79', 79)">
+          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
             takeWhileM p xs
           </code>
-          <div class="tip" id="79">
-            <strong>Signature:</strong> p:(IO&lt;&#39;?7443&gt; -&gt; bool) -&gt; xs:seq&lt;IO&lt;&#39;?7443&gt;&gt; -&gt; IO&lt;seq&lt;&#39;?7443&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7443          </div>
+          <div class="tip" id="85">
+            <strong>Signature:</strong> p:(&#39;?7426 -&gt; IO&lt;bool&gt;) -&gt; xs:&#39;?7426 list -&gt; IO&lt;&#39;?7426 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7426          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L194-194" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L227-227" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -156,15 +216,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '80', 80)" onmouseover="showTip(event, '80', 80)">
+          <code onmouseout="hideTip(event, '86', 86)" onmouseover="showTip(event, '86', 86)">
             unfoldWhileM p f
           </code>
-          <div class="tip" id="80">
-            <strong>Signature:</strong> p:(&#39;a -&gt; bool) -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;seq&lt;&#39;a&gt;&gt;<br />
+          <div class="tip" id="86">
+            <strong>Signature:</strong> p:(&#39;a -&gt; bool) -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;&#39;a list&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L247-247" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L320-320" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -177,15 +237,15 @@ values that satisfied the predicate.  Discards the final one (which failed the p
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '81', 81)" onmouseover="showTip(event, '81', 81)">
+          <code onmouseout="hideTip(event, '87', 87)" onmouseover="showTip(event, '87', 87)">
             untilM pAct f
           </code>
-          <div class="tip" id="81">
-            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;seq&lt;&#39;a&gt;&gt;<br />
+          <div class="tip" id="87">
+            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;&#39;a list&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L221-221" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L282-282" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -197,15 +257,15 @@ values that satisfied the predicate.  Discards the final one (which failed the p
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '82', 82)" onmouseover="showTip(event, '82', 82)">
+          <code onmouseout="hideTip(event, '88', 88)" onmouseover="showTip(event, '88', 88)">
             whileM pAct f
           </code>
-          <div class="tip" id="82">
-            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;seq&lt;&#39;a&gt;&gt;<br />
+          <div class="tip" id="88">
+            <strong>Signature:</strong> pAct:IO&lt;bool&gt; -&gt; f:IO&lt;&#39;a&gt; -&gt; IO&lt;&#39;a list&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L212-212" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L255-255" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -217,15 +277,15 @@ values that satisfied the predicate.  Discards the final one (which failed the p
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '83', 83)" onmouseover="showTip(event, '83', 83)">
+          <code onmouseout="hideTip(event, '89', 89)" onmouseover="showTip(event, '89', 89)">
             whileSome act binder
           </code>
-          <div class="tip" id="83">
-            <strong>Signature:</strong> act:IO&lt;&#39;?7451 option&gt; -&gt; binder:(&#39;?7451 -&gt; IO&lt;&#39;?7452&gt;) -&gt; IO&lt;seq&lt;&#39;?7452&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7451, '?7452          </div>
+          <div class="tip" id="89">
+            <strong>Signature:</strong> act:IO&lt;&#39;?7438 option&gt; -&gt; binder:(&#39;?7438 -&gt; IO&lt;&#39;?7439&gt;) -&gt; IO&lt;&#39;?7439 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7438, '?7439          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L225-225" class="github-link">
+            <a href="http://github.com/TheInnerLight/NovelIO/tree/master/src/NovelIO/IO.fs#L289-289" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -257,6 +317,7 @@ Results are collected into a sequence.</p>
             <li><a href="/NovelIO/pickler.html">Using the Pickler Combinator</a></li>
             <li><a href="/NovelIO/channels.html">Channels</a></li>
             <li class="nav-header">Documentation</li>
+            <li><a href="/NovelIO/operators.html">Operator Reference</a></li>
             <li><a href="/NovelIO/reference/index.html">API Reference</a></li>
           </ul>
         </div>
