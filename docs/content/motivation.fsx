@@ -17,7 +17,7 @@ Consider:
 
 *)
 
-let x = 2*2
+let x = 2 * 2
 
 (**
 
@@ -176,53 +176,6 @@ io {
 > Random: [1801985798; 963004958; 1819358047; 292397249]
 
 So, using this approach we can easily describe either behaviour while still keeping the intent clear and explicit.
-
-## Lazy evaluation and exceptions
-
-This example is more or less taken from Erik Meijer's Curse of the excluded middle (https://queue.acm.org/detail.cfm?ref=rss&id=2611829)
-
-Consider the following code where we try to combine lazy evaluation with File IO:
-
-*)
-
-let floatLines = 
-    try
-        System.IO.File.ReadLines("testfile.txt")
-        |> Seq.map (float) // parse each line as a float
-    with
-        | _ -> Seq.empty
-
-Seq.iter (printfn "%f") floatLines // print each float to the console
-
-(**
-
-This code appears to be relatively safe - we have a comforting `try`/`with` block around a function that may fail at runtime.  This code, however, does not function in the way it immediately appears to.
-
-In reality, the map is not actually evaluated until we enumerate the sequence with `Seq.iter`, this means that any exception, if triggered, will actually be thrown outside the `try`/`with` block causing the program to crash.
-
-Consider an alternative using NovelIO's expression of IO:
-
-*)
-
-let fName = File.assumeValidFilename "testfile.txt"
-
-let fileIO = io {
-    let! lines = File.readLines fName // sequence of io actions which each read a line from a file
-    let! floatLines = IO.mapM (IO.map float) lines // parse each line, collecting the results
-    do! IO.iterM (IO.putStrLn << sprintf "%f") floatLines // print each float to the console
-}
-
-try
-    IO.run fileIO // side effects occur *only* on this line
-with 
-    |_ -> () // error case
-
-
-(**
-
-This code describes exactly the same problem but we know that side-effects can occur in exactly one place `IO.run`.  That means that success or failure need be handled in only that one location.  We can therefore design complicated programs where IO is described using pure, referentially transparent functions and potentially error-prone behaviour is made very explicit and side-effects are restricted to very specific and obvious locations.
-
-Hopefully this demonstrates how being explicit about when effects occur can massively improve the ability of developers to understand and reason about their code.
 
 *)
 

@@ -27,25 +27,8 @@ type ``File Integration Tests``() =
     static member ``Read All Bytes from file`` (bytes : byte[]) =
         let fnameStr = "readbytestest.tst"
         System.IO.File.WriteAllBytes(fnameStr, bytes)
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.readAllBytes fname = bytes
-
-    [<Property>]
-    static member ``Read lines from file`` (strA : NonEmptyArray<NonEmptyString>) =
-        let fnameStr = "readlinestest.tst"
-        let lstStrs = 
-            strA.Get 
-            |> Array.collect (fun str -> str.Get.Split('\r','\n'))
-            |> List.ofArray 
-        System.IO.File.WriteAllLines(fnameStr, lstStrs)
-        let fname = File.assumeValidFilename fnameStr
-        let lineIO =
-            io {
-                let! lineSeq = File.readLines fname
-                let! uwSeq = IO.sequence lineSeq
-                return List.ofSeq uwSeq
-            }
-        IO.run lineIO = lstStrs
 
     [<Property>]
     static member ``Read all lines from file`` (strA : NonEmptyArray<NonEmptyString>) =
@@ -55,7 +38,7 @@ type ``File Integration Tests``() =
             |> Array.collect (fun str -> str.Get.Split('\r','\n'))
             |> List.ofArray 
         System.IO.File.WriteAllLines(fnameStr, lstStrs)
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         let lineIO =
             io {
                 return! File.readAllLines fname

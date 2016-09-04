@@ -28,124 +28,160 @@ type ``File Unit Tests``() =
         |> Seq.find (not << System.IO.File.Exists)
 
     [<Property>]
-    static member ``Function: assumeValidFilename returns a valid filename for a valid file path``() =
+    static member ``File.Path.fromValid returns a valid filename for a valid file path``() =
         let fnameStr = System.IO.Path.GetRandomFileName()
-        let fname = File.assumeValidFilename fnameStr // throws exception in failure case
+        let fname = File.Path.fromValid fnameStr // throws exception in failure case
         true
 
     [<Property>]
-    static member ``Function: assumeValidFilename throws exception for an invalid file path``() =
+    static member ``File.Path.fromValid throws exception for an invalid file path``() =
         let invStr = string << Array.head <| System.IO.Path.GetInvalidFileNameChars()
         let fnameStr = System.IO.Path.GetRandomFileName() + invStr
         try
-            let fname = File.assumeValidFilename fnameStr // throws exception in failure case
+            let fname = File.Path.fromValid fnameStr // throws exception in failure case
             failwith "path was not expected to be valid"
         with
             | :? System.ArgumentException as aex -> true
 
     [<Property>]
-    static member ``ValidFilename path disciminator matches for a valid file path``() =
-        let fnameStr = System.IO.Path.GetRandomFileName()
-        match fnameStr with
-        |ValidFilename fname -> true
-        |InvalidFilename -> failwith "path was expected not be invalid"
+    static member ``File.Open.defaultRead has FileMode.Open``() =
+        match File.Open.defaultRead.FileMode with
+        |FileMode.Open -> true
+        |_ -> false
 
     [<Property>]
-    static member ``InvalidFilename path disciminator matches for a invalid file path``() =
+    static member ``File.Open.defaultRead has FileAccess.Read``() =
+        match File.Open.defaultRead.FileAccess with
+        |FileAccess.Read -> true
+        |_ -> false
+
+    [<Property>]
+    static member ``File.Open.defaultReadWrite has FileMode.OpenOrCreate``() =
+        match File.Open.defaultReadWrite.FileMode with
+        |FileMode.OpenOrCreate -> true
+        |_ -> false
+
+    [<Property>]
+    static member ``File.Open.defaultReadWrite has FileAccess.ReadWrite``() =
+        match File.Open.defaultReadWrite.FileAccess with
+        |FileAccess.ReadWrite -> true
+        |_ -> false
+
+    [<Property>]
+    static member ``File.Open.defaultWrite has FileMode.Create``() =
+        match File.Open.defaultWrite.FileMode with
+        |FileMode.Create -> true
+        |_ -> false
+
+    [<Property>]
+    static member ``File.Open.defaultWrite has FileAccess.ReadWrite``() =
+        match File.Open.defaultWrite.FileAccess with
+        |FileAccess.Write -> true
+        |_ -> false
+
+    [<Property>]
+    static member ``ValidFilePath path disciminator matches for a valid file path``() =
+        let fnameStr = System.IO.Path.GetRandomFileName()
+        match fnameStr with
+        |ValidFilePath fname -> true
+        |InvalidFilePath -> failwith "path was expected not be invalid"
+
+    [<Property>]
+    static member ``ValidFilePath path disciminator matches for a invalid file path``() =
         let invStr = string << Array.head <| System.IO.Path.GetInvalidFileNameChars()
         let fnameStr = System.IO.Path.GetRandomFileName() + invStr
         match fnameStr with
-        |ValidFilename fname -> failwith "path was invalid"
-        |InvalidFilename -> true
+        |ValidFilePath fname -> failwith "path was invalid"
+        |InvalidFilePath -> true
 
     [<Property>]
-    static member ``Function: getPathString returns contained path string``() =
+    static member ``File.Path.pathString returns contained path string``() =
         let fnameStr = System.IO.Path.GetRandomFileName()
-        let fname = File.assumeValidFilename fnameStr
-        File.getPathString fname = fnameStr
+        let fname = File.Path.fromValid fnameStr
+        File.Path.pathString fname = fnameStr
 
     [<Property>]
-    static member ``Function: creationTime returns correct date/time for test file``() =
+    static member ``File.creationTime returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.creationTime fname = System.IO.File.GetCreationTime fnameStr
 
     [<Property>]
-    static member ``Function: creationTimeUTC returns correct date/time for test file``() =
+    static member ``File.creationTimeUTC returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.creationTimeUTC fname = System.IO.File.GetCreationTimeUtc fnameStr
 
     [<Property>]
-    static member ``Function: lastAccessTime returns correct date/time for test file``() =
+    static member ``File.lastAccessTime returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.lastAccessTime fname = System.IO.File.GetLastAccessTime fnameStr
 
     [<Property>]
-    static member ``Function: lastAccessTimeUTC returns correct date/time for test file``() =
+    static member ``File.lastAccessTimeUTC returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.lastAccessTimeUTC fname = System.IO.File.GetLastAccessTimeUtc fnameStr
 
     [<Property>]
-    static member ``Function: lastWriteTime returns correct date/time for test file``() =
+    static member ``File.lastWriteTime returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.lastWriteTime fname = System.IO.File.GetLastWriteTime fnameStr
 
     [<Property>]
-    static member ``Function: lastWriteTimeUTC returns correct date/time for test file``() =
+    static member ``File.lastWriteTimeUTC returns correct date/time for test file``() =
         let fnameStr = "creationtimetest.txt"
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.lastWriteTimeUTC fname = System.IO.File.GetLastWriteTimeUtc fnameStr
 
     [<Property>]
-    static member ``Function: setCreationTime sets correct date/time for test file`` (dt : System.DateTime) =
+    static member ``File.setCreationTime sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.setCreationTime dt fname
         dt = System.IO.File.GetCreationTime fnameStr
 
     [<Property>]
-    static member ``Function: setCreationTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
+    static member ``File.setCreationTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.setCreationTimeUTC dt fname
         dt = System.IO.File.GetCreationTimeUtc fnameStr
 
     [<Property>]
-    static member ``Function: setLastAccessTime sets correct date/time for test file`` (dt : System.DateTime) =
+    static member ``File.setLastAccessTime sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.setLastAccessTime dt fname 
         dt = System.IO.File.GetLastAccessTime fnameStr
 
     [<Property>]
-    static member ``Function: setLastAccessTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
+    static member ``File.setLastAccessTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.setLastAccessTimeUTC dt fname 
         dt = System.IO.File.GetLastAccessTimeUtc fnameStr
 
     [<Property>]
-    static member ``Function: setLastWriteTime sets correct date/time for test file`` (dt : System.DateTime) =
+    static member ``File.setLastWriteTime sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.setLastWriteTime dt fname 
         dt = System.IO.File.GetLastWriteTime fnameStr
 
     [<Property>]
-    static member ``Function: setLastWriteTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
+    static member ``File.setLastWriteTimeUTC sets correct date/time for test file`` (dt : System.DateTime) =
         let fnameStr = """creationtimetestwriting.txt"""
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         IO.run <| File.setLastWriteTimeUTC dt fname 
         dt = System.IO.File.GetLastWriteTimeUtc fnameStr
 
     [<Property>]
     static member ``File that does not exist is not found``() =
         let fnameStr = firstRandomFileThatDoesNotExist()
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         not << IO.run <| File.exists fname
 
     [<Property>]
@@ -153,7 +189,7 @@ type ``File Unit Tests``() =
         let fnameStr = firstRandomFileThatDoesNotExist()
         System.IO.File.WriteAllLines(fnameStr, [|""|])
         try
-            let fname = File.assumeValidFilename fnameStr
+            let fname = File.Path.fromValid fnameStr
             IO.run <| File.exists fname
         finally
             System.IO.File.Delete fnameStr
@@ -161,7 +197,7 @@ type ``File Unit Tests``() =
     [<Property>]
     static member ``Random file can be deleted``() =
         let fnameStr = firstRandomFileThatDoesNotExist()
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         System.IO.File.AppendAllLines(fnameStr, [""])
         IO.run <| File.delete fname
         not <| System.IO.File.Exists fnameStr
@@ -169,10 +205,10 @@ type ``File Unit Tests``() =
     [<Property>]
     static member ``Random file can be copied``() =
         let fnameStr = firstRandomFileThatDoesNotExist()
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         System.IO.File.AppendAllLines(fnameStr, [""])
         let fnameStr2 = firstRandomFileThatDoesNotExist()
-        let fname2 = File.assumeValidFilename fnameStr2
+        let fname2 = File.Path.fromValid fnameStr2
         IO.run <| File.copy fname fname2 
         try
             System.IO.File.Exists fnameStr2
@@ -184,10 +220,10 @@ type ``File Unit Tests``() =
     [<Property>]
     static member ``Random file can be moved``() =
         let fnameStr = firstRandomFileThatDoesNotExist()
-        let fname = File.assumeValidFilename fnameStr
+        let fname = File.Path.fromValid fnameStr
         System.IO.File.AppendAllLines(fnameStr, [""])
         let fnameStr2 = firstRandomFileThatDoesNotExist()
-        let fname2 = File.assumeValidFilename fnameStr2
+        let fname2 = File.Path.fromValid fnameStr2
         try
             IO.run <| File.move fname fname2 
             try

@@ -1,3 +1,10 @@
+#### 0.4.0-alpha - 04/09/2016
+API improvements, particularly centred around simplifying common tasks
+Added support for asynchronous IO within the IO type
+Added support for forking and awaiting TPL tasks
+Many performance optimisations
+Documentation massively improved
+
 #### 0.3.0-alpha - 12/07/2016
 Added support for recursive PUs
 Renamed Handles to Channels - part of wider API improvements

@@ -36,3 +36,15 @@ type ``Prelude Unit Tests``() =
     static member ``ByteOrder.systemEndianness returns the endianness of the current system`` () =
         ByteOrder.isBigEndian (ByteOrder.systemEndianness) <> System.BitConverter.IsLittleEndian
 
+    [<Property>]
+    static member ``listCons is equivalent to a::b`` (a : int, b : int list) =
+        listCons a b = a :: b
+
+    [<Property>]
+    static member ``curry f(x, y) a b = f' a b `` (f : int * int -> int, a : int, b : int) =
+        curry f a b = f(a, b)
+
+    [<Property>]
+    static member ``uncurry f a b = f'(a, b) `` (f : int -> int -> int, a : int, b : int) =
+        uncurry f (a, b) = f a b
+

@@ -30,6 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 		docs\content\index.fsx = docs\content\index.fsx
 		docs\content\motivation.fsx = docs\content\motivation.fsx
 		docs\content\oopintro.fsx = docs\content\oopintro.fsx
+		docs\content\operators.fsx = docs\content\operators.fsx
 		docs\content\pickler.fsx = docs\content\pickler.fsx
 		docs\content\tutorial.fsx = docs\content\tutorial.fsx
 	EndProjectSection
