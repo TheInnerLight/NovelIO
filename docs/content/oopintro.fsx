@@ -12,9 +12,12 @@ Introduction from an Object-Oriented Perspective
 
 For those coming from an OOP background, the purpose of purely functional I/O might not seem immediately apparent but in many cases, what would be regarded as "good practise" in the object oriented world is something we can simply have by construction using referentially transparent IO.
 
-## Dependency Inversion
+## Inversion of Control
 
-In the OO world, you might design an interface to retrieve some resource.  One implementation might touch the file system and then mock implementation would return test data for unit testing purposes.
+In the OO world, you might design an interface to retrieve some resource.  Alongside it, you might design a processing class with that interface as an injected dependency.  You call a method on that interface in order to retrieve the data to process.
+One implementation of that interface might touch the file system and then a mock implementation would return test data for unit testing purposes.
+
+A simple example might look something like this:
 
 *)
 
@@ -37,23 +40,27 @@ type Adder(supplier : IResourceSupplier) =
 
 This class is now pretty easy to test, we just use a custom `IResourceSupplier` implementation and we can test the logic that the `Adder` class performs in isolation of its dependency.
 
-Of course, we've had to add quite a bit of boilerplate to actually get to this point.  
+Of course, we've had to add extra boilerplate to do this and this is just a trivial example.  I think it's also fair to say that those uninitiated to the world of object oriented programming probably wouldn't start by structuring their code in this way.
+Logically and intuitively, it makes more sense to think of getting a resource and passing it to a processing function.
 
-Exactly the same results can be achieved in IO by lifting a pure function into IO.
+We can actually maintain both the logical ordering and the testability by simply lifting a pure processing function into IO.
 
 *)
 
-// this pure function works on a standard lists, its trivial to unit test
+// this pure function works on a standard lists, it's trivial to unit test
 let addOneToList lst = List.map ((+) 1) lst 
 
 // this function is just the above function made to operate on lists in IO using map.
-let addOneToIOList lstIO = IO.map (addOneToList) lstIO 
+let addOneToIOList lstIO = IO.map (addOneToList) lstIO
+
+// alternatively, we can write the above in operator form:
+let addOneToIOList' lstIO = addOneToList <!> lstIO
 
 (**
 
 `IO.map` can take any function of the form `'a -> 'b` and return an `IO<'a> -> IO<'b>`, allowing our previously pure function to easily operate within IO.
 
-We have gained the same testability advantage as the OO dependency inversion example with less boilerplate required to actually realise it.
+This approach is simple, practical and retains all of the testability of the Inversion of Control based approach.
 
 We can also see through the type system which function performs IO and which does not.  That's a massive win for both readability and maintenance!
 
