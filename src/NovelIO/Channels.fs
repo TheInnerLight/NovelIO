@@ -91,7 +91,7 @@ module TextChannel =
     let isReady channel = IO.fromEffectful (fun _ -> SideEffecting.isChannelReadyToRead channel)
 
     /// An action that writes a line to the text channel
-    let putStrLn (channel : TChannel) str =
+    let writeLine (channel : TChannel) str =
         match channel.IOMode with
         |ChannelIOMode.Asynchronous -> IO.liftAsync <| SideEffecting.writeLineAsync str channel
         |_ -> IO.fromEffectful (fun _ -> SideEffecting.writeLine str channel)

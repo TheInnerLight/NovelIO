@@ -166,6 +166,14 @@ type ``Binary Pickler Tests`` =
         result = str
 
     [<Property>]
+    static member ``Unpickle CRLF terminated Ascii string from array of bytes`` (nStr : NonEmptyString) =
+        let str = nStr.Get.Split([|"\r\n"|], System.StringSplitOptions.None).[0]
+        let bytesWOPrefix = System.Text.Encoding.ASCII.GetBytes (str + "\r\n")
+        let stringPickler = BinaryPickler.crlfTerminated BinaryPickler.asciiCharPU
+        let result = BinaryPickler.unpickle stringPickler bytesWOPrefix
+        result = str
+
+    [<Property>]
     static member ``Unpickle UTF-7 string from array of bytes`` (nStr : NonEmptyString) =
         let str = nStr.Get 
         let bytesWOPrefix = System.Text.Encoding.UTF7.GetBytes str
@@ -368,6 +376,30 @@ type ``Binary Pickler Tests`` =
     static member ``Pickle UTF-32 with Endianness detection from string`` (nStr : NonEmptyString) =
         let str = nStr.Get
         let strPickler = BinaryPickler.utf32PU
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle null terminated Ascii from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get |> String.filter ((<>) '\000')
+        let strPickler = BinaryPickler.nullTerminated BinaryPickler.asciiCharPU
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle LF terminated Ascii from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get |> String.filter ((<>) '\n')
+        let strPickler = BinaryPickler.lfTerminated BinaryPickler.asciiCharPU
+        let bytes = BinaryPickler.pickle strPickler str
+        let result = BinaryPickler.unpickle strPickler bytes
+        result = str
+
+    [<Property>]
+    static member ``Pickle CRLF terminated Ascii from string`` (nStr : NonEmptyString) =
+        let str = nStr.Get.Split([|"\r\n"|], System.StringSplitOptions.None).[0]
+        let strPickler = BinaryPickler.crlfTerminated BinaryPickler.asciiCharPU
         let bytes = BinaryPickler.pickle strPickler str
         let result = BinaryPickler.unpickle strPickler bytes
         result = str

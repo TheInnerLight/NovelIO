@@ -21,16 +21,26 @@ open NovelFS.NovelIO
 /// The attempted binary pickling exceeded the length of the supplied array
 exception PicklingExceededArrayLengthException of int * int
 
-type private BinaryUnpicklerState = {Raw : byte array; Position : int; Endianness : Endianness}
 type private BinaryPicklerState = {Raw : byte list; Endianness : Endianness}
-type private IncrBinaryUnpicklerState = {Reader : BChannel}
 type private IncrBinaryPicklerState = {Writer : BChannel}
 
-type private BUnpickleState =
-    |UnpickleComplete of BinaryUnpicklerState
-    |UnpickleIncremental of IncrBinaryUnpicklerState
+type private ABinaryPicklerState = {
+    Raw : byte array; 
+    Position : int; 
+    Writer : BChannel option
+    }
 
-type private BPickleState =
+type BinaryUnpicklerState = private {
+    /// The byte array that the unpickler is currently operating on
+    Raw : byte array; 
+    /// The position in the raw array that unpickler has consumed up to
+    Position : int;
+    /// An optional binary channel to read more bytes from
+    Reader : BChannel option
+    }
+
+type BPickleState = 
+    private
     |PickleComplete of BinaryPicklerState
     |PickleIncremental of IncrBinaryPicklerState
 

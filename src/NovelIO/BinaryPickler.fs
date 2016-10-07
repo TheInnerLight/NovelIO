@@ -18,7 +18,7 @@ namespace NovelFS.NovelIO.BinaryPickler
 
 open NovelFS.NovelIO
 
-type BasicBinaryPU<'a> = private {Pickle : 'a * BPickleState -> BPickleState; Unpickle : BUnpickleState -> 'a * BUnpickleState}
+type BasicBinaryPU<'a> = private {Pickle : 'a * BPickleState -> BPickleState; Unpickle : BinaryUnpicklerState -> 'a * BinaryUnpicklerState}
 
 /// A pickler/unpickler pair for type 'a
 type BinaryPU<'a> = 
@@ -39,10 +39,9 @@ module BinaryPickler =
         |PU {Unpickle = _; Pickle = g} -> g (a, st)
         |RecursivePU y -> runPickle (a,st) (y())
 
-
     /// Uses the supplied pickler/unpickler pair (PU) to unpickle the supplied byte array into some type 'a 
     let unpickle pu array =
-        fst <| runUnpickle (UnpickleComplete {Raw = array; Position = 0; Endianness = ByteOrder.systemEndianness}) pu
+        fst <| runUnpickle ({Raw = array; Position = 0; Reader = None}) pu
 
     /// Uses the supplied pickler/unpickler pair (PU) to pickle the supplied value into a byte array
     let pickle pu value =
@@ -51,6 +50,17 @@ module BinaryPickler =
         |PickleComplete ps -> ps.Raw |> Seq.rev |> Array.ofSeq
         |_ -> invalidOp "A non-complete binary pickler state was returned from an initially complete pickler"
 
+    let private writeIfExhausted bytes (st : ABinaryPicklerState) =
+        match st.Position + Array.length bytes >= Array.length st.Raw, st.Writer with
+        |(true, Some writer) ->
+            let write, rest = Array.splitAt st.Position st.Raw
+            IO.run <| BinaryChannel.writeBytes writer write
+            {Raw = rest; Position = Array.length rest; Writer = Some writer}
+        |(true, None) ->
+            {st with Raw = Array.append st.Raw (Array.zeroCreate <| Array.length st.Raw)}
+        |_ -> 
+            st
+
     /// Helper function that chooses between complete or incremental pickling
     let private pickleHelper f b st =
         match st with
@@ -58,23 +68,29 @@ module BinaryPickler =
         |PickleIncremental ips -> 
             BinaryChannel.SideEffecting.write (f b) ips.Writer
             st
+
+    let private readIfExhausted size st =
+        match st.Position + size >= Array.length st.Raw, st.Reader with
+        |(true, Some reader) ->
+            let bytes = IO.run <| BinaryChannel.read reader size
+            let array' = Array.skip st.Position st.Raw
+            {Raw = Array.append array' bytes; Position = 0; Reader = Some reader}
+        |_ -> 
+            st
+
     /// Helper function that chooses between complete or incremental unpickling and accepts an arbitrary data-size
     let private unpickleHelperSized size f st =
-        match st with
-        |UnpickleComplete ps -> 
-            let pos = ps.Position
-            let result = f pos (ps.Raw)
-            result, UnpickleComplete {ps with Position = pos + size}
-        |UnpickleIncremental ips ->
-            let result = f 0 (BinaryChannel.SideEffecting.readExactly size ips.Reader)
-            result, st
+        let ps = readIfExhausted size st
+        let pos = ps.Position
+        let result = f pos (ps.Raw)
+        result, {ps with Position = pos + size}
 
     /// Helper function that chooses between complete or incremental unpickling and gets the size from the size of the data type
     let private unpickleHelper (f : int -> byte array -> 'a) st =
         unpickleHelperSized (sizeof<'a>) f st
 
     /// Given a value of x, returns a PU of x without affecting the underlying read/write states
-    let lift x = PU{Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
+    let lift x = PU {Pickle = (fun (_,st) -> st); Unpickle = (fun s -> x, s)}
 
     /// Creates a sequential combination of PU 
     let rec sequ (f : 'b -> 'a) (pa : BinaryPU<'a>) (k : 'a -> BinaryPU<'b>) : BinaryPU<'b> =
@@ -126,24 +142,39 @@ module BinaryPickler =
             let pb = tuple2 pa (repeat pa (n-1))
             wrap ((fun (a, b) -> (a::b)),(fun (a::b) -> (a,b))) pb
 
+    /// Repeats a PU n times to create an array pickler
+    let repeatA pa n = wrap (Array.ofList, List.ofArray) (repeat pa n)
+
     /// Repeats a PU until a condition is met to create a list PU
-    let rec repeatUntil cond pa =
+    let rec untilCond cond last pa =
         let mapper = function 
-            |[] -> Unchecked.defaultof<'b>
+            |[] -> last
             |a::b -> a
         let binder = function 
             |x when cond(x) -> lift []
             |x ->  
-                let pb = tuple2 (lift x) (repeatUntil cond pa)
+                let pb = tuple2 (lift x) (untilCond cond last pa)
+                wrap ((fun (a, b) -> (a::b)), (fun (a::b) -> (a,b))) pb
+        sequ (mapper) pa (binder)
+
+    /// Repeats a PU until a specific value is reached
+    let until value pa = untilCond ((=) value) value pa
+
+    /// Repeats a PU until a condition is met to create a list PU
+    let rec repeatUntilIncl cond last pa =
+        let mapper = function 
+            |[] -> last
+            |a::b -> a
+        let binder = function 
+            |x when cond(x) -> lift [x]
+            |x ->  
+                let pb = tuple2 (lift x) (repeatUntilIncl cond last pa)
                 wrap ((fun (a, b) -> (a::b)), (fun (a::b) -> (a,b))) pb
         sequ (mapper) pa (binder)
 
     /// Repeats a PU until a condition is met to create a list PU
     let repeatWhile cond pa =
-        repeatUntil (not << cond) pa
-
-    /// Repeats a PU n times to create an array pickler
-    let repeatA pa n = wrap (Array.ofList, List.ofArray) (repeat pa n)
+        untilCond (not << cond) pa
 
     /// A pickler/unpickler pair (PU) for the unit type
     let unitPU = lift ()
@@ -310,8 +341,17 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for creating null terminated strings from a char PU.
     let nullTerminated (pa : BinaryPU<char>) : BinaryPU<string> =
-        let pNullTerm = repeatUntil ((=) '\000') pa
-        pNullTerm |> wrap (Array.ofList >> System.String, List.ofSeq) 
+        wrap (Array.ofList >> System.String, List.ofSeq) (until '\000' pa)
+
+    /// A pickler/unpickler pair (PU) for creating null terminated strings from a char PU.
+    let lfTerminated (pa : BinaryPU<char>) : BinaryPU<string> =
+        wrap (Array.ofList >> System.String, List.ofSeq) (until '\n' pa)
+
+    /// A pickler/unpickler pair (PU) for creating CRLF terminated strings from a char PU.
+    let crlfTerminated (pa : BinaryPU<char>) : BinaryPU<string> =
+        let pCRLFTerm = repeatUntilIncl (fun (str : string) -> str.EndsWith("\r")) "\r" (lfTerminated pa)
+        let trimCR (str : string) = if str.EndsWith("\r") then str.Substring(0, str.Length - 1) else str
+        pCRLFTerm |> wrap (List.reduce (+) >> trimCR, List.singleton)
         
     /// A pickler/unpickler pair (PU) for option types in the supplied endianness
     let private optionalPUE endianness pa = 
@@ -460,13 +500,13 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for UTF-32 strings which uses a byte order mark to indicate endianness when unpickling.  During pickling, little endian is used and a byte order
     /// mark to indicate this is prepended.
-    let utf32PU = pickleUTFXWithEndiannessDetect (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = true}) LittleEndian.utf32PU BigEndian.utf16PU
+    let utf32PU = pickleUTFXWithEndiannessDetect (Encoding.UTF32 {Endianness = LittleEndian; ByteOrderMark = true}) LittleEndian.utf32PU BigEndian.utf32PU
 
     /// Uses the supplied pickler/unpickler pair (PU) to unpickle from the supplied binary channel incrementally
     let unpickleIncr pu binaryChannel =
         match binaryChannel.IOStream.CanRead with
         |true -> 
-            let incrUnpickler = UnpickleIncremental {Reader = binaryChannel}
+            let incrUnpickler = {Raw = [||]; Position = 0; Reader = Some binaryChannel}
             IO.fromEffectful (fun _ -> fst <| runUnpickle (incrUnpickler) pu)
         |false -> raise ChannelDoesNotSupportReadingException
 
