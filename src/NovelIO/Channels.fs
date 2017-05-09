@@ -77,9 +77,7 @@ module TextChannel =
 
     /// An action that reads a line from the text channel
     let getLine (channel : TChannel) = 
-        match channel.IOMode with
-        |ChannelIOMode.Asynchronous -> IO.liftAsync <| SideEffecting.getLineAsync channel
-        |_ -> IO.fromEffectful (fun _ -> SideEffecting.getLine channel)
+        IO.fromEffectful (fun _ -> SideEffecting.getLine channel)
 
     /// An action that determines if the text channel is at the end of the stream.  This a synonym for isEOF
     let isEOS channel = IO.fromEffectful (fun _ -> SideEffecting.isChannelAtEndOfStream channel)
@@ -91,10 +89,7 @@ module TextChannel =
     let isReady channel = IO.fromEffectful (fun _ -> SideEffecting.isChannelReadyToRead channel)
 
     /// An action that writes a line to the text channel
-    let writeLine (channel : TChannel) str =
-        match channel.IOMode with
-        |ChannelIOMode.Asynchronous -> IO.liftAsync <| SideEffecting.writeLineAsync str channel
-        |_ -> IO.fromEffectful (fun _ -> SideEffecting.writeLine str channel)
+    let writeLine (channel : TChannel) str = IO.fromEffectful (fun _ -> SideEffecting.writeLine str channel)
 
 /// Operations on binary channels
 module BinaryChannel =
@@ -156,33 +151,19 @@ module BinaryChannel =
                 |false -> return! raise ChannelDoesNotSupportWritingException
             }
 
-    /// Higher order function for performing channel actions synchrously or asynchronously
-    let private syncOrAsync syncFunc asyncA count channel =
-        match channel.IOMode with
-        |ChannelIOMode.Synchronous | ChannelIOMode.Optimise when count < 1024 -> IO.fromEffectful syncFunc
-        |_ -> IO.liftAsync asyncA
+    let private readPartialByteArrayAsync channel count =
+        async {
+            let bytes = Array.zeroCreate<byte> count
+            let! count' = SideEffecting.asyncRead bytes 0 count channel
+            return Array.take count' bytes
+            }
 
     /// Provides a general approach for reading partial byte arrays from a channel
     let private readPartialByteArray channel count =
-        // function to synchronously read a partial byte array
-        let syncFunc () =
+        IO.fromEffectful (fun _ ->
             let bytes = Array.zeroCreate<byte> count
             let count' = SideEffecting.read bytes 0 count channel
-            Array.take count' bytes
-        // async action to read partial byte array
-        let asyncA =
-            async {
-                let bytes = Array.zeroCreate<byte> count
-                let! count' = SideEffecting.asyncRead bytes 0 count channel
-                return Array.take count' bytes
-                }
-        syncOrAsync syncFunc asyncA count channel
-
-    /// Provides a general approach for reading complete byte arrays from a channel
-    let private readCompleteByteArray channel count =
-        let syncFunc() =  SideEffecting.readExactly count channel
-        let asyncA = SideEffecting.asyncReadExactly count channel
-        syncOrAsync syncFunc asyncA count channel
+            Array.take count' bytes)
 
     /// An action that closes a binary channel  
     let close channel = IO.fromEffectful (fun _ -> SideEffecting.close channel)
@@ -197,13 +178,10 @@ module BinaryChannel =
     let read channel maxCount = readPartialByteArray channel maxCount
 
     /// An action that reads exactly count bytes from a channel and throws an exception if the end of the stream is reached
-    let readExactly channel count = readCompleteByteArray channel count
+    let readExactly channel count = IO.fromEffectful(fun _ -> SideEffecting.readExactly count channel)
 
     /// An action that sets the position of the binary channel to the supplied absolute position
     let setAbsPosition channel pos = IO.fromEffectful (fun _ -> SideEffecting.setAbsPosition pos channel)
 
     /// An action that writes a supplied array of bytes to the binary channel
-    let writeBytes channel (bytes : byte[]) = 
-        let sync() = SideEffecting.write bytes channel
-        let asyncA = SideEffecting.asyncWrite bytes channel
-        syncOrAsync sync asyncA (bytes.Length) channel
+    let writeBytes channel (bytes : byte[]) = IO.fromEffectful(fun _ -> SideEffecting.write bytes channel)

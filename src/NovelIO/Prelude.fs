@@ -103,21 +103,19 @@ type ChannelIOMode =
 
 /// A set of options for opening a file
 type FileOpenOptions =
-    {FileMode : FileMode; FileAccess : FileAccess; FileShare: FileShare; IOMode : ChannelIOMode}
+    {FileMode : FileMode; FileAccess : FileAccess; FileShare: FileShare}
 
 /// A channel that may support text being read from it and written to it
 type TChannel = 
     private {
         TextReader : StreamReader option; 
         TextWriter : StreamWriter option;
-        IOMode : ChannelIOMode
         }
 
 /// A channel that may support binary data being read from it or written to it
 type BChannel = 
     private {
         IOStream : System.IO.Stream; 
-        IOMode : ChannelIOMode;
         mutable EOS :  bool
         }
 

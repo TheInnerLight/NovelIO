@@ -29,10 +29,7 @@ module TCP =
     module private SideEffecting =
         /// Accept a socket from a TCP Server
         let acceptSocketFromServer serv =
-            async {
-                let! sock = Async.AwaitTask <| serv.TCPListener.AcceptSocketAsync()
-                return {TCPConnectedSocket = sock}
-            }
+            {TCPConnectedSocket = serv.TCPListener.AcceptSocket()}
 
         /// Connect a TCP Socket to a specified ip and port
         let connectTCPSocket (ip : IPAddress) (port : int) =
@@ -53,7 +50,7 @@ module TCP =
             {TCPListener = listener}
 
     /// Accept a connection from the supplied TCP server
-    let private acceptConn serv = IO.liftAsync <| SideEffecting.acceptSocketFromServer serv
+    let private acceptConn serv = IO.fromEffectful (fun () -> SideEffecting.acceptSocketFromServer serv)
 
     /// Create a TCP server at the specfied IP on the specified port
     let createServer ip port = IO.fromEffectful (fun () -> SideEffecting.startTCPServer ip port)
@@ -79,14 +76,18 @@ module TCP =
     /// Create a text channel from a connected socket
     let socketToTextChannel tcpSocket =
         IO.fromEffectful (fun _ ->
-            {TextReader = new StreamReader(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some;
-             TextWriter = new StreamWriter(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some;
-             IOMode = ChannelIOMode.Asynchronous})
+            {
+                TextReader = new StreamReader(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some;
+                TextWriter = new StreamWriter(new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)) |> Some;
+             })
 
     /// Create a binary channel from a connect socket
     let socketToBinaryChannel tcpSocket =
         IO.fromEffectful (fun _ ->
             let nStream = new Sockets.NetworkStream(tcpSocket.TCPConnectedSocket)
-            {IOStream = nStream; IOMode = ChannelIOMode.Asynchronous; EOS = false})
+            {
+                IOStream = nStream; 
+                EOS = false
+            })
 
 

@@ -157,6 +157,18 @@ module BinaryPickler =
                 wrap ((fun (a, b) -> (a::b)), (fun (a::b) -> (a,b))) pb
         sequ (mapper) pa (binder)
 
+
+    let rec untilCondIncl cond last pa =
+        let mapper = function 
+            |[] -> last
+            |a::b -> a
+        let binder = function 
+            |x when cond(x) -> lift [x]
+            |x ->  
+                let pb = tuple2 (lift x) (untilCondIncl cond last pa)
+                wrap ((fun (a, b) -> (a::b)), (fun (a::b) -> (a,b))) pb
+        sequ (mapper) pa (binder)
+
     /// Repeats a PU until a specific value is reached
     let until value pa = untilCond ((=) value) value pa
 
@@ -349,9 +361,14 @@ module BinaryPickler =
 
     /// A pickler/unpickler pair (PU) for creating CRLF terminated strings from a char PU.
     let crlfTerminated (pa : BinaryPU<char>) : BinaryPU<string> =
-        let pCRLFTerm = repeatUntilIncl (fun (str : string) -> str.EndsWith("\r")) "\r" (lfTerminated pa)
-        let trimCR (str : string) = if str.EndsWith("\r") then str.Substring(0, str.Length - 1) else str
-        pCRLFTerm |> wrap (List.reduce (+) >> trimCR, List.singleton)
+        let removeLast n (str : string) =
+            str.Substring(0, str.Length-n)
+        let stringsLister (arr : string[]) =
+            arr.[arr.Length-1] <- arr.[arr.Length-1] + "\r"
+            Array.toList arr
+        let lfTerminatedStrings = (lfTerminated pa) |> untilCondIncl (fun (str : string) -> str.EndsWith("\r")) "\r"
+        lfTerminatedStrings 
+        |> wrap ((fun strs -> (String.concat "\n" strs + "\n") |> removeLast 2), (fun str -> str.Split([|'\n'|]) |> stringsLister ))
         
     /// A pickler/unpickler pair (PU) for option types in the supplied endianness
     let private optionalPUE endianness pa = 

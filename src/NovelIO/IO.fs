@@ -24,7 +24,6 @@ type IO<'a> =
     private 
     |Return of 'a
     |SyncIO of (unit -> IO<'a> )
-    |AsyncIO of (Async<IO<'a>>)
 
 /// Pure IO Functions
 module IO =
@@ -34,13 +33,11 @@ module IO =
         match io with
         |Return a -> async.Return <| Return a
         |SyncIO f -> runUntilAsync (f())
-        |AsyncIO a -> a
 
     let rec private runAsyncIO io =
         match io with
         |Return a -> async.Return a
         |SyncIO f -> runAsyncIO <| f()
-        |AsyncIO a -> async.Bind (a, runAsyncIO)
 
     let rec private  runRec (io : IO<'a>) : Async<'a> =
         async{
@@ -67,11 +64,10 @@ module IO =
             match x' with
             |Return a -> f a
             |SyncIO (g) -> SyncIO (fun () ->  bindRec <| g())
-            |AsyncIO (a) -> AsyncIO (async.Bind(a, async.Return << bindRec))
         bindRec x
 
     /// Lift an async computation into IO
-    let liftAsync a = AsyncIO <| async.Bind(a, async.Return << Return)
+    let liftAsync a = SyncIO <| (fun _ -> return' <| Async.RunSynchronously a)
             
     /// Removes a level of IO structure
     let join x = bind x id
@@ -161,13 +157,14 @@ module IO =
             match io with
             |Return a -> System.Threading.Tasks.Task.FromResult(a)
             |SyncIO act -> System.Threading.Tasks.Task.Run(fun _ -> run io)
-            |AsyncIO aIO -> Async.StartAsTask <| runAsyncIO io)
+            )
 
     /// Allows a supplied IO action to be executed on the thread pool
     let forkIO<'a> (io : IO<'a>) = map (ignore) (forkTask io)
 
-    /// Allows the awaiting of a result from a forked Task
-    let awaitTask task = liftAsync <| Async.AwaitTask task
+    /// Allows the waiting of a result from a forked Task
+    let waitTask (task : System.Threading.Tasks.Task<'a>) = 
+        fromEffectful(fun _ -> task.Result)
 
     /// Map each element of a list to a monadic action, evaluate these actions from left to right and collect the results as a sequence.
     let traverse mFunc lst =
@@ -355,7 +352,7 @@ module IO =
                 |> List.ofArray
                 |> sequence
                 |> map (System.Threading.Tasks.Task.WhenAll)
-            map (List.ofArray) (allIOTasks >>= awaitTask)
+            map (List.ofArray) (allIOTasks >>= waitTask)
 
         /// Map each element in a list to a monadic action and then run all of those monadic actions in parallel.
         let traverse (f : 'a -> IO<'b>) sequ =

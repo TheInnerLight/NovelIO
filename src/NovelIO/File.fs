@@ -41,12 +41,12 @@ module private SideEffectingFileIO =
             |NovelFS.NovelIO.FileAccess.Read -> Some <| crTxtRdr fStream, None
             |NovelFS.NovelIO.FileAccess.ReadWrite -> Some <| crTxtRdr fStream, Some <| crTxtWrtr fStream
             |NovelFS.NovelIO.FileAccess.Write -> None, Some <| crTxtWrtr fStream
-        {TextReader = reader; TextWriter = writer; IOMode = ChannelIOMode.Synchronous}
+        {TextReader = reader; TextWriter = writer}
 
     /// Create a binary file channel for a supplied file name, file mode and file access
     let openBinaryFileChannel (fName : FilePath) mode access =
         let fStream = new FileStream(fName.PathString, mode, access)
-        {IOStream = fStream; IOMode = ChannelIOMode.Optimise; EOS = false}
+        {IOStream = fStream; EOS = false}
 
 /// Provides functions relating to the creating, copying, deleting, moving, opening and reading of files
 module File =
@@ -57,21 +57,18 @@ module File =
             FileMode = NovelFS.NovelIO.FileMode.Open;
             FileAccess = NovelFS.NovelIO.FileAccess.Read;
             FileShare = NovelFS.NovelIO.FileShare.Read;
-            IOMode = ChannelIOMode.Optimise
             }
         /// A default set of options for reading and writing a file
         let defaultReadWrite = {
             FileMode = NovelFS.NovelIO.FileMode.OpenOrCreate;
             FileAccess = NovelFS.NovelIO.FileAccess.ReadWrite;
             FileShare = NovelFS.NovelIO.FileShare.Read;
-            IOMode = ChannelIOMode.Optimise
             }
         /// A default set of options for writing a file
         let defaultWrite = {
             FileMode = NovelFS.NovelIO.FileMode.Create;
             FileAccess = NovelFS.NovelIO.FileAccess.Write;
             FileShare = NovelFS.NovelIO.FileShare.Read;
-            IOMode = ChannelIOMode.Optimise
             }
 
     /// Operations on File Paths
