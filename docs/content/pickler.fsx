@@ -225,7 +225,7 @@ Example of incremental unpickling:
 *)
 
 io {
-    let! channel = File.openBinaryChannel FileMode.Open FileAccess.Read (File.assumeValidFilename "test.txt")
+    let! channel = File.openBinaryChannel File.Open.defaultRead (File.Path.fromValid "test.txt")
     return! BinaryPickler.unpickleIncr complexPickler channel
 }
 
@@ -236,7 +236,7 @@ Example of incremental pickling:
 *)
 
 io {
-    let! channel = File.openBinaryChannel FileMode.Create FileAccess.Write (File.assumeValidFilename "test.txt")
+    let! channel = File.openBinaryChannel File.Open.defaultWrite (File.Path.fromValid "test.txt")
     let data = [("A", 7.5, 16); ("B", 7.5, 1701)]
     return! BinaryPickler.pickleIncr complexPickler channel data
 }

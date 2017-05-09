@@ -166,19 +166,21 @@ io {
 
 (**
 
-If you wished to perform a task and then retrieve the results later, you would need to use `forkTask` and `awaitTask`.
+If you wished to perform a task and then retrieve the results later, you would need to use `forkTask` and `waitTask`.
 
 *)
 
 io {
     // create a task that generates some random numbers on the thread pool
     let! task = IO.forkTask <| IO.replicateM Random.nextIO 100
-    // await the completion of the task (await Task waits asychronously, it will not block threads)
-    let! results = IO.awaitTask task
+    // wait for the completion of the task (this will block)
+    let! results = IO.waitTask task
     return results
 }
 
 (**
+
+If you wish to avoid blocking, you can use `Async.AwaitTask` to await the rest of forked operations asychronously.
 
 ### Parallel actions
 

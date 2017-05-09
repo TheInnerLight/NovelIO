@@ -87,13 +87,13 @@ We can then choose to perform the action twice (as before):
 
 io {
     let! sequence1 = keysIO
-    do! IO.putStrLn <| sprintf "Length: %d" (Seq.length sequence1)
+    do! Console.writeLine <| sprintf "Length: %d" (Seq.length sequence1)
     let! sequence2 = keysIO
     do! sequence2
         |> Seq.map(fun ki -> string <| ki.KeyChar)
         |> String.concat ""
         |> sprintf "String: %s"
-        |> IO.putStrLn
+        |> Console.writeLine
 } |> IO.run
 
 (**
@@ -102,12 +102,12 @@ Or execute the action only once:
 
 io {
     let! sequence = keysIO
-    do! IO.putStrLn <| sprintf "Length: %d" (Seq.length sequence)
+    do! Console.writeLine <| sprintf "Length: %d" (Seq.length sequence)
     do! sequence
         |> Seq.map(fun ki -> string <| ki.KeyChar)
         |> String.concat ""
         |> sprintf "String: %s"
-        |> IO.putStrLn
+        |> Console.writeLine
 } |> IO.run
 
 (**
@@ -146,8 +146,8 @@ io {
     let randomSeqIO = IO.replicateM (Random.nextIO) 4
     let! randomSeq = randomSeqIO
     let sortedSeq = Seq.sort randomSeq
-    do! IO.putStrLn <| sprintf "Sorted: %A" sortedSeq
-    do! IO.putStrLn <| sprintf "Random: %A" randomSeq
+    do! Console.writeLine <| sprintf "Sorted: %A" sortedSeq
+    do! Console.writeLine <| sprintf "Random: %A" randomSeq
     } |> IO.run
 
 (**
@@ -166,8 +166,8 @@ io {
     let! randomSeq = randomSeqIO
     let sortedSeq = Seq.sort randomSeq // sort the first set
     let! randomSeq2 = randomSeqIO // evaluate the effects of randomSeqIO again
-    do! IO.putStrLn <| sprintf "Sorted: %A" sortedSeq
-    do! IO.putStrLn <| sprintf "Random: %A" randomSeq2
+    do! Console.writeLine<| sprintf "Sorted: %A" sortedSeq
+    do! Console.writeLine <| sprintf "Random: %A" randomSeq2
     } |> IO.run
 
 (**

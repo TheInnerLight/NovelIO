@@ -29,26 +29,11 @@ type IO<'a> =
 module IO =
     // ------- RUN ------- //
 
-    let rec private runUntilAsync io =
-        match io with
-        |Return a -> async.Return <| Return a
-        |SyncIO f -> runUntilAsync (f())
-
-    let rec private runAsyncIO io =
-        match io with
-        |Return a -> async.Return a
-        |SyncIO f -> runAsyncIO <| f()
-
-    let rec private  runRec (io : IO<'a>) : Async<'a> =
-        async{
-            let! io' = runUntilAsync io
-            match io' with
-            |Return res -> return res
-            |_ -> return! runRec io'
-        }
-
     /// Runs the IO actions and evaluates the result
-    let run io = runRec io |> Async.RunSynchronously
+    let rec run io = 
+        match io with
+        |Return a -> a
+        |SyncIO f -> run (f())
 
     // ------- MONAD ------- //
 
